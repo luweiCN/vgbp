@@ -51,10 +51,10 @@ npm run deploy
 
 ### Vite 配置 (vite.config.ts)
 ```typescript
-base: mode === 'production' ? '/-/' : '/',
+base: mode === 'production' ? '/vgbp/' : '/',
 ```
 - 开发环境使用根路径 `/`
-- 生产环境使用 GitHub Pages 路径 `/-/`
+- 生产环境使用 GitHub Pages 路径 `/vgbp/`
 
 ### GitHub Actions 配置
 - 自动在推送到 `main` 分支时触发
@@ -79,7 +79,7 @@ base: mode === 'production' ? '/-/' : '/',
 
 部署成功后，你的应用将在以下地址可用：
 
-**主要地址**: https://huang1074867514.github.io/-/
+**主要地址**: https://huang1074867514.github.io/vgbp/
 
 ## 🎯 功能特性
 

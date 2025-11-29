@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       // GitHub Pages 部署配置
-      base: mode === 'production' ? '/-/' : '/',
+      base: mode === 'production' ? '/vgbp/' : '/',
       server: {
         port: 3000,
         host: '0.0.0.0',
