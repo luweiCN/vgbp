@@ -1,23 +1,87 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { HEROES } from "./constants";
-import { searchHeroes, HEROES_BY_ROLE } from "./data/heroes";
+import { searchHeroes, getHeroesByRole, ClassificationMode } from "./data/heroes";
 import HeroCard from "./components/HeroCard";
-import { HeroRole } from "./types";
+import { Hero, HeroRole } from "./types";
+
+// 本地存储的key
+const STORAGE_KEY = 'vainglory-draft-selected-heroes';
+const CLASSIFICATION_MODE_KEY = 'vainglory-draft-classification-mode';
+const HIDE_SELECTED_KEY = 'vainglory-draft-hide-selected';
 
 // OSS 配置 - 请在这里设置你的 OSS 地址
 const OSS_BASE_URL = "https://www.luwei.space:4014/default/vainglory";
 
 const App: React.FC = () => {
+  // 从本地存储加载已选择的英雄
+  const loadSelectedHeroes = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const heroIds = JSON.parse(stored);
+        return new Set(heroIds);
+      }
+    } catch (error) {
+      console.error('Failed to load selected heroes from localStorage:', error);
+    }
+    return new Set();
+  }, []);
+
   // Store IDs of selected (pressed) heroes
   const [selectedHeroIds, setSelectedHeroIds] = useState<Set<string>>(
-    new Set(),
+    () => loadSelectedHeroes()
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [layoutMode, setLayoutMode] = useState<"auto" | "3" | "4" | "5">("auto");
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showClassificationInfo, setShowClassificationInfo] = useState(false);
   const [currentVisibleSection, setCurrentVisibleSection] = useState<'captain' | 'jungle' | 'carry' | null>(null);
-  const [hideSelected, setHideSelected] = useState(false);
+  const [hideSelected, setHideSelected] = useState(() => {
+    try {
+      const stored = localStorage.getItem(HIDE_SELECTED_KEY);
+      return stored ? JSON.parse(stored) : false;
+    } catch (error) {
+      console.error('Failed to load hideSelected from localStorage:', error);
+      return false;
+    }
+  });
   const [showSelectedHeroes, setShowSelectedHeroes] = useState(false);
+  const [classificationMode, setClassificationMode] = useState<ClassificationMode>(() => {
+    try {
+      const stored = localStorage.getItem(CLASSIFICATION_MODE_KEY);
+      return stored ? JSON.parse(stored) : ClassificationMode.OFFICIAL;
+    } catch (error) {
+      console.error('Failed to load classificationMode from localStorage:', error);
+      return ClassificationMode.OFFICIAL;
+    }
+  });
+
+  // 保存选择的英雄到本地存储
+  const saveSelectedHeroes = useCallback((heroIds: Set<string>) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(heroIds)));
+    } catch (error) {
+      console.error('Failed to save selected heroes to localStorage:', error);
+    }
+  }, []);
+
+  // 保存分类模式到本地存储
+  const saveClassificationMode = useCallback((mode: ClassificationMode) => {
+    try {
+      localStorage.setItem(CLASSIFICATION_MODE_KEY, JSON.stringify(mode));
+    } catch (error) {
+      console.error('Failed to save classification mode to localStorage:', error);
+    }
+  }, []);
+
+  // 保存隐藏选项到本地存储
+  const saveHideSelected = useCallback((hide: boolean) => {
+    try {
+      localStorage.setItem(HIDE_SELECTED_KEY, JSON.stringify(hide));
+    } catch (error) {
+      console.error('Failed to save hide selected to localStorage:', error);
+    }
+  }, []);
 
   // Handlers
   const handleToggleHero = useCallback((id: string) => {
@@ -28,20 +92,48 @@ const App: React.FC = () => {
       } else {
         newSet.add(id);
       }
+      // 保存到本地存储
+      saveSelectedHeroes(newSet);
       return newSet;
     });
-  }, []);
+  }, [saveSelectedHeroes]);
 
   const handleReset = useCallback(() => {
-    setSelectedHeroIds(new Set());
+    const newSet = new Set<string>();
+    setSelectedHeroIds(newSet);
+    setShowSelectedHeroes(false); // 关闭弹窗
     setShowResetConfirm(false);
-  }, []);
+    // 清空本地存储
+    saveSelectedHeroes(newSet);
+  }, [saveSelectedHeroes]);
 
   const handleResetClick = useCallback(() => {
     if (selectedHeroIds.size > 0) {
       setShowResetConfirm(true);
     }
   }, [selectedHeroIds.size]);
+
+  // 弹窗内的toggle函数，不保存到本地存储（实际上弹窗内的卡片被禁用了交互）
+  const handleModalToggleHero = useCallback((id: string) => {
+    // 由于弹窗内卡片被禁用，这个函数实际上不会被调用
+    // 但为了保持接口一致性，保留这个空函数
+    return;
+  }, []);
+
+  // 自定义滚动函数，考虑sticky header高度
+  const scrollToSection = useCallback((sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const header = document.querySelector('header');
+      const headerHeight = header ? header.offsetHeight : 100;
+      const elementTop = element.offsetTop - headerHeight - 20; // 减去header高度和额外偏移
+
+      window.scrollTo({
+        top: elementTop,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
 
   // Handle scroll detection for current visible section
   useEffect(() => {
@@ -52,7 +144,10 @@ const App: React.FC = () => {
         { role: 'carry', id: 'carry-section' }
       ];
 
-      const scrollPosition = window.scrollY + 200; // 头部高度 + 一些偏移
+      // 获取sticky header的实际高度
+      const header = document.querySelector('header');
+      const headerHeight = header ? header.offsetHeight : 100; // 默认100px作为fallback
+      const scrollPosition = window.scrollY + headerHeight + 20; // 头部高度 + 一些额外偏移
 
       // 找到当前最接近顶部的section
       let currentSection: typeof currentVisibleSection = null;
@@ -92,17 +187,25 @@ const App: React.FC = () => {
     return heroes;
   }, [searchTerm, selectedHeroIds, hideSelected]);
 
-  const groupedHeroes = useMemo(() => {
-    return {
-      [HeroRole.CAPTAIN]: filteredHeroes.filter(
-        (h) => h.role === HeroRole.CAPTAIN,
-      ),
-      [HeroRole.JUNGLE]: filteredHeroes.filter(
-        (h) => h.role === HeroRole.JUNGLE,
-      ),
-      [HeroRole.CARRY]: filteredHeroes.filter((h) => h.role === HeroRole.CARRY),
+  const groupedHeroes: Record<HeroRole, Hero[]> = useMemo(() => {
+    const roleFilter = (hero: Hero, role: HeroRole) => {
+      switch (classificationMode) {
+        case ClassificationMode.COMMON:
+          return !hero.commonRoles || hero.commonRoles.includes(role);
+        case ClassificationMode.FLEX:
+          return !hero.flexRoles || hero.flexRoles.includes(role);
+        case ClassificationMode.OFFICIAL:
+        default:
+          return hero.role === role;
+      }
     };
-  }, [filteredHeroes]);
+
+    return {
+      [HeroRole.CAPTAIN]: filteredHeroes.filter((h) => roleFilter(h, HeroRole.CAPTAIN)),
+      [HeroRole.JUNGLE]: filteredHeroes.filter((h) => roleFilter(h, HeroRole.JUNGLE)),
+      [HeroRole.CARRY]: filteredHeroes.filter((h) => roleFilter(h, HeroRole.CARRY)),
+    };
+  }, [filteredHeroes, classificationMode]);
 
   // Get selected heroes grouped by role for the modal
   const selectedHeroesGrouped = useMemo(() => {
@@ -167,7 +270,35 @@ const App: React.FC = () => {
           </h2>
           <span className="text-lg font-bold opacity-60">{cnTitle}</span>
           <span className="ml-auto text-xs font-mono bg-zinc-900 px-2 py-1 rounded-full text-zinc-500">
-            {heroes.length} Heroes
+            已选 {selectedHeroIds.size > 0 ? (() => {
+              const categoryHeroes = HEROES.filter(h => {
+                switch (classificationMode) {
+                  case ClassificationMode.COMMON:
+                    return !h.commonRoles || h.commonRoles.includes(role);
+                  case ClassificationMode.FLEX:
+                    return !h.flexRoles || h.flexRoles.includes(role);
+                  case ClassificationMode.OFFICIAL:
+                  default:
+                    return h.role === role;
+                }
+              });
+              const selectedInCategory = categoryHeroes.filter(h => selectedHeroIds.has(h.id));
+              return `${selectedInCategory.length} 个`;
+            })() : '0 个'}，剩余 {(() => {
+              const categoryHeroes = HEROES.filter(h => {
+                switch (classificationMode) {
+                  case ClassificationMode.COMMON:
+                    return !h.commonRoles || h.commonRoles.includes(role);
+                  case ClassificationMode.FLEX:
+                    return !h.flexRoles || h.flexRoles.includes(role);
+                  case ClassificationMode.OFFICIAL:
+                  default:
+                    return h.role === role;
+                }
+              });
+              const selectedInCategory = categoryHeroes.filter(h => selectedHeroIds.has(h.id));
+              return `${categoryHeroes.length - selectedInCategory.length} 个`;
+            })()}
           </span>
         </div>
         <div className={getGridClasses()}>
@@ -210,17 +341,19 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Layout Selector - Inline */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setLayoutMode("auto")}
-                  className={`p-2 rounded-md transition-all duration-200 ${layoutMode === "auto" ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"}`}
-                  title="Auto Layout"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                  </svg>
-                </button>
+              {/* Layout Selector Only */}
+              <div className="flex items-center gap-2">
+                {/* Layout Selector - Inline */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setLayoutMode("auto")}
+                    className={`p-2 rounded-md transition-all duration-200 ${layoutMode === "auto" ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"}`}
+                    title="Auto Layout"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                    </svg>
+                  </button>
                 <button
                   onClick={() => setLayoutMode("3")}
                   className={`p-2 rounded-md transition-all duration-200 ${layoutMode === "3" ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"}`}
@@ -248,6 +381,7 @@ const App: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V4zM9 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM16 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM5 14a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H6a1 1 0 01-1-1v-6zM12 14a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
                   </svg>
                 </button>
+                </div>
               </div>
             </div>
 
@@ -297,17 +431,148 @@ const App: React.FC = () => {
                 )}
               </div>
 
+              <button
+                onClick={handleResetClick}
+                disabled={selectedHeroIds.size === 0}
+                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg border transition-colors flex items-center gap-2 whitespace-nowrap ${
+                  selectedHeroIds.size === 0
+                    ? "bg-zinc-900 text-zinc-600 border-zinc-800 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 shadow-lg shadow-red-500/20"
+                }`}
+              >
+                重置BP
+              </button>
               </div>
           </div>
+        </div>
+        {/* Progress and Controls Section */}
+        <div className="border-t border-zinc-800 pt-3 px-4 pb-2">
+          {/* Hide Selected Toggle */}
+          <div className="hidden sm:flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-zinc-400">
+                剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroIds.size}</span> 个英雄
+              </div>
 
-  
+              {/* Progress Bar */}
+              <div className="w-20 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 transition-all duration-500"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+
+              <div className="text-xs text-zinc-500">
+                {progressPercentage}%
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-xs text-zinc-500 text-center max-w-sm">
+                {selectedHeroIds.size > 0
+                  ? (hideSelected
+                      ? "已隐藏已选英雄，从列表中隐藏以便选择剩余英雄"
+                      : "点击按钮可隐藏已选英雄，专注于选择剩余英雄")
+                  : "选择英雄后可使用隐藏功能，专注于选择剩余英雄"
+                }
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-500">隐藏已选</span>
+                <button
+                  onClick={() => {
+                  if (selectedHeroIds.size > 0) {
+                    const newValue = !hideSelected;
+                    setHideSelected(newValue);
+                    saveHideSelected(newValue);
+                  }
+                }}
+                  disabled={selectedHeroIds.size === 0}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    selectedHeroIds.size === 0
+                      ? "bg-zinc-700 cursor-not-allowed opacity-50"
+                      : hideSelected
+                      ? "bg-orange-600"
+                      : "bg-zinc-600"
+                  }`}
+                  title={selectedHeroIds.size === 0 ? "请先选择英雄" : (hideSelected ? "显示已选英雄" : "隐藏已选英雄")}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      hideSelected ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Layout - Two Rows */}
+          <div className="sm:hidden space-y-3">
+            {/* First row: Progress info and progress bar */}
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-zinc-400 whitespace-nowrap">
+                剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroIds.size}</span> 个英雄
+              </div>
+              <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 transition-all duration-500"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+              <div className="text-xs text-zinc-500 whitespace-nowrap">
+                {progressPercentage}%
+              </div>
+            </div>
+
+            {/* Second row: Button and description */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-xs text-zinc-500 flex-1">
+                {selectedHeroIds.size > 0
+                  ? (hideSelected
+                      ? "已隐藏已选，专注选择剩余英雄"
+                      : "隐藏已选，专注选择剩余英雄")
+                  : "选择后可隐藏已选英雄"
+                }
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="text-xs text-zinc-500">隐藏已选</span>
+                <button
+                  onClick={() => {
+                  if (selectedHeroIds.size > 0) {
+                    const newValue = !hideSelected;
+                    setHideSelected(newValue);
+                    saveHideSelected(newValue);
+                  }
+                }}
+                  disabled={selectedHeroIds.size === 0}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    selectedHeroIds.size === 0
+                      ? "bg-zinc-700 cursor-not-allowed opacity-50"
+                      : hideSelected
+                      ? "bg-orange-600"
+                      : "bg-zinc-600"
+                  }`}
+                  title={selectedHeroIds.size === 0 ? "请先选择英雄" : (hideSelected ? "显示已选英雄" : "隐藏已选英雄")}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      hideSelected ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Border between sections */}
+          <div className="border-t border-zinc-800 pt-2 mt-2"></div>
+
           {/* Current Section Indicator */}
-          <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xs text-zinc-500">当前位置:</span>
               <div className="flex gap-1">
                 <button
-                  onClick={() => document.getElementById('captain-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => scrollToSection('captain-section')}
                   className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                     currentVisibleSection === 'captain'
                       ? 'bg-yellow-500 text-black'
@@ -317,7 +582,7 @@ const App: React.FC = () => {
                   辅助
                 </button>
                 <button
-                  onClick={() => document.getElementById('jungle-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => scrollToSection('jungle-section')}
                   className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                     currentVisibleSection === 'jungle'
                       ? 'bg-emerald-500 text-black'
@@ -327,7 +592,7 @@ const App: React.FC = () => {
                   打野
                 </button>
                 <button
-                  onClick={() => document.getElementById('carry-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => scrollToSection('carry-section')}
                   className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                     currentVisibleSection === 'carry'
                       ? 'bg-red-500 text-white'
@@ -339,12 +604,62 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="flex-1 ml-4 mr-0 h-1 bg-zinc-800 rounded-full overflow-hidden max-w-[200px]">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 transition-all duration-500"
-                style={{ width: `${progressPercentage}%` }}
-              ></div>
+            {/* Classification Mode Toggle */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-400 hidden sm:inline">英雄分类:</span>
+              <button
+                onClick={() => setShowClassificationInfo(true)}
+                className="p-1 text-zinc-400 hover:text-zinc-200 transition-colors"
+                title="分类说明"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+              <div className="flex items-center gap-1 bg-zinc-800 rounded-full p-1">
+                <button
+                  onClick={() => {
+                  setClassificationMode(ClassificationMode.OFFICIAL);
+                  saveClassificationMode(ClassificationMode.OFFICIAL);
+                }}
+                  className={`px-2 py-1 text-xs font-medium rounded-full transition-colors ${
+                    classificationMode === ClassificationMode.OFFICIAL
+                      ? "bg-blue-600 text-white"
+                      : "text-zinc-400 hover:text-white hover:bg-zinc-700"
+                  }`}
+                  title="按官方定位分类"
+                >
+                  官方
+                </button>
+                <button
+                  onClick={() => {
+                  setClassificationMode(ClassificationMode.COMMON);
+                  saveClassificationMode(ClassificationMode.COMMON);
+                }}
+                  className={`px-2 py-1 text-xs font-medium rounded-full transition-colors ${
+                    classificationMode === ClassificationMode.COMMON
+                      ? "bg-green-600 text-white"
+                      : "text-zinc-400 hover:text-white hover:bg-zinc-700"
+                  }`}
+                  title="按玩家常见位置分类"
+                >
+                  常见
+                </button>
+                <button
+                  onClick={() => {
+                  setClassificationMode(ClassificationMode.FLEX);
+                  saveClassificationMode(ClassificationMode.FLEX);
+                }}
+                  className={`px-2 py-1 text-xs font-medium rounded-full transition-colors ${
+                    classificationMode === ClassificationMode.FLEX
+                      ? "bg-orange-600 text-white"
+                      : "text-zinc-400 hover:text-white hover:bg-zinc-700"
+                  }`}
+                  title="按理论上可以打的位置分类"
+                >
+                  灵活
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -352,7 +667,7 @@ const App: React.FC = () => {
 
       {/* Reset Confirmation Modal */}
       {showResetConfirm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-sm w-full mx-auto shadow-2xl">
             <h3 className="text-lg font-bold text-white mb-2">确认重置BP</h3>
             <p className="text-zinc-400 mb-6">
@@ -376,8 +691,59 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Main Grid */}
-      <main className={`max-w-[1400px] mx-auto px-4 py-8 ${getMainContainerClasses()}`}>
+      {/* Classification Info Modal */}
+      {showClassificationInfo && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full mx-auto shadow-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-white">英雄分类说明</h3>
+              <button
+                onClick={() => setShowClassificationInfo(false)}
+                className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4 text-zinc-300">
+              <div className="border-l-4 border-blue-500 pl-4">
+                <h4 className="font-semibold text-blue-500 mb-2">官方分类</h4>
+                <p className="text-sm">
+                  指的是按照游戏内部的官方分类。
+                </p>
+              </div>
+
+              <div className="border-l-4 border-green-500 pl-4">
+                <h4 className="font-semibold text-green-500 mb-2">常用分类</h4>
+                <p className="text-sm">
+                  常见分类是我们最常使用这个英雄打的位置，比如官方分类中把牛头放在了对线英雄，但是我们最常见的是牛头去打辅助位置。
+                </p>
+              </div>
+
+              <div className="border-l-4 border-orange-500 pl-4">
+                <h4 className="font-semibold text-orange-500 mb-2">灵活分类</h4>
+                <p className="text-sm">
+                  灵活兼顾了我们通常使用这个英雄可以打的所有位置，比如盲豹 格雷这个英雄，在官方分类中他属于打野英雄，而常见分类中属于对线英雄，因为我们使用他最常打的位置应该是对线，或者说人们对他的第一印象。而实际上这个英雄可以走物理出装去对线，也可以走ap出装去打野，甚至还可以去辅助位置。灵活分类就是标明了某个英雄常见的所有可能位置。
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowClassificationInfo(false)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+              >
+                了解了
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+        {/* Main Grid */}
+      <main className={`max-w-[1400px] mx-auto px-4 pb-8 ${getMainContainerClasses()}`}>
         {!hasAnyHeroes ? (
           <div className="text-center py-20 opacity-50">
             <p className="text-xl font-medium">
@@ -408,10 +774,11 @@ const App: React.FC = () => {
         )}
       </main>
 
+  
       {/* Selected Heroes Button */}
       <button
         onClick={() => setShowSelectedHeroes(true)}
-        className={`fixed bottom-24 right-8 z-30 flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-full border-2 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 ${
+        className={`fixed bottom-32 right-8 z-30 flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-full border-2 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 ${
           selectedHeroIds.size === 0
             ? "bg-zinc-900 text-zinc-500 border-zinc-700 cursor-not-allowed opacity-50"
             : "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 shadow-lg shadow-blue-500/20"
@@ -432,7 +799,7 @@ const App: React.FC = () => {
             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <span className="hidden sm:inline">已选英雄</span>
+        <span className="hidden sm:inline">查看已选</span>
         <span className="bg-black/20 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
           {selectedHeroIds.size}
         </span>
@@ -442,7 +809,7 @@ const App: React.FC = () => {
       {/* Selected Heroes Modal */}
       {showSelectedHeroes && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-xl max-w-6xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-xl max-w-6xl w-full max-h-[95vh] overflow-hidden shadow-2xl">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-zinc-700">
               <div>
@@ -484,52 +851,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Modal Controls */}
-            {selectedHeroIds.size > 0 && (
-              <div className="px-6 pt-4 pb-4 border-b border-zinc-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-zinc-400">列表设置:</span>
-                    <button
-                      onClick={() => setHideSelected(!hideSelected)}
-                      className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200 ${
-                        hideSelected
-                          ? "bg-orange-600 hover:bg-orange-700 text-white border-orange-600 hover:border-orange-700 shadow-lg shadow-orange-500/20"
-                          : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700 hover:border-zinc-600"
-                      }`}
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        {hideSelected ? (
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13.875 18.825A10.05 10.05 0 0112.194 0M13.875 18.825A10.05 10.05 0 0112.194 0M12 19.825a10.05 10.05 0 01-2.07 0M6.75 15a10.05 10.05 0 00-2.07 0"
-                          />
-                        ) : (
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM12 15a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        )}
-                      </svg>
-                      <span>{hideSelected ? "列表显示已选" : "列表隐藏已选"}</span>
-                    </button>
-                  </div>
-                  <span className="text-xs text-zinc-500">
-                    {hideSelected ? "已选英雄在主列表中已隐藏" : "已选英雄在主列表中仍显示"}
-                  </span>
-                </div>
-              </div>
-            )}
-
+  
             {/* Modal Content */}
             <div className="p-6 overflow-y-auto max-h-[60vh]">
               {selectedHeroIds.size === 0 ? (
@@ -553,7 +875,7 @@ const App: React.FC = () => {
                         </h3>
                         <span className="text-sm font-bold text-zinc-400">指挥官 / 辅助</span>
                         <span className="ml-auto text-xs font-mono bg-zinc-800 px-2 py-1 rounded-full text-zinc-500">
-                          {selectedHeroesGrouped[HeroRole.CAPTAIN].length} Heroes
+                          {selectedHeroesGrouped[HeroRole.CAPTAIN].length} 个英雄
                         </span>
                       </div>
                       <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
@@ -562,7 +884,7 @@ const App: React.FC = () => {
                             key={hero.id}
                             hero={hero}
                             isSelected={true}
-                            onToggle={handleToggleHero}
+                            onToggle={handleModalToggleHero}
                             ossBaseUrl={OSS_BASE_URL}
                             inModal={true}
                           />
@@ -580,7 +902,7 @@ const App: React.FC = () => {
                         </h3>
                         <span className="text-sm font-bold text-zinc-400">打野</span>
                         <span className="ml-auto text-xs font-mono bg-zinc-800 px-2 py-1 rounded-full text-zinc-500">
-                          {selectedHeroesGrouped[HeroRole.JUNGLE].length} Heroes
+                          {selectedHeroesGrouped[HeroRole.JUNGLE].length} 个英雄
                         </span>
                       </div>
                       <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
@@ -589,7 +911,7 @@ const App: React.FC = () => {
                             key={hero.id}
                             hero={hero}
                             isSelected={true}
-                            onToggle={handleToggleHero}
+                            onToggle={handleModalToggleHero}
                             ossBaseUrl={OSS_BASE_URL}
                             inModal={true}
                           />
@@ -607,7 +929,7 @@ const App: React.FC = () => {
                         </h3>
                         <span className="text-sm font-bold text-zinc-400">对线 / 核心</span>
                         <span className="ml-auto text-xs font-mono bg-zinc-800 px-2 py-1 rounded-full text-zinc-500">
-                          {selectedHeroesGrouped[HeroRole.CARRY].length} Heroes
+                          {selectedHeroesGrouped[HeroRole.CARRY].length} 个英雄
                         </span>
                       </div>
                       <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
@@ -616,7 +938,7 @@ const App: React.FC = () => {
                             key={hero.id}
                             hero={hero}
                             isSelected={true}
-                            onToggle={handleToggleHero}
+                            onToggle={handleModalToggleHero}
                             ossBaseUrl={OSS_BASE_URL}
                             inModal={true}
                           />
@@ -630,6 +952,7 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
