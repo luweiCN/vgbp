@@ -13,52 +13,76 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBase
   // 使用 OSS 存储的英雄头像
   const imageUrl = getHeroAvatarUrl(hero, ossBaseUrl);
 
+  // 分离称号和名字
+  const parseHeroName = (cnName: string) => {
+    const parts = cnName.split(' ');
+    if (parts.length >= 2) {
+      return {
+        title: parts[0], // 称号
+        name: parts.slice(1).join(' ') // 名字
+      };
+    }
+    return {
+      title: cnName,
+      name: ''
+    };
+  };
+
+  const { title, name } = parseHeroName(hero.cnName);
+
   return (
     <button
       onClick={() => onToggle(hero.id)}
       className={`
-        relative group flex flex-col items-center justify-end p-0 overflow-hidden rounded-xl transition-all duration-200 border-2
-        ${isSelected 
-          ? 'bg-zinc-900 border-zinc-800 opacity-50 scale-95 grayscale cursor-default shadow-inner' 
+        relative group flex flex-col items-center overflow-hidden rounded-xl transition-all duration-200 border-2         ${isSelected
+          ? 'bg-zinc-900 border-zinc-800 opacity-50 scale-95 grayscale cursor-default shadow-inner'
           : 'bg-zinc-800 border-zinc-700 hover:border-blue-500 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 cursor-pointer shadow-md'
         }
       `}
-      style={{ aspectRatio: '1/1' }} 
     >
-      {/* Background Image */}
-      <div className="absolute inset-0 bg-cover bg-top transition-transform duration-500 group-hover:scale-110" 
-           style={{ 
-             backgroundImage: `url(${imageUrl})`,
-             opacity: isSelected ? 0.3 : 1
-           }} 
-      />
-      
-      {/* Overlay Gradient for text readability */}
-      <div className={`absolute inset-0 bg-gradient-to-t ${isSelected ? 'from-black/90 to-black/60' : 'from-black/90 via-black/20 to-transparent'}`} />
+      {/* Hero Image Container */}
+      <div className="relative w-full aspect-[1/1] overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 bg-cover bg-top transition-transform duration-500 group-hover:scale-110"
+             style={{
+               backgroundImage: `url(${imageUrl})`,
+               opacity: isSelected ? 0.7 : 1
+             }}
+        />
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center w-full pb-2">
-        <h3 className={`text-sm md:text-base font-bold text-center leading-tight ${isSelected ? 'text-zinc-500 line-through' : 'text-white'}`}>
-          {hero.cnName}
-        </h3>
-        <span className={`text-[10px] uppercase tracking-wider font-semibold ${isSelected ? 'text-zinc-600' : 'text-zinc-400'}`}>
-          {hero.name}
-        </span>
-        
+        {/* Nickname banner at bottom of image (if exists) */}
+        {hero.nickname && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-black/10 px-2 py-1">
+            <div className="text-center text-[10px] md:text-[11px] text-yellow-300 font-bold tracking-wide truncate">
+              {hero.nickname}
+            </div>
+          </div>
+        )}
+
+        {/* Selected Corner Badge */}
         {isSelected && (
-           <div className="mt-1 text-red-500 font-bold text-[10px] uppercase tracking-widest border border-red-900/50 bg-red-900/40 px-1.5 py-0.5 rounded">
-             Picked
-           </div>
+          <div className="absolute top-0 right-0 transform translate-x-1 -translate-y-1">
+            <div className="bg-red-500 text-white font-bold text-[10px] md:text-xs uppercase tracking-wide px-2 py-1 rounded-bl-lg shadow-lg border border-red-600">
+              Picked
+            </div>
+          </div>
         )}
       </div>
 
-      {/* Selected Overlay Effect (Crossed out visual) */}
-      {isSelected && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="w-full h-[2px] bg-red-900/60 rotate-45 transform origin-center"></div>
-            <div className="w-full h-[2px] bg-red-900/60 -rotate-45 transform origin-center"></div>
+      {/* Text Content - Below Image */}
+      <div className="w-full p-2 bg-zinc-900/50 backdrop-blur-sm">
+        <div className="text-center">
+          <div className="flex flex-col leading-tight">
+            <h3 className={`text-[12px] md:text-lg font-bold truncate mb-1 ${isSelected ? 'text-zinc-500 line-through' : 'text-white'}`}>
+              {title}
+            </h3>
+            {name && <div className={`text-[14px] md:text-xl font-normal truncate opacity-80 ${isSelected ? 'text-zinc-600' : 'text-white'}`}>{name}</div>}
+          </div>
+          <span className={`text-[12px] md:text-sm tracking-wide font-semibold truncate ${isSelected ? 'text-zinc-600' : 'text-zinc-400'}`}>
+            {hero.name.charAt(0).toUpperCase() + hero.name.slice(1).toLowerCase()}
+          </span>
         </div>
-      )}
+      </div>
     </button>
   );
 };
