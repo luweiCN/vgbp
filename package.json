@@ -10,9 +10,10 @@
     "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
-    "react-dom": "^19.2.0",
     "@google/genai": "^1.30.0",
-    "react": "^19.2.0"
+    "pinyin-pro": "^3.27.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
