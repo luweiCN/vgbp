@@ -35,7 +35,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBase
       onClick={() => onToggle(hero.id)}
       className={`
         relative group flex flex-col items-center overflow-hidden rounded-xl transition-all duration-200 border-2         ${isSelected
-          ? 'bg-zinc-900 border-zinc-800 opacity-50 scale-95 grayscale cursor-default shadow-inner'
+          ? 'bg-zinc-800 border-zinc-700 cursor-pointer shadow-md'
           : 'bg-zinc-800 border-zinc-700 hover:border-blue-500 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 cursor-pointer shadow-md'
         }
       `}
@@ -46,7 +46,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBase
         <div className="absolute inset-0 bg-cover bg-top transition-transform duration-500 group-hover:scale-110"
              style={{
                backgroundImage: `url(${imageUrl})`,
-               opacity: isSelected ? 0.7 : 1
+               opacity: 1
              }}
         />
 
@@ -59,26 +59,18 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBase
           </div>
         )}
 
-        {/* Selected Corner Badge */}
-        {isSelected && (
-          <div className="absolute top-0 right-0 transform translate-x-1 -translate-y-1">
-            <div className="bg-red-500 text-white font-bold text-[10px] md:text-xs uppercase tracking-wide px-2 py-1 rounded-bl-lg shadow-lg border border-red-600">
-              Picked
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
 
       {/* Text Content - Below Image */}
       <div className="w-full p-2 bg-zinc-900/50 backdrop-blur-sm">
         <div className="text-center">
           <div className="flex flex-col leading-tight">
-            <h3 className={`text-[12px] md:text-lg font-bold truncate mb-1 ${isSelected ? 'text-zinc-500 line-through' : 'text-white'}`}>
+            <h3 className={`text-[12px] md:text-lg font-bold truncate mb-1 text-white`}>
               {title}
             </h3>
-            {name && <div className={`text-[14px] md:text-xl font-normal truncate opacity-80 ${isSelected ? 'text-zinc-600' : 'text-white'}`}>{name}</div>}
+            {name && <div className={`text-[14px] md:text-xl font-normal truncate opacity-80 text-white`}>{name}</div>}
           </div>
-          <span className={`text-[12px] md:text-sm tracking-wide font-semibold truncate ${isSelected ? 'text-zinc-600' : 'text-zinc-400'}`}>
+          <span className={`text-[12px] md:text-sm tracking-wide font-semibold truncate text-zinc-400`}>
             {hero.name.charAt(0).toUpperCase() + hero.name.slice(1).toLowerCase()}
           </span>
         </div>
