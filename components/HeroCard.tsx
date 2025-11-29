@@ -11,6 +11,11 @@ interface HeroCardProps {
 }
 
 const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBaseUrl = 'https://your-oss-bucket.oss-region.aliyuncs.com', inModal = false }) => {
+  const handleClick = () => {
+    // 在弹窗内不允许交互
+    if (inModal) return;
+    onToggle(hero.id);
+  };
   // 使用 OSS 存储的英雄头像
   const imageUrl = getHeroAvatarUrl(hero, ossBaseUrl);
 
@@ -33,12 +38,12 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBase
 
   return (
     <button
-      onClick={() => onToggle(hero.id)}
+      onClick={handleClick}
       className={`
         relative group flex flex-col items-center overflow-hidden rounded-xl transition-all duration-200 border-2         ${isSelected && !inModal
           ? 'bg-zinc-900 border-zinc-800 opacity-60 scale-95 grayscale cursor-default shadow-inner'
           : isSelected && inModal
-          ? 'bg-zinc-800 border-zinc-700 cursor-pointer shadow-md'
+          ? 'bg-zinc-800 border-zinc-700 cursor-default shadow-md'
           : 'bg-zinc-800 border-zinc-700 hover:border-blue-500 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 cursor-pointer shadow-md'
         }
       `}
@@ -46,7 +51,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBase
       {/* Hero Image Container */}
       <div className="relative w-full aspect-[1/1] overflow-hidden">
         {/* Background Image */}
-        <div className="absolute inset-0 bg-cover bg-top transition-transform duration-500 group-hover:scale-110"
+        <div className={`absolute inset-0 bg-cover bg-top transition-transform duration-500 ${inModal ? '' : 'group-hover:scale-110'}`}
              style={{
                backgroundImage: `url(${imageUrl})`,
                opacity: isSelected && !inModal ? 0.8 : 1
