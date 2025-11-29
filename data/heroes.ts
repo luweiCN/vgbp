@@ -1,5 +1,5 @@
 import { Hero, HeroRole, AttackType } from "../types";
-import { pinyin } from 'pinyin-pro';
+import { pinyin } from "pinyin-pro";
 
 // 英雄数据配置
 export const HEROES_DATA: Hero[] = [
@@ -132,22 +132,6 @@ export const HEROES_DATA: Hero[] = [
     attackType: AttackType.MELEE,
   },
   {
-    id: "anka",
-    name: "Anka",
-    cnName: "刀锋魅影 安卡",
-    nickname: "",
-    role: HeroRole.JUNGLE,
-    attackType: AttackType.MELEE,
-  },
-  {
-    id: "baptiste",
-    name: "Baptiste",
-    cnName: "巫毒师 巴蒂斯特",
-    nickname: "",
-    role: HeroRole.JUNGLE,
-    attackType: AttackType.MELEE,
-  },
-  {
     id: "glaive",
     name: "Glaive",
     cnName: "盲豹 格雷",
@@ -220,14 +204,6 @@ export const HEROES_DATA: Hero[] = [
     attackType: AttackType.MELEE,
   },
   {
-    id: "reza",
-    name: "Reza",
-    cnName: "火焰法师 雷萨",
-    nickname: "火法",
-    role: HeroRole.JUNGLE,
-    attackType: AttackType.MELEE,
-  },
-  {
     id: "rona",
     name: "Rona",
     cnName: "狂战士 罗娜",
@@ -276,6 +252,22 @@ export const HEROES_DATA: Hero[] = [
     nickname: "牛头",
     role: HeroRole.CARRY,
     attackType: AttackType.RANGED,
+  },
+  {
+    id: "anka",
+    name: "Anka",
+    cnName: "刀锋魅影 安卡",
+    nickname: "",
+    role: HeroRole.CARRY,
+    attackType: AttackType.MELEE,
+  },
+  {
+    id: "baptiste",
+    name: "Baptiste",
+    cnName: "巫毒师 巴蒂斯特",
+    nickname: "",
+    role: HeroRole.CARRY,
+    attackType: AttackType.MELEE,
   },
   {
     id: "baron",
@@ -398,9 +390,17 @@ export const HEROES_DATA: Hero[] = [
     attackType: AttackType.MELEE,
   },
   {
+    id: "reza",
+    name: "Reza",
+    cnName: "火焰法师 雷萨",
+    nickname: "火法",
+    role: HeroRole.CARRY,
+    attackType: AttackType.MELEE,
+  },
+  {
     id: "ringo",
     name: "Ringo",
-    cnName: "嘴枪手 林戈",
+    cnName: "醉枪手 林戈",
     nickname: "酒枪",
     role: HeroRole.CARRY,
     attackType: AttackType.RANGED,
@@ -531,12 +531,17 @@ export const searchHeroes = (heroes: Hero[], searchTerm: string): Hero[] => {
     const cnNameMatch = fuzzyMatch(hero.cnName, searchTerm);
 
     // 3. 昵称模糊匹配（支持不连续字符）
-    const nicknameMatch = hero.nickname ? fuzzyMatch(hero.nickname, searchTerm) : false;
+    const nicknameMatch = hero.nickname
+      ? fuzzyMatch(hero.nickname, searchTerm)
+      : false;
 
     // 4. 中文名称拼音匹配（支持不连续字符）
     let cnPinyinMatch = false;
     try {
-      const cnPinyin = pinyin(hero.cnName, { toneType: 'none', type: 'string' });
+      const cnPinyin = pinyin(hero.cnName, {
+        toneType: "none",
+        type: "string",
+      });
       cnPinyinMatch = fuzzyMatch(cnPinyin, searchTerm);
     } catch (error) {
       // 如果拼音转换失败，忽略错误
@@ -546,13 +551,23 @@ export const searchHeroes = (heroes: Hero[], searchTerm: string): Hero[] => {
     let nicknamePinyinMatch = false;
     if (hero.nickname) {
       try {
-        const nicknamePinyin = pinyin(hero.nickname, { toneType: 'none', type: 'string' });
+        const nicknamePinyin = pinyin(hero.nickname, {
+          toneType: "none",
+          type: "string",
+        });
         nicknamePinyinMatch = fuzzyMatch(nicknamePinyin, searchTerm);
       } catch (error) {
         // 如果拼音转换失败，忽略错误
       }
     }
 
-    return nameMatch || cnNameMatch || nicknameMatch || cnPinyinMatch || nicknamePinyinMatch;
+    return (
+      nameMatch ||
+      cnNameMatch ||
+      nicknameMatch ||
+      cnPinyinMatch ||
+      nicknamePinyinMatch
+    );
   });
 };
+
