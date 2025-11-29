@@ -49,7 +49,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBase
       `}
     >
       {/* Hero Image Container */}
-      <div className="relative w-full aspect-[1/1] overflow-hidden">
+      <div className="relative w-full aspect-square overflow-hidden">
         {/* Background Image */}
         <div className={`absolute inset-0 bg-cover bg-top transition-transform duration-500 ${inModal ? '' : 'group-hover:scale-110'}`}
              style={{
