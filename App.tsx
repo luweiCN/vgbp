@@ -1,7 +1,11 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { HEROES } from "./constants";
+import { searchHeroes, HEROES_BY_ROLE } from "./data/heroes";
 import HeroCard from "./components/HeroCard";
 import { HeroRole } from "./types";
+
+// OSS 配置 - 请在这里设置你的 OSS 地址
+const OSS_BASE_URL = 'https://your-oss-bucket.oss-region.aliyuncs.com';
 
 const App: React.FC = () => {
   // Store IDs of selected (pressed) heroes
@@ -28,22 +32,18 @@ const App: React.FC = () => {
   }, []);
 
   
-  // Filter Logic
-  const groupedHeroes = useMemo(() => {
-    const filtered = HEROES.filter((hero) => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        hero.name.toLowerCase().includes(searchLower) ||
-        hero.cnName.includes(searchTerm)
-      );
-    });
-
-    return {
-      [HeroRole.CAPTAIN]: filtered.filter((h) => h.role === HeroRole.CAPTAIN),
-      [HeroRole.JUNGLE]: filtered.filter((h) => h.role === HeroRole.JUNGLE),
-      [HeroRole.CARRY]: filtered.filter((h) => h.role === HeroRole.CARRY),
-    };
+  // Filter Logic - 使用新的搜索函数
+  const filteredHeroes = useMemo(() => {
+    return searchHeroes(HEROES, searchTerm);
   }, [searchTerm]);
+
+  const groupedHeroes = useMemo(() => {
+    return {
+      [HeroRole.CAPTAIN]: filteredHeroes.filter((h) => h.role === HeroRole.CAPTAIN),
+      [HeroRole.JUNGLE]: filteredHeroes.filter((h) => h.role === HeroRole.JUNGLE),
+      [HeroRole.CARRY]: filteredHeroes.filter((h) => h.role === HeroRole.CARRY),
+    };
+  }, [filteredHeroes]);
 
   const progressPercentage = Math.round(
     (selectedHeroIds.size / HEROES.length) * 100,
@@ -78,6 +78,7 @@ const App: React.FC = () => {
               hero={hero}
               isSelected={selectedHeroIds.has(hero.id)}
               onToggle={handleToggleHero}
+              ossBaseUrl={OSS_BASE_URL}
             />
           ))}
         </div>
