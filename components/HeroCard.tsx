@@ -1,15 +1,17 @@
 import React from 'react';
 import { Hero, HeroRole } from '../types';
+import { getHeroAvatarUrl } from '../data/heroes';
 
 interface HeroCardProps {
   hero: Hero;
   isSelected: boolean;
   onToggle: (id: string) => void;
+  ossBaseUrl?: string;
 }
 
-const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle }) => {
-  // Use a GitHub raw content source for Vainglory assets
-  const imageUrl = `https://raw.githubusercontent.com/madebybox/vainglory-assets/master/heroes/${hero.id}.jpg`;
+const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBaseUrl = 'https://your-oss-bucket.oss-region.aliyuncs.com' }) => {
+  // 使用 OSS 存储的英雄头像
+  const imageUrl = getHeroAvatarUrl(hero, ossBaseUrl);
 
   return (
     <button
