@@ -7,9 +7,10 @@ interface HeroCardProps {
   isSelected: boolean;
   onToggle: (id: string) => void;
   ossBaseUrl?: string;
+  inModal?: boolean;
 }
 
-const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBaseUrl = 'https://your-oss-bucket.oss-region.aliyuncs.com' }) => {
+const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBaseUrl = 'https://your-oss-bucket.oss-region.aliyuncs.com', inModal = false }) => {
   // 使用 OSS 存储的英雄头像
   const imageUrl = getHeroAvatarUrl(hero, ossBaseUrl);
 
@@ -34,7 +35,9 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBase
     <button
       onClick={() => onToggle(hero.id)}
       className={`
-        relative group flex flex-col items-center overflow-hidden rounded-xl transition-all duration-200 border-2         ${isSelected
+        relative group flex flex-col items-center overflow-hidden rounded-xl transition-all duration-200 border-2         ${isSelected && !inModal
+          ? 'bg-zinc-900 border-zinc-800 opacity-60 scale-95 grayscale cursor-default shadow-inner'
+          : isSelected && inModal
           ? 'bg-zinc-800 border-zinc-700 cursor-pointer shadow-md'
           : 'bg-zinc-800 border-zinc-700 hover:border-blue-500 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 cursor-pointer shadow-md'
         }
@@ -46,7 +49,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBase
         <div className="absolute inset-0 bg-cover bg-top transition-transform duration-500 group-hover:scale-110"
              style={{
                backgroundImage: `url(${imageUrl})`,
-               opacity: 1
+               opacity: isSelected && !inModal ? 0.8 : 1
              }}
         />
 
@@ -59,18 +62,26 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBase
           </div>
         )}
 
+        {/* Selected Corner Badge (only for main list, not modal) */}
+        {isSelected && !inModal && (
+          <div className="absolute top-0 right-0 transform translate-x-1 -translate-y-1">
+            <div className="bg-red-500 text-white font-bold text-[10px] md:text-xs uppercase tracking-wide px-2 py-1 rounded-bl-lg shadow-lg border border-red-600">
+              Picked
+            </div>
+          </div>
+        )}
         </div>
 
       {/* Text Content - Below Image */}
       <div className="w-full p-2 bg-zinc-900/50 backdrop-blur-sm">
         <div className="text-center">
           <div className="flex flex-col leading-tight">
-            <h3 className={`text-[12px] md:text-lg font-bold truncate mb-1 text-white`}>
+            <h3 className={`text-[12px] md:text-lg font-bold truncate mb-1 ${isSelected && !inModal ? 'text-zinc-500 line-through' : 'text-white'}`}>
               {title}
             </h3>
-            {name && <div className={`text-[14px] md:text-xl font-normal truncate opacity-80 text-white`}>{name}</div>}
+            {name && <div className={`text-[14px] md:text-xl font-normal truncate opacity-80 ${isSelected && !inModal ? 'text-zinc-600' : 'text-white'}`}>{name}</div>}
           </div>
-          <span className={`text-[12px] md:text-sm tracking-wide font-semibold truncate text-zinc-400`}>
+          <span className={`text-[12px] md:text-sm tracking-wide font-semibold truncate ${isSelected && !inModal ? 'text-zinc-600' : 'text-zinc-400'}`}>
             {hero.name.charAt(0).toUpperCase() + hero.name.slice(1).toLowerCase()}
           </span>
         </div>

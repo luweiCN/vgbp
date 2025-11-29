@@ -564,6 +564,7 @@ const App: React.FC = () => {
                             isSelected={true}
                             onToggle={handleToggleHero}
                             ossBaseUrl={OSS_BASE_URL}
+                            inModal={true}
                           />
                         ))}
                       </div>
@@ -590,6 +591,7 @@ const App: React.FC = () => {
                             isSelected={true}
                             onToggle={handleToggleHero}
                             ossBaseUrl={OSS_BASE_URL}
+                            inModal={true}
                           />
                         ))}
                       </div>
@@ -616,6 +618,7 @@ const App: React.FC = () => {
                             isSelected={true}
                             onToggle={handleToggleHero}
                             ossBaseUrl={OSS_BASE_URL}
+                            inModal={true}
                           />
                         ))}
                       </div>
