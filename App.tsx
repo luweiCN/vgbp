@@ -451,7 +451,7 @@ const App: React.FC = () => {
           <div className="hidden sm:flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="text-sm text-zinc-400">
-                剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroIds.size}</span> 个英雄
+                已选 <span className="font-semibold text-white">{selectedHeroIds.size}</span> 个英雄，剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroIds.size}</span> 个英雄
               </div>
 
               {/* Progress Bar */}
@@ -510,7 +510,7 @@ const App: React.FC = () => {
             {/* First row: Progress info and progress bar */}
             <div className="flex items-center gap-3">
               <div className="text-sm text-zinc-400 whitespace-nowrap">
-                剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroIds.size}</span> 个英雄
+                已选 <span className="font-semibold text-white">{selectedHeroIds.size}</span> 个英雄，剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroIds.size}</span> 个英雄
               </div>
               <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
                 <div
