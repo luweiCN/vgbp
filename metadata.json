@@ -1,0 +1,5 @@
+{
+  "name": "Vainglory Draft Assistant",
+  "description": "A tactical drafting tool for Vainglory players to track picked/banned heroes and receive AI-powered drafting advice.",
+  "requestFramePermissions": []
+}
