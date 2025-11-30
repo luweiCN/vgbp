@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { RoomManager } from './RoomManager';
 
 interface EntryPageProps {
   onLocalMode: () => void;
@@ -8,6 +9,7 @@ interface EntryPageProps {
 const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showJoinRoomModal, setShowJoinRoomModal] = useState(false);
+  const [showRoomManager, setShowRoomManager] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -28,7 +30,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
     // TODO: 这里应该调用实际的认证逻辑
     // 暂时模拟成功
     setShowAuthModal(false);
-    onOnlineMode();
+    setShowRoomManager(true);
   };
 
   const handleJoinRoom = () => {
@@ -82,7 +84,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
 
           {/* Online Mode Card */}
           <div
-            onClick={() => setShowAuthModal(true)}
+            onClick={() => setShowRoomManager(true)}
             className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8 cursor-pointer hover:bg-zinc-900/80 hover:border-blue-600/50 transition-all duration-300 group"
           >
             <div className="flex flex-col items-center text-center">
@@ -132,6 +134,31 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
             支持本地和在线两种模式，满足不同使用场景需求
           </p>
         </div>
+
+        {/* Room Manager Overlay */}
+        {showRoomManager && (
+          <div className="fixed inset-0 bg-zinc-950 z-[80] overflow-y-auto">
+            <div className="min-h-screen">
+              {/* Header */}
+              <div className="sticky top-0 bg-zinc-950 border-b border-zinc-800 p-4 z-[81]">
+                <div className="max-w-6xl mx-auto flex items-center justify-between">
+                  <h1 className="text-2xl font-bold text-white">房间管理</h1>
+                  <button
+                    onClick={() => setShowRoomManager(false)}
+                    className="text-zinc-400 hover:text-white text-2xl px-3 py-1 hover:bg-zinc-800 rounded-lg transition-colors"
+                  >
+                    ← 返回
+                  </button>
+                </div>
+              </div>
+
+              {/* Room Manager Content */}
+              <div className="p-4">
+                <RoomManager />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Auth Modal */}
         {showAuthModal && (

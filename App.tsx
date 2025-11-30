@@ -893,8 +893,6 @@ const App: React.FC = () => {
       )}
 
       {/* Share Modal - temporarily removed */}
-        </div>
-      )}
     </>
   );
 }
