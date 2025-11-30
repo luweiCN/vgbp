@@ -47,7 +47,13 @@ export const useRooms = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRooms, setTotalRooms] = useState(0);
-  const [pageSize] = useState(12);
+  const [pageSize] = useState(() => {
+    // PC端显示10个，移动端显示5个
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 640 ? 5 : 10;
+    }
+    return 10; // 默认PC端
+  });
   const { user, isConfigured } = useAuth();
 
   // 请求去重：防止重复请求 (使用 ref 避免依赖循环)
@@ -313,19 +319,32 @@ export const useRooms = () => {
       if (countError) throw countError;
 
       // 获取分页数据
-      const { data, error: roomsError } = await supabase
+      const { data: roomsData, error: roomsError } = await supabase
         .from('rooms')
-        .select(`
-          *,
-          owner:profiles(email, display_name)
-        `)
+        .select('*')
         .eq('is_public', true)
         .order('created_at', { ascending: false })
         .range((page - 1) * pageSize, page * pageSize - 1);
 
       if (roomsError) throw roomsError;
 
-      setAllRooms(data || []);
+      // 获取创建者信息
+      const roomsWithOwners = await Promise.all(
+        (roomsData || []).map(async (room) => {
+          const { data: ownerData } = await supabase
+            .from('profiles')
+            .select('email, display_name')
+            .eq('id', room.owner_id)
+            .single();
+
+          return {
+            ...room,
+            owner: ownerData
+          };
+        })
+      );
+
+      setAllRooms(roomsWithOwners);
       setTotalRooms(count || 0);
       setCurrentPage(page);
     } catch (err: any) {
@@ -342,6 +361,8 @@ export const useRooms = () => {
     fetchUserRooms();
     fetchAllRooms();
   }, [fetchUserRooms, fetchAllRooms]);
+
+
 
   return {
     rooms,
