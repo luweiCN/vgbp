@@ -8,12 +8,13 @@ interface HeroCardProps {
   onToggle: (id: string) => void;
   ossBaseUrl?: string;
   inModal?: boolean;
+  disabled?: boolean;
 }
 
-const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBaseUrl = 'https://www.luwei.space:4014/default/vainglory/heros', inModal = false }) => {
+const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBaseUrl = 'https://www.luwei.space:4014/default/vainglory/heroes', inModal = false, disabled = false }) => {
   const handleClick = () => {
-    // 在弹窗内不允许交互
-    if (inModal) return;
+    // 在弹窗内或禁用状态下不允许交互
+    if (inModal || disabled) return;
     onToggle(hero.id);
   };
   // 使用 OSS 存储的英雄头像

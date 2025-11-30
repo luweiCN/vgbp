@@ -1,28 +1,32 @@
 import React, { useState } from 'react';
 import { RoomManager } from './RoomManager';
+import RoomJoin from './RoomJoin';
+import { ToastContainer } from './Toast';
+import { useToast } from '../hooks/useToast';
 
 interface EntryPageProps {
   onLocalMode: () => void;
   onOnlineMode: () => void;
+  onEnterRoom: (roomId: string) => void;
 }
 
-const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
+const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnterRoom }) => {
+  const { showError, toasts, removeToast } = useToast();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showJoinRoomModal, setShowJoinRoomModal] = useState(false);
   const [showRoomManager, setShowRoomManager] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [roomId, setRoomId] = useState('');
 
   const handleAuthSubmit = (email: string, password: string, confirmPassword?: string) => {
     if (authMode === 'register' && password !== confirmPassword) {
-      alert('两次输入的密码不一致！');
+      showError('两次输入的密码不一致！');
       return;
     }
 
     if (authMode === 'register' && password.length < 6) {
-      alert('密码长度至少为6位！');
+      showError('密码长度至少为6位！');
       return;
     }
 
@@ -33,16 +37,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
     setShowRoomManager(true);
   };
 
-  const handleJoinRoom = () => {
-    if (!roomId.trim()) {
-      alert('请输入房间ID！');
-      return;
-    }
-    console.log('Joining room:', roomId);
-    setShowJoinRoomModal(false);
-    onOnlineMode(); // 暂时进入在线模式，后续可以实现具体的房间加入逻辑
-  };
-
+  
   return (
     <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4">
       <div className="max-w-4xl w-full mx-auto">
@@ -82,7 +77,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
             </div>
           </div>
 
-          {/* Online Mode Card */}
+          {/* Create Room Card */}
           <div
             onClick={() => setShowRoomManager(true)}
             className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8 cursor-pointer hover:bg-zinc-900/80 hover:border-blue-600/50 transition-all duration-300 group"
@@ -90,15 +85,15 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
             <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 transition-colors">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 016-6V7a6 6 0 016-6h2m2 9a6 6 0 018 0v6m0-6V7a6 6 0 00-6-6H3" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-blue-400 mb-2">在线模式</h2>
+              <h2 className="text-xl font-bold text-blue-400 mb-2">创建房间</h2>
               <p className="text-zinc-300 text-sm leading-relaxed">
-                注册登录后可创建房间，邀请好友实时查看，创建人拥有编辑权限，支持数据云端同步
+                注册登录后创建房间，邀请好友实时查看英雄选择，创建人拥有编辑权限，支持数据云端同步
               </p>
               <div className="mt-4 text-xs text-zinc-500">
-                • 实时查看 • 房间管理 • 数据同步 • 权限控制
+                • 实时协作 • 房间管理 • 数据同步 • 权限控制
               </div>
             </div>
           </div>
@@ -114,7 +109,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
             </div>
             <h3 className="text-2xl font-bold text-purple-400 mb-3">加入房间</h3>
             <p className="text-zinc-300 text-sm leading-relaxed max-w-md mb-6">
-              直接输入房间ID加入好友的游戏房间，实时查看创建人的英雄选择，支持数据同步
+              支持多种方式加入房间：通过房间ID、邀请链接或浏览公开房间列表，实时查看创建人的英雄选择
             </p>
             <button
               onClick={() => setShowJoinRoomModal(true)}
@@ -123,7 +118,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
               加入房间
             </button>
             <div className="mt-4 text-xs text-zinc-500">
-              • 无需登录 • 直接加入 • 实时查看 • 房间ID加入
+              • 多种加入方式 • 无需登录 • 实时查看 • 数据同步
             </div>
           </div>
         </div>
@@ -154,7 +149,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
 
               {/* Room Manager Content */}
               <div className="p-4">
-                <RoomManager />
+                <RoomManager onEnterRoom={onEnterRoom} />
               </div>
             </div>
           </div>
@@ -286,49 +281,22 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
           </div>
         )}
 
-        {/* Join Room Modal */}
+        {/* Room Join Modal */}
         {showJoinRoomModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-            <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full mx-auto shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-white">加入房间</h3>
-                <button
-                  onClick={() => setShowJoinRoomModal(false)}
-                  className="text-zinc-400 hover:text-white text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-
-              {/* Join Room Form */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">房间ID</label>
-                  <input
-                    type="text"
-                    value={roomId}
-                    onChange={(e) => setRoomId(e.target.value)}
-                    placeholder="请输入房间ID（如：ABC123）"
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500 uppercase"
-                  />
-                </div>
-                <div className="text-xs text-zinc-400">
-                  请向房间创建者索取房间ID，房间ID不区分大小写
-                </div>
-                <button
-                  onClick={handleJoinRoom}
-                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200"
-                >
-                  加入房间
-                </button>
-              </div>
-
-              <div className="text-xs text-zinc-500 text-center pt-2">
-                无需登录即可加入房间，实时查看创建人的英雄选择
-              </div>
-            </div>
-          </div>
+          <RoomJoin
+            onRoomJoined={(roomId) => {
+              setShowJoinRoomModal(false);
+              onEnterRoom(roomId);
+            }}
+            onCancel={() => setShowJoinRoomModal(false)}
+          />
         )}
+
+        {/* Toast Container */}
+        <ToastContainer
+          toasts={toasts}
+          onRemove={removeToast}
+        />
       </div>
     </div>
   );

@@ -39,7 +39,9 @@ export interface RoomParticipant {
 
 export const useRooms = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [participants, setParticipants] = useState<Record<string, RoomParticipant[]>>({});
   const [loading, setLoading] = useState(false);
+  const [participantsLoading, setParticipantsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user, isConfigured } = useAuth();
 
@@ -54,25 +56,58 @@ export const useRooms = () => {
     setError(null);
 
     try {
-      const { data, error: fetchError } = await supabase
+      // 先查询用户拥有的房间
+      const { data: ownedRooms, error: ownedError } = await supabase
         .from('rooms')
         .select(`
           *,
-          owner:profiles(email, display_name),
-          room_participants!inner(user_id)
+          owner:profiles(email, display_name)
         `)
-        .or(`owner_id.eq.${user.id},room_participants.user_id.eq.${user.id}`)
+        .eq('owner_id', user.id)
         .order('updated_at', { ascending: false });
 
-      if (fetchError) throw fetchError;
+      if (ownedError) throw ownedError;
 
-      // 计算参与者数量
-      const roomsWithCounts = (data || []).map(room => ({
-        ...room,
-        participant_count: Array.isArray(room.room_participants)
-          ? room.room_participants.length
-          : 1
-      }));
+      // 再查询用户参与的房间
+      const { data: participatedRooms, error: participatedError } = await supabase
+        .from('room_participants')
+        .select(`
+          room_id,
+          rooms(
+            *,
+            owner:profiles(email, display_name)
+          )
+        `)
+        .eq('user_id', user.id)
+        .neq('role', 'owner'); // 排除已拥有的房间
+
+      if (participatedError) throw participatedError;
+
+      // 合并结果
+      const allRooms = [
+        ...(ownedRooms || []),
+        ...(participatedRooms?.map(p => p.rooms).flat() || [])
+      ];
+
+      // 去重（根据ID）
+      const uniqueRooms = allRooms.filter((room, index, arr) =>
+        arr.findIndex(r => r.id === room.id) === index
+      );
+
+      // 查询每个房间的准确参与者数量
+      const roomsWithCounts = await Promise.all(
+        uniqueRooms.map(async (room) => {
+          const { data: roomParticipants } = await supabase
+            .from('room_participants')
+            .select('user_id')
+            .eq('room_id', room.id);
+
+          return {
+            ...room,
+            participant_count: roomParticipants?.length || 1
+          };
+        })
+      );
 
       setRooms(roomsWithCounts);
     } catch (err: any) {

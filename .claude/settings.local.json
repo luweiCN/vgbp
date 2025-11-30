@@ -20,7 +20,9 @@
       "WebSearch",
       "Bash(openspec:*)",
       "Bash(git checkout:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(kill:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

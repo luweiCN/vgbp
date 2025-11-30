@@ -3,7 +3,12 @@ import { HEROES } from "./constants";
 import { searchHeroes, getHeroesByRole, ClassificationMode } from "./data/heroes";
 import HeroCard from "./components/HeroCard";
 import EntryPage from "./components/EntryPage";
+import RealtimeStatus from "./components/RealtimeStatus";
+import PermissionIndicator from "./components/PermissionIndicator";
 import { Hero, HeroRole } from "./types";
+import { useBPState } from "./hooks/useBPState";
+import { useToast } from "./hooks/useToast";
+import { ToastContainer } from "./components/Toast";
 
 // 本地存储的key
 const STORAGE_KEY = 'vainglory-draft-selected-heroes';
@@ -11,7 +16,7 @@ const CLASSIFICATION_MODE_KEY = 'vainglory-draft-classification-mode';
 const HIDE_SELECTED_KEY = 'vainglory-draft-hide-selected';
 
 // OSS 配置
-const OSS_BASE_URL = "https://www.luwei.space:4014/default/vainglory";
+const OSS_BASE_URL = "https://www.luwei.space:4014/default/vainglory/heroes";
 
 const App: React.FC = () => {
 
@@ -23,24 +28,61 @@ const App: React.FC = () => {
     return !hasDirectParam; // 如果有直接访问参数，跳过入口页面
   });
 
-  // 从本地存储加载已选择的英雄
-  const loadSelectedHeroes = useCallback(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const heroIds = JSON.parse(stored);
-        return new Set(heroIds);
-      }
-    } catch (error) {
-      console.error('Failed to load selected heroes from localStorage:', error);
-    }
-    return new Set();
-  }, []);
+  // 房间状态
+  const [currentRoomId, setCurrentRoomId] = useState<string | null>(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('room') || null;
+  });
 
-  // Store IDs of selected (pressed) heroes
-  const [selectedHeroIds, setSelectedHeroIds] = useState<Set<string>>(
-    () => loadSelectedHeroes()
-  );
+  // 使用BP状态管理hook
+  const {
+    selectedHeroes,
+    loading: bpLoading,
+    error: bpError,
+    isOnlineMode,
+    canEdit,
+    isOwner,
+    isRealtimeConnected,
+    lastSyncTime,
+    lastSendTime,
+    syncMethod,
+    toggleHero
+  } = useBPState(currentRoomId);
+
+  // Toast提示
+  const { showError, toasts, removeToast } = useToast();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // 处理房间不存在的情况 - 只在加载完成后检查错误
+  useEffect(() => {
+    if (currentRoomId && bpError && !bpLoading && !isRedirecting) {
+      // 检查错误是否包含房间不存在的相关信息
+      if (bpError.includes('房间不存在') || bpError.includes('404') || bpError.includes('406') || bpError.includes('400') || bpError.includes('invalid input syntax') || bpError.includes('PGRST116')) {
+        console.log('房间不存在，显示提示后返回入口页面');
+
+        // 设置重定向状态，防止重复处理
+        setIsRedirecting(true);
+
+        // 显示错误提示
+        showError('房间不存在或已被删除，即将返回首页...');
+
+        // 延迟2秒后返回入口页面，让用户看到提示
+        setTimeout(() => {
+          // 清除URL中的房间参数
+          const url = new URL(window.location.href);
+          url.searchParams.delete('room');
+          url.searchParams.delete('direct');
+          window.history.replaceState({}, '', url.toString());
+
+          // 重置状态并显示入口页面
+          setCurrentRoomId(null);
+          setShowEntryPage(true);
+          setIsRedirecting(false);
+        }, 2000);
+      }
+    }
+  }, [currentRoomId, bpError, bpLoading, showError, isRedirecting]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [layoutMode, setLayoutMode] = useState<"auto" | "3" | "4" | "5">("auto");
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -50,8 +92,7 @@ const App: React.FC = () => {
     try {
       const stored = localStorage.getItem(HIDE_SELECTED_KEY);
       return stored ? JSON.parse(stored) : false;
-    } catch (error) {
-      console.error('Failed to load hideSelected from localStorage:', error);
+    } catch {
       return false;
     }
   });
@@ -65,15 +106,6 @@ const App: React.FC = () => {
       return ClassificationMode.OFFICIAL;
     }
   });
-
-  // 保存选择的英雄到本地存储
-  const saveSelectedHeroes = useCallback((heroIds: Set<string>) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(heroIds)));
-    } catch (error) {
-      console.error('Failed to save selected heroes to localStorage:', error);
-    }
-  }, []);
 
   // 保存分类模式到本地存储
   const saveClassificationMode = useCallback((mode: ClassificationMode) => {
@@ -93,40 +125,25 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Persist selected heroes
-  useEffect(() => {
-    saveSelectedHeroes(selectedHeroIds);
-  }, [selectedHeroIds, saveSelectedHeroes]);
-
   // Handlers
-  const handleToggleHero = useCallback((id: string) => {
-    setSelectedHeroIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      // 保存到本地存储
-      saveSelectedHeroes(newSet);
-      return newSet;
-    });
-  }, [saveSelectedHeroes]);
+  const handleToggleHero = useCallback(async (id: string) => {
+    await toggleHero(id);
+  }, [toggleHero]);
 
-  const handleReset = useCallback(() => {
-    const newSet = new Set<string>();
-    setSelectedHeroIds(newSet);
+  const handleReset = useCallback(async () => {
+    // 清空所有已选英雄
+    for (const heroId of selectedHeroes) {
+      await toggleHero(heroId);
+    }
     setShowSelectedHeroes(false); // 关闭弹窗
     setShowResetConfirm(false);
-    // 清空本地存储
-    saveSelectedHeroes(newSet);
-  }, [saveSelectedHeroes]);
+  }, [selectedHeroes, toggleHero]);
 
   const handleResetClick = useCallback(() => {
-    if (selectedHeroIds.size > 0) {
+    if (selectedHeroes.size > 0) {
       setShowResetConfirm(true);
     }
-  }, [selectedHeroIds.size]);
+  }, [selectedHeroes.size]);
 
   // 弹窗内的toggle函数，不保存到本地存储（实际上弹窗内的卡片被禁用了交互）
   const handleModalToggleHero = useCallback((id: string) => {
@@ -141,9 +158,29 @@ const App: React.FC = () => {
   }, []);
 
   const handleOnlineMode = useCallback(() => {
-    // TODO: 实现在线模式逻辑
-    console.log('在线模式功能开发中...');
+    // 显示创建房间界面
     setShowEntryPage(false);
+  }, []);
+
+  const handleEnterRoom = useCallback((roomId: string) => {
+    setCurrentRoomId(roomId);
+    setShowEntryPage(false);
+    // 更新URL，添加房间参数
+    const url = new URL(window.location.href);
+    url.searchParams.set('room', roomId);
+    url.searchParams.delete('direct'); // 移除direct参数
+    window.history.replaceState({}, '', url.toString());
+  }, []);
+
+  // 返回入口页面
+  const handleBackToEntry = useCallback(() => {
+    setCurrentRoomId(null);
+    setShowEntryPage(true);
+    // 清除URL参数
+    const url = new URL(window.location.href);
+    url.searchParams.delete('room');
+    url.searchParams.delete('direct');
+    window.history.replaceState({}, '', url.toString());
   }, []);
 
   // 自定义滚动函数，考虑sticky header高度
@@ -208,10 +245,10 @@ const App: React.FC = () => {
     let heroes = searchHeroes(HEROES, searchTerm);
     // 如果隐藏已选开关打开，排除已选择的英雄
     if (hideSelected) {
-      heroes = heroes.filter((hero) => !selectedHeroIds.has(hero.id));
+      heroes = heroes.filter((hero) => !selectedHeroes.has(hero.id));
     }
     return heroes;
-  }, [searchTerm, selectedHeroIds, hideSelected]);
+  }, [searchTerm, selectedHeroes, hideSelected]);
 
   const groupedHeroes: Record<HeroRole, Hero[]> = useMemo(() => {
     const roleFilter = (hero: Hero, role: HeroRole) => {
@@ -235,22 +272,29 @@ const App: React.FC = () => {
 
   // Get selected heroes grouped by role for the modal
   const selectedHeroesGrouped = useMemo(() => {
-    const selectedHeroes = HEROES.filter((hero) => selectedHeroIds.has(hero.id));
-    return {
-      [HeroRole.CAPTAIN]: selectedHeroes.filter(
-        (h) => h.role === HeroRole.CAPTAIN,
-      ),
-      [HeroRole.JUNGLE]: selectedHeroes.filter(
-        (h) => h.role === HeroRole.JUNGLE,
-      ),
-      [HeroRole.CARRY]: selectedHeroes.filter(
-        (h) => h.role === HeroRole.CARRY,
-      ),
+    const selectedHeroesArray = HEROES.filter((hero) => selectedHeroes.has(hero.id));
+
+    const roleFilter = (hero: Hero, role: HeroRole) => {
+      switch (classificationMode) {
+        case ClassificationMode.COMMON:
+          return !hero.commonRoles || hero.commonRoles.includes(role);
+        case ClassificationMode.FLEX:
+          return !hero.flexRoles || hero.flexRoles.includes(role);
+        case ClassificationMode.OFFICIAL:
+        default:
+          return hero.role === role;
+      }
     };
-  }, [selectedHeroIds]);
+
+    return {
+      [HeroRole.CAPTAIN]: selectedHeroesArray.filter((h) => roleFilter(h, HeroRole.CAPTAIN)),
+      [HeroRole.JUNGLE]: selectedHeroesArray.filter((h) => roleFilter(h, HeroRole.JUNGLE)),
+      [HeroRole.CARRY]: selectedHeroesArray.filter((h) => roleFilter(h, HeroRole.CARRY)),
+    };
+  }, [selectedHeroes, classificationMode]);
 
   const progressPercentage = Math.round(
-    (selectedHeroIds.size / HEROES.length) * 100,
+    (selectedHeroes.size / HEROES.length) * 100,
   );
 
   // Get grid classes based on layout mode
@@ -298,7 +342,7 @@ const App: React.FC = () => {
           </h2>
           <span className="text-lg font-bold opacity-60">{cnTitle}</span>
           <span className="ml-auto text-xs font-mono bg-zinc-900 px-2 py-1 rounded-full text-zinc-500">
-            已选 {selectedHeroIds.size > 0 ? (() => {
+            已选 {selectedHeroes.size > 0 ? (() => {
               const categoryHeroes = HEROES.filter(h => {
                 switch (classificationMode) {
                   case ClassificationMode.COMMON:
@@ -310,7 +354,7 @@ const App: React.FC = () => {
                     return h.role === role;
                 }
               });
-              const selectedInCategory = categoryHeroes.filter(h => selectedHeroIds.has(h.id));
+              const selectedInCategory = categoryHeroes.filter(h => selectedHeroes.has(h.id));
               return `${selectedInCategory.length} 个`;
             })() : '0 个'}，剩余 {(() => {
               const categoryHeroes = HEROES.filter(h => {
@@ -324,7 +368,7 @@ const App: React.FC = () => {
                     return h.role === role;
                 }
               });
-              const selectedInCategory = categoryHeroes.filter(h => selectedHeroIds.has(h.id));
+              const selectedInCategory = categoryHeroes.filter(h => selectedHeroes.has(h.id));
               return `${categoryHeroes.length - selectedInCategory.length} 个`;
             })()}
           </span>
@@ -334,9 +378,10 @@ const App: React.FC = () => {
             <HeroCard
               key={hero.id}
               hero={hero}
-              isSelected={selectedHeroIds.has(hero.id)}
-              onToggle={handleToggleHero}
+              isSelected={selectedHeroes.has(hero.id)}
+              onToggle={isOnlineMode && !canEdit ? undefined : handleToggleHero}
               ossBaseUrl={OSS_BASE_URL}
+              disabled={isOnlineMode && !canEdit}
             />
           ))}
         </div>
@@ -350,11 +395,13 @@ const App: React.FC = () => {
 
   return (
     <>
+  
       {/* 入口页面 */}
       {showEntryPage ? (
         <EntryPage
           onLocalMode={handleLocalMode}
           onOnlineMode={handleOnlineMode}
+          onEnterRoom={handleEnterRoom}
         />
       ) : (
         <div className="min-h-screen bg-zinc-950 text-white pb-20 font-sans">
@@ -363,14 +410,46 @@ const App: React.FC = () => {
         <div className="max-w-[1400px] mx-auto px-4 py-3">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+              {isOnlineMode && (
+                <button
+                  onClick={handleBackToEntry}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                  title="返回入口页面"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                </button>
+              )}
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-lg shadow-lg shadow-blue-500/20">
+                <div className={`w-8 h-8 rounded flex items-center justify-center font-bold text-lg shadow-lg ${
+                  isOnlineMode
+                    ? 'bg-gradient-to-br from-green-600 to-emerald-600 shadow-green-500/20'
+                    : 'bg-gradient-to-br from-blue-600 to-indigo-600 shadow-blue-500/20'
+                }`}>
                   V
                 </div>
                 <div>
-                  <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
-                    Vainglory BP
-                  </h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
+                      Vainglory BP
+                    </h1>
+                    {isOnlineMode && (
+                      <div className="flex items-center gap-1">
+                        <div className={`w-2 h-2 rounded-full animate-pulse ${
+                          canEdit ? 'bg-green-500' : 'bg-orange-500'
+                        }`}></div>
+                        <span className={`text-xs font-medium ${
+                          canEdit ? 'text-green-400' : 'text-orange-400'
+                        }`}>
+                          {isOwner ? '房主' : '查看模式'}
+                        </span>
+                        {currentRoomId && (
+                          <span className="text-xs text-zinc-500">房间: {currentRoomId}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <p className="text-[10px] text-zinc-500 uppercase tracking-widest hidden sm:block">
                     Tactical Draft Tool
                   </p>
@@ -469,9 +548,9 @@ const App: React.FC = () => {
 
               <button
                 onClick={handleResetClick}
-                disabled={selectedHeroIds.size === 0}
+                disabled={selectedHeroes.size === 0}
                 className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg border transition-colors flex items-center gap-2 whitespace-nowrap ${
-                  selectedHeroIds.size === 0
+                  selectedHeroes.size === 0
                     ? "bg-zinc-900 text-zinc-600 border-zinc-800 cursor-not-allowed"
                     : "bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 shadow-lg shadow-red-500/20"
                 }`}
@@ -488,7 +567,7 @@ const App: React.FC = () => {
           <div className="hidden sm:flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="text-sm text-zinc-400">
-                已选 <span className="font-semibold text-white">{selectedHeroIds.size}</span> 个英雄，剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroIds.size}</span> 个英雄
+                已选 <span className="font-semibold text-white">{selectedHeroes.size}</span> 个英雄，剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroes.size}</span> 个英雄
               </div>
 
               {/* Progress Bar */}
@@ -505,7 +584,7 @@ const App: React.FC = () => {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-xs text-zinc-500 text-center max-w-sm">
-                {selectedHeroIds.size > 0
+                {selectedHeroes.size > 0
                   ? (hideSelected
                       ? "已隐藏已选英雄，从列表中隐藏以便选择剩余英雄"
                       : "点击按钮可隐藏已选英雄，专注于选择剩余英雄")
@@ -516,21 +595,21 @@ const App: React.FC = () => {
                 <span className="text-xs text-zinc-500">隐藏已选</span>
                 <button
                   onClick={() => {
-                  if (selectedHeroIds.size > 0) {
+                  if (selectedHeroes.size > 0) {
                     const newValue = !hideSelected;
                     setHideSelected(newValue);
                     saveHideSelected(newValue);
                   }
                 }}
-                  disabled={selectedHeroIds.size === 0}
+                  disabled={selectedHeroes.size === 0}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    selectedHeroIds.size === 0
+                    selectedHeroes.size === 0
                       ? "bg-zinc-700 cursor-not-allowed opacity-50"
                       : hideSelected
                       ? "bg-orange-600"
                       : "bg-zinc-600"
                   }`}
-                  title={selectedHeroIds.size === 0 ? "请先选择英雄" : (hideSelected ? "显示已选英雄" : "隐藏已选英雄")}
+                  title={selectedHeroes.size === 0 ? "请先选择英雄" : (hideSelected ? "显示已选英雄" : "隐藏已选英雄")}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -547,7 +626,7 @@ const App: React.FC = () => {
             {/* First row: Progress info and progress bar */}
             <div className="flex items-center gap-3">
               <div className="text-sm text-zinc-400 whitespace-nowrap">
-                已选 <span className="font-semibold text-white">{selectedHeroIds.size}</span> 个英雄，剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroIds.size}</span> 个英雄
+                已选 <span className="font-semibold text-white">{selectedHeroes.size}</span> 个英雄，剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroes.size}</span> 个英雄
               </div>
               <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
                 <div
@@ -563,7 +642,7 @@ const App: React.FC = () => {
             {/* Second row: Button and description */}
             <div className="flex items-center justify-between gap-3">
               <div className="text-xs text-zinc-500 flex-1">
-                {selectedHeroIds.size > 0
+                {selectedHeroes.size > 0
                   ? (hideSelected
                       ? "已隐藏已选，专注选择剩余英雄"
                       : "隐藏已选，专注选择剩余英雄")
@@ -574,21 +653,21 @@ const App: React.FC = () => {
                 <span className="text-xs text-zinc-500">隐藏已选</span>
                 <button
                   onClick={() => {
-                  if (selectedHeroIds.size > 0) {
+                  if (selectedHeroes.size > 0) {
                     const newValue = !hideSelected;
                     setHideSelected(newValue);
                     saveHideSelected(newValue);
                   }
                 }}
-                  disabled={selectedHeroIds.size === 0}
+                  disabled={selectedHeroes.size === 0}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    selectedHeroIds.size === 0
+                    selectedHeroes.size === 0
                       ? "bg-zinc-700 cursor-not-allowed opacity-50"
                       : hideSelected
                       ? "bg-orange-600"
                       : "bg-zinc-600"
                   }`}
-                  title={selectedHeroIds.size === 0 ? "请先选择英雄" : (hideSelected ? "显示已选英雄" : "隐藏已选英雄")}
+                  title={selectedHeroes.size === 0 ? "请先选择英雄" : (hideSelected ? "显示已选英雄" : "隐藏已选英雄")}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -699,8 +778,48 @@ const App: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* 实时状态显示 */}
+          {isOnlineMode && (
+            <div className="border-t border-zinc-800 px-4 py-2">
+              <div className="flex justify-between items-center">
+                <RealtimeStatus
+                  isConnected={isRealtimeConnected}
+                  lastSyncTime={lastSyncTime}
+                  lastSendTime={lastSendTime}
+                  syncMethod={syncMethod}
+                  isOnlineMode={isOnlineMode}
+                />
+                <PermissionIndicator
+                  roomId={currentRoomId || undefined}
+                  showDetails={true}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </header>
+
+      {/* BP Loading & Error States */}
+      {bpLoading && (
+        <div className="fixed top-20 right-4 z-50 bg-blue-900/90 border border-blue-700 text-blue-200 px-4 py-2 rounded-lg shadow-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm">同步中...</span>
+          </div>
+        </div>
+      )}
+
+      {bpError && (
+        <div className="fixed top-20 right-4 z-50 bg-red-900/90 border border-red-700 text-red-200 px-4 py-2 rounded-lg shadow-lg">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-sm">同步失败: {bpError}</span>
+          </div>
+        </div>
+      )}
 
       {/* Reset Confirmation Modal */}
       {showResetConfirm && (
@@ -708,7 +827,7 @@ const App: React.FC = () => {
           <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-sm w-full mx-auto shadow-2xl">
             <h3 className="text-lg font-bold text-white mb-2">确认重置BP</h3>
             <p className="text-zinc-400 mb-6">
-              确定要清空已选择的 {selectedHeroIds.size} 个英雄吗？此操作不可撤销。
+              确定要清空已选择的 {selectedHeroes.size} 个英雄吗？此操作不可撤销。
             </p>
             <div className="flex gap-3 justify-end">
               <button
@@ -771,7 +890,7 @@ const App: React.FC = () => {
         {!hasAnyHeroes ? (
           <div className="text-center py-20 opacity-50">
             <p className="text-xl font-medium">
-              No heroes found matching "{searchTerm}"
+              No heroes found matching &quot;{searchTerm}&quot;
             </p>
           </div>
         ) : (
@@ -802,12 +921,12 @@ const App: React.FC = () => {
       <button
         onClick={() => setShowSelectedHeroes(true)}
         className={`fixed bottom-8 right-8 z-30 flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-full border-2 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 ${
-          selectedHeroIds.size === 0
+          selectedHeroes.size === 0
             ? "bg-zinc-900 text-zinc-500 border-zinc-700 cursor-not-allowed opacity-50"
             : "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 shadow-lg shadow-blue-500/20"
         }`}
-        disabled={selectedHeroIds.size === 0}
-        title={selectedHeroIds.size === 0 ? "还没有选择英雄" : "查看已选英雄"}
+        disabled={selectedHeroes.size === 0}
+        title={selectedHeroes.size === 0 ? "还没有选择英雄" : "查看已选英雄"}
       >
         <svg
           className="w-5 h-5"
@@ -828,16 +947,16 @@ const App: React.FC = () => {
             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
           />
         </svg>
-        已选英雄 ({selectedHeroIds.size})
+        已选英雄 ({selectedHeroes.size})
       </button>
 
       {/* Selected Heroes Modal */}
       {showSelectedHeroes && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-zinc-800 rounded-xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
+          <div className="bg-zinc-800 rounded-xl max-w-4xl w-full max-h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b border-zinc-700">
               <h2 className="text-xl font-semibold">
-                已选择的英雄 ({selectedHeroIds.size})
+                已选择的英雄 ({selectedHeroes.size})
               </h2>
               <button
                 onClick={() => setShowSelectedHeroes(false)}
@@ -846,32 +965,53 @@ const App: React.FC = () => {
                 ×
               </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {Array.from(selectedHeroIds).map((heroId) => {
-                const hero = HEROES.find((h) => h.id === heroId);
-                if (!hero) return null;
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-6">
+              {([HeroRole.CAPTAIN, HeroRole.JUNGLE, HeroRole.CARRY] as const).map((role) => {
+                const heroes = selectedHeroesGrouped[role];
+                if (heroes.length === 0) return null;
+
                 return (
-                  <div key={hero.id} className="text-center">
-                    <div className="relative group">
-                      <img
-                        src={`${OSS_BASE_URL}/${hero.id}.jpg`}
-                        alt={hero.cnName}
-                        className="w-full h-auto rounded-lg border-2 border-zinc-600 group-hover:border-blue-500 transition-colors"
-                      />
-                      <button
-                        onClick={() => handleToggleHero(hero.id)}
-                        className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        ×
-                      </button>
+                  <div key={role}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className={`w-3 h-3 rounded-full ${
+                        role === HeroRole.CAPTAIN ? 'bg-yellow-500' :
+                        role === HeroRole.JUNGLE ? 'bg-emerald-500' : 'bg-red-500'
+                      }`} />
+                      <h3 className="text-lg font-semibold text-white">
+                        {role === HeroRole.CAPTAIN ? '辅助' : role === HeroRole.JUNGLE ? '打野' : '输出'}
+                      </h3>
+                      <span className="text-sm text-zinc-400">({heroes.length})</span>
                     </div>
-                    <p className="mt-2 text-xs text-zinc-300">{hero.cnName}</p>
-                    <p className="text-xs text-zinc-500">{hero.name}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {heroes.map((hero) => (
+                        <div key={hero.id} className="text-center">
+                          <div className="relative group">
+                            <img
+                              src={`${OSS_BASE_URL}/${hero.id}.jpg`}
+                              alt={hero.cnName}
+                              className="w-full h-auto rounded-lg border-2 border-zinc-600 group-hover:border-blue-500 transition-colors"
+                            />
+                            <button
+                              onClick={() => handleToggleHero(hero.id)}
+                              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              ×
+                            </button>
+                          </div>
+                          <p className="mt-2 text-xs text-zinc-300">{hero.cnName}</p>
+                          <p className="text-xs text-zinc-500">{hero.name}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
+              </div>
             </div>
-            <div className="mt-6 flex justify-end gap-3">
+
+            {/* 固定底部 */}
+            <div className="p-6 border-t border-zinc-700 flex justify-end gap-3">
               <button
                 onClick={() => {
                   handleReset();
@@ -891,9 +1031,18 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+        </div>
+      )}
 
       {/* Share Modal - temporarily removed */}
-    </>
+
+      {/* Toast Container */}
+      <ToastContainer
+        toasts={toasts}
+        onRemove={removeToast}
+      />
+
+      </>
   );
 }
 
