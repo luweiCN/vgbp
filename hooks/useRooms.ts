@@ -39,8 +39,10 @@ export interface RoomParticipant {
 
 export const useRooms = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [participants, setParticipants] = useState<Record<string, RoomParticipant[]>>({});
   const [loading, setLoading] = useState(false);
+  const [publicRoomsLoading, setPublicRoomsLoading] = useState(false);
   const [participantsLoading, setParticipantsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user, isConfigured } = useAuth();
@@ -271,15 +273,51 @@ export const useRooms = () => {
     }
   };
 
+  // 获取所有公开房间
+  const fetchPublicRooms = async (page: number = 1, limit: number = 20) => {
+    if (!isConfigured) {
+      setPublicRooms([]);
+      return;
+    }
+
+    setPublicRoomsLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: roomsError } = await supabase
+        .from('rooms')
+        .select(`
+          *,
+          owner:profiles(email, display_name)
+        `)
+        .eq('is_public', true)
+        .order('created_at', { ascending: false })
+        .range((page - 1) * limit, page * limit - 1);
+
+      if (roomsError) throw roomsError;
+
+      setPublicRooms(data || []);
+    } catch (err: any) {
+      setError(err.message);
+      setPublicRooms([]);
+    } finally {
+      setPublicRoomsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchUserRooms();
+    fetchPublicRooms();
   }, [user, isConfigured]);
 
   return {
     rooms,
+    publicRooms,
     loading,
+    publicRoomsLoading,
     error,
     fetchUserRooms,
+    fetchPublicRooms,
     createRoom,
     joinRoom,
     leaveRoom,

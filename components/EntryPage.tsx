@@ -55,7 +55,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
         </div>
 
         {/* Main Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Local Mode Card */}
           <div
             onClick={onLocalMode}
@@ -77,7 +77,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
             </div>
           </div>
 
-          {/* Create Room Card */}
+          {/* Online Mode Card */}
           <div
             onClick={() => setShowRoomManager(true)}
             className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8 cursor-pointer hover:bg-zinc-900/80 hover:border-blue-600/50 transition-all duration-300 group"
@@ -85,40 +85,16 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
             <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 transition-colors">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-blue-400 mb-2">创建房间</h2>
+              <h2 className="text-xl font-bold text-blue-400 mb-2">在线模式</h2>
               <p className="text-zinc-300 text-sm leading-relaxed">
-                注册登录后创建房间，邀请好友实时查看英雄选择，创建人拥有编辑权限，支持数据云端同步
+                浏览公开房间列表，创建自己的房间或加入他人房间，支持数据云端存储和共享
               </p>
               <div className="mt-4 text-xs text-zinc-500">
-                • 实时协作 • 房间管理 • 数据同步 • 权限控制
+                • 房间管理 • 数据存储 • 云端同步 • 多人使用
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Join Room Section */}
-        <div className="bg-zinc-900/30 backdrop-blur-sm border border-zinc-800 rounded-2xl p-6 mb-8">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-purple-400 mb-3">加入房间</h3>
-            <p className="text-zinc-300 text-sm leading-relaxed max-w-md mb-6">
-              支持多种方式加入房间：通过房间ID、邀请链接或浏览公开房间列表，实时查看创建人的英雄选择
-            </p>
-            <button
-              onClick={() => setShowJoinRoomModal(true)}
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all duration-200 text-lg shadow-lg shadow-purple-500/20 hover:shadow-xl hover:scale-105"
-            >
-              加入房间
-            </button>
-            <div className="mt-4 text-xs text-zinc-500">
-              • 多种加入方式 • 无需登录 • 实时查看 • 数据同步
             </div>
           </div>
         </div>
@@ -126,7 +102,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
         {/* Bottom Info */}
         <div className="text-center">
           <p className="text-xs text-zinc-500">
-            支持本地和在线两种模式，满足不同使用场景需求
+            选择本地模式快速开始，或进入在线模式体验云端房间功能
           </p>
         </div>
 
@@ -137,7 +113,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
               {/* Header */}
               <div className="sticky top-0 bg-zinc-950 border-b border-zinc-800 p-4 z-[81]">
                 <div className="max-w-6xl mx-auto flex items-center justify-between">
-                  <h1 className="text-2xl font-bold text-white">房间管理</h1>
+                  <h1 className="text-2xl font-bold text-white">在线房间</h1>
                   <button
                     onClick={() => setShowRoomManager(false)}
                     className="text-zinc-400 hover:text-white text-2xl px-3 py-1 hover:bg-zinc-800 rounded-lg transition-colors"

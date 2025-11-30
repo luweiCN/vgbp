@@ -22,6 +22,7 @@ export interface BPStateHook {
   lastSendTime: number | null;  // 新增：最后发送时间
   syncMethod: 'realtime' | 'polling' | 'none'; // 新增：当前同步方式
   toggleHero: (heroId: string) => Promise<void>;
+  clearAllHeroes: () => Promise<void>; // 新增：一次性清空所有英雄
   syncToDatabase: () => Promise<void>;
   loadFromDatabase: () => Promise<void>;
 }
@@ -232,6 +233,25 @@ export const useBPState = (roomId?: string): BPStateHook => {
     }
   }, [selectedHeroes, roomId, user, isConfigured]);
 
+  // 一次性清空所有英雄
+  const clearAllHeroes = useCallback(async () => {
+    // 权限检查：在线模式下非创建人不能编辑
+    if (isOnlineMode && !canEdit) {
+      setError('只有房间创建人可以清空英雄选择');
+      return;
+    }
+
+    // 清空本地状态
+    setSelectedHeroes(new Set());
+
+    // 根据模式同步状态
+    if (isOnlineMode) {
+      await syncToDatabase(new Set());
+    } else {
+      saveToLocalStorage(new Set());
+    }
+  }, [isOnlineMode, canEdit, syncToDatabase, saveToLocalStorage]);
+
   // 设置实时订阅
   useEffect(() => {
     if (!isOnlineMode) {
@@ -351,6 +371,7 @@ export const useBPState = (roomId?: string): BPStateHook => {
     lastSendTime,
     syncMethod,
     toggleHero,
+    clearAllHeroes,
     syncToDatabase,
     loadFromDatabase
   };

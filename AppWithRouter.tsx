@@ -33,8 +33,8 @@ const AppWithRouter: React.FC = () => {
 
   // 处理本地模式
   const handleLocalMode = useCallback(() => {
-    // 导航到本地模式页面（使用RoomPage，但没有房间ID）
-    window.location.href = '/room/local';
+    // 导航到本地模式页面（暂时使用房间页面）
+    window.location.href = '/local';
   }, []);
 
   return (
@@ -47,8 +47,14 @@ const AppWithRouter: React.FC = () => {
           {/* 房间管理页面 */}
           <Route path="/rooms" element={<RoomsPage onEnterRoom={handleEnterRoom} />} />
 
-          {/* 房间页面 - 支持在线模式和本地模式 */}
+          {/* 房间页面 */}
           <Route path="/room/:roomId" element={<RoomPageWrapper />} />
+
+          {/* 本地模式页面 */}
+          <Route
+            path="/local"
+            element={<RoomPage roomId="local" onBack={() => window.location.href = '/'} />}
+          />
 
           {/* 默认重定向 */}
           <Route path="*" element={<Navigate to="/" replace />} />
