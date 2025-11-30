@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { HEROES } from '../constants';
 import { searchHeroes, getHeroesByRole, ClassificationMode } from '../data/heroes';
 import HeroCard from '../components/HeroCard';
-import RealtimeStatus from '../components/RealtimeStatus';
-import PermissionIndicator from '../components/PermissionIndicator';
+import OnlineModeIndicator from '../components/OnlineModeIndicator';
 import SelectedHeroesModal from '../components/SelectedHeroesModal';
 import ResetConfirmModal from '../components/ResetConfirmModal';
 import ClassificationInfoModal from '../components/ClassificationInfoModal';
@@ -425,23 +424,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                 </div>
               </div>
 
-              {/* Right Section: Status Indicators and Reset Button */}
-              <div className="flex items-center gap-3">
-                {/* Online Mode Status */}
-                {isOnlineMode && (
-                  <>
-                    <RealtimeStatus
-                      isConnected={isRealtimeConnected}
-                      syncMethod={syncMethod}
-                      lastSyncTime={lastSyncTime}
-                      lastSendTime={lastSendTime}
-                    />
-                    <PermissionIndicator
-                      canEdit={canEdit}
-                      isOwner={isOwner}
-                    />
-                  </>
-                )}
+               {/* Right Section: Reset Button */}
+               <div className="flex items-center gap-3">
 
                 {/* Reset BP Button */}
                 <button
@@ -505,6 +489,18 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
               </div>
             </div>
           </div>
+
+          {/* 在线模式指示栏 */}
+          <OnlineModeIndicator
+            roomId={roomId}
+            isConnected={isRealtimeConnected}
+            lastSyncTime={lastSyncTime}
+            lastSendTime={lastSendTime}
+            syncMethod={syncMethod}
+            isOnlineMode={isOnlineMode}
+            isOwner={isOwner}
+            canEdit={canEdit}
+          />
 
           {/* Progress and Controls Section */}
           <div className="border-t border-zinc-800 pt-3 pb-2 sm:px-6">
@@ -674,6 +670,18 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
           </div>
         </div>
       </header>
+
+      {/* 在线模式指示栏 */}
+      <OnlineModeIndicator
+        roomId={roomId}
+        isConnected={isRealtimeConnected}
+        lastSyncTime={lastSyncTime}
+        lastSendTime={lastSendTime}
+        syncMethod={syncMethod}
+        isOnlineMode={isOnlineMode}
+        isOwner={isOwner}
+        canEdit={canEdit}
+      />
 
       {/* BP Loading & Error States */}
       {bpLoading && (
