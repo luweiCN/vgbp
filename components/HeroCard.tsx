@@ -10,7 +10,7 @@ interface HeroCardProps {
   inModal?: boolean;
 }
 
-const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBaseUrl = 'https://your-oss-bucket.oss-region.aliyuncs.com', inModal = false }) => {
+const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBaseUrl = 'https://www.luwei.space:4014/default/vainglory/heros', inModal = false }) => {
   const handleClick = () => {
     // 在弹窗内不允许交互
     if (inModal) return;

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { HEROES } from "./constants";
 import { searchHeroes, getHeroesByRole, ClassificationMode } from "./data/heroes";
 import HeroCard from "./components/HeroCard";
+import EntryPage from "./components/EntryPage";
 import { Hero, HeroRole } from "./types";
 
 // 本地存储的key
@@ -9,10 +10,19 @@ const STORAGE_KEY = 'vainglory-draft-selected-heroes';
 const CLASSIFICATION_MODE_KEY = 'vainglory-draft-classification-mode';
 const HIDE_SELECTED_KEY = 'vainglory-draft-hide-selected';
 
-// OSS 配置 - 请在这里设置你的 OSS 地址
+// OSS 配置
 const OSS_BASE_URL = "https://www.luwei.space:4014/default/vainglory";
 
 const App: React.FC = () => {
+
+  // 应用状态 - 控制是否显示入口页面
+  const [showEntryPage, setShowEntryPage] = useState(() => {
+    // 检查是否是第一次访问或从外部链接直接进入
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasDirectParam = urlParams.has('direct') || urlParams.has('room');
+    return !hasDirectParam; // 如果有直接访问参数，跳过入口页面
+  });
+
   // 从本地存储加载已选择的英雄
   const loadSelectedHeroes = useCallback(() => {
     try {
@@ -83,6 +93,11 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Persist selected heroes
+  useEffect(() => {
+    saveSelectedHeroes(selectedHeroIds);
+  }, [selectedHeroIds, saveSelectedHeroes]);
+
   // Handlers
   const handleToggleHero = useCallback((id: string) => {
     setSelectedHeroIds((prev) => {
@@ -118,6 +133,17 @@ const App: React.FC = () => {
     // 由于弹窗内卡片被禁用，这个函数实际上不会被调用
     // 但为了保持接口一致性，保留这个空函数
     return;
+  }, []);
+
+  // 入口页面事件处理函数
+  const handleLocalMode = useCallback(() => {
+    setShowEntryPage(false);
+  }, []);
+
+  const handleOnlineMode = useCallback(() => {
+    // TODO: 实现在线模式逻辑
+    console.log('在线模式功能开发中...');
+    setShowEntryPage(false);
   }, []);
 
   // 自定义滚动函数，考虑sticky header高度
@@ -217,7 +243,9 @@ const App: React.FC = () => {
       [HeroRole.JUNGLE]: selectedHeroes.filter(
         (h) => h.role === HeroRole.JUNGLE,
       ),
-      [HeroRole.CARRY]: selectedHeroes.filter((h) => h.role === HeroRole.CARRY),
+      [HeroRole.CARRY]: selectedHeroes.filter(
+        (h) => h.role === HeroRole.CARRY,
+      ),
     };
   }, [selectedHeroIds]);
 
@@ -321,9 +349,17 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white pb-20 font-sans">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 shadow-xl">
+    <>
+      {/* 入口页面 */}
+      {showEntryPage ? (
+        <EntryPage
+          onLocalMode={handleLocalMode}
+          onOnlineMode={handleOnlineMode}
+        />
+      ) : (
+        <div className="min-h-screen bg-zinc-950 text-white pb-20 font-sans">
+          {/* Header */}
+          <header className="sticky top-0 z-40 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 shadow-xl">
         <div className="max-w-[1400px] mx-auto px-4 py-3">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
@@ -354,33 +390,33 @@ const App: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                     </svg>
                   </button>
-                <button
-                  onClick={() => setLayoutMode("3")}
-                  className={`p-2 rounded-md transition-all duration-200 ${layoutMode === "3" ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"}`}
-                  title="3 Columns"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a1 1 0 011-1h14a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V6zM4 14a1 1 0 011-1h14a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setLayoutMode("4")}
-                  className={`p-2 rounded-md transition-all duration-200 ${layoutMode === "4" ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"}`}
-                  title="4 Columns"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM3 14a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 14a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1h-6a1 1 0 01-1-1v-6z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setLayoutMode("5")}
-                  className={`p-2 rounded-md transition-all duration-200 ${layoutMode === "5" ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"}`}
-                  title="5 Columns"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V4zM9 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM16 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM5 14a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H6a1 1 0 01-1-1v-6zM12 14a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
-                  </svg>
-                </button>
+                  <button
+                    onClick={() => setLayoutMode("3")}
+                    className={`p-2 rounded-md transition-all duration-200 ${layoutMode === "3" ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"}`}
+                    title="3 Columns"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a1 1 0 011-1h14a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V6zM4 14a1 1 0 011-1h14a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setLayoutMode("4")}
+                    className={`p-2 rounded-md transition-all duration-200 ${layoutMode === "4" ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"}`}
+                    title="4 Columns"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM3 14a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 14a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1h-6a1 1 0 01-1-1v-6z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setLayoutMode("5")}
+                    className={`p-2 rounded-md transition-all duration-200 ${layoutMode === "5" ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"}`}
+                    title="5 Columns"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V4zM9 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM16 4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM5 14a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H6a1 1 0 01-1-1v-6zM12 14a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -442,9 +478,10 @@ const App: React.FC = () => {
               >
                 重置BP
               </button>
-              </div>
+            </div>
           </div>
         </div>
+
         {/* Progress and Controls Section */}
         <div className="border-t border-zinc-800 pt-3 px-4 pb-2">
           {/* Hide Selected Toggle */}
@@ -696,53 +733,40 @@ const App: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-md w-full mx-auto shadow-2xl max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-white">英雄分类说明</h3>
+              <h3 className="text-lg font-bold text-white">英雄分类说明</h3>
               <button
                 onClick={() => setShowClassificationInfo(false)}
-                className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                className="text-zinc-400 hover:text-white text-2xl"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                ×
               </button>
             </div>
-
-            <div className="space-y-4 text-zinc-300">
-              <div className="border-l-4 border-blue-500 pl-4">
-                <h4 className="font-semibold text-blue-500 mb-2">官方分类</h4>
-                <p className="text-sm">
-                  指的是按照游戏内部的官方分类。
+            <div className="space-y-4 text-sm">
+              <div className="p-3 bg-blue-900/30 rounded-lg">
+                <h4 className="font-semibold text-blue-400 mb-1">官方定位</h4>
+                <p className="text-zinc-300">
+                  按照游戏官方设定的位置分类。每个英雄只有一个固定位置，这是最标准的分类方式。
                 </p>
               </div>
-
-              <div className="border-l-4 border-green-500 pl-4">
-                <h4 className="font-semibold text-green-500 mb-2">常用分类</h4>
-                <p className="text-sm">
-                  常见分类是我们最常使用这个英雄打的位置，比如官方分类中把牛头放在了对线英雄，但是我们最常见的是牛头去打辅助位置。
+              <div className="p-3 bg-green-900/30 rounded-lg">
+                <h4 className="font-semibold text-green-400 mb-1">常见位置</h4>
+                <p className="text-zinc-300">
+                  基于玩家实际游戏习惯分类。英雄会出现在他们最常被打的位置，更贴近实际游戏情况。
                 </p>
               </div>
-
-              <div className="border-l-4 border-orange-500 pl-4">
-                <h4 className="font-semibold text-orange-500 mb-2">灵活分类</h4>
-                <p className="text-sm">
-                  灵活兼顾了我们通常使用这个英雄可以打的所有位置，比如盲豹 格雷这个英雄，在官方分类中他属于打野英雄，而常见分类中属于对线英雄，因为我们使用他最常打的位置应该是对线，或者说人们对他的第一印象。而实际上这个英雄可以走物理出装去对线，也可以走ap出装去打野，甚至还可以去辅助位置。灵活分类就是标明了某个英雄常见的所有可能位置。
+              <div className="p-3 bg-orange-900/30 rounded-lg">
+                <h4 className="font-semibold text-orange-400 mb-1">灵活位置</h4>
+                <p className="text-zinc-300">
+                  按照理论上可以打的位置分类。英雄会出现在所有能够胜任的位置，帮助发现更多战术可能性。
                 </p>
               </div>
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowClassificationInfo(false)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
-              >
-                了解了
-              </button>
             </div>
           </div>
         </div>
       )}
 
-        {/* Main Grid */}
+  
+      {/* Main Grid */}
       <main className={`max-w-[1400px] mx-auto px-4 pb-8 ${getMainContainerClasses()}`}>
         {!hasAnyHeroes ? (
           <div className="text-center py-20 opacity-50">
@@ -774,11 +798,10 @@ const App: React.FC = () => {
         )}
       </main>
 
-  
       {/* Selected Heroes Button */}
       <button
         onClick={() => setShowSelectedHeroes(true)}
-        className={`fixed bottom-32 right-8 z-30 flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-full border-2 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 ${
+        className={`fixed bottom-8 right-8 z-30 flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-full border-2 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 ${
           selectedHeroIds.size === 0
             ? "bg-zinc-900 text-zinc-500 border-zinc-700 cursor-not-allowed opacity-50"
             : "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 shadow-lg shadow-blue-500/20"
@@ -789,172 +812,91 @@ const App: React.FC = () => {
         <svg
           className="w-5 h-5"
           fill="none"
-          viewBox="0 0 24 24"
           stroke="currentColor"
+          viewBox="0 0 24 24"
         >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
           />
         </svg>
-        <span className="hidden sm:inline">查看已选</span>
-        <span className="bg-black/20 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
-          {selectedHeroIds.size}
-        </span>
-        </button>
+        已选英雄 ({selectedHeroIds.size})
+      </button>
 
-  
       {/* Selected Heroes Modal */}
       {showSelectedHeroes && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-xl max-w-6xl w-full max-h-[95vh] overflow-hidden shadow-2xl">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-zinc-700">
-              <div>
-                <h2 className="text-2xl font-bold text-white">已选英雄</h2>
-                <p className="text-zinc-400 mt-1">
-                  共选择了 {selectedHeroIds.size} 个英雄
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleResetClick}
-                  disabled={selectedHeroIds.size === 0}
-                  className={`px-4 py-2 text-sm font-bold uppercase tracking-wider rounded-lg border transition-colors flex items-center gap-2 whitespace-nowrap ${
-                    selectedHeroIds.size === 0
-                      ? "bg-zinc-800 text-zinc-600 border-zinc-700 cursor-not-allowed"
-                      : "bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 shadow-lg shadow-red-500/20"
-                  }`}
-                >
-                  重置BP
-                </button>
-                <button
-                  onClick={() => setShowSelectedHeroes(false)}
-                  className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
-                >
-                  <svg
-                    className="w-6 h-6 text-zinc-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-zinc-800 rounded-xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">
+                已选择的英雄 ({selectedHeroIds.size})
+              </h2>
+              <button
+                onClick={() => setShowSelectedHeroes(false)}
+                className="text-zinc-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
             </div>
-
-  
-            {/* Modal Content */}
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
-              {selectedHeroIds.size === 0 ? (
-                <div className="text-center py-20 opacity-50">
-                  <div className="text-6xl mb-4">🎮</div>
-                  <p className="text-xl font-medium text-zinc-400">
-                    还没有选择任何英雄
-                  </p>
-                  <p className="text-sm text-zinc-500 mt-2">
-                    点击英雄卡片来选择英雄
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-8">
-                  {/* Captain Section */}
-                  {selectedHeroesGrouped[HeroRole.CAPTAIN].length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-2">
-                        <h3 className="text-xl font-black uppercase tracking-tighter text-yellow-500">
-                          Captain
-                        </h3>
-                        <span className="text-sm font-bold text-zinc-400">指挥官 / 辅助</span>
-                        <span className="ml-auto text-xs font-mono bg-zinc-800 px-2 py-1 rounded-full text-zinc-500">
-                          {selectedHeroesGrouped[HeroRole.CAPTAIN].length} 个英雄
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                        {selectedHeroesGrouped[HeroRole.CAPTAIN].map((hero) => (
-                          <HeroCard
-                            key={hero.id}
-                            hero={hero}
-                            isSelected={true}
-                            onToggle={handleModalToggleHero}
-                            ossBaseUrl={OSS_BASE_URL}
-                            inModal={true}
-                          />
-                        ))}
-                      </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {Array.from(selectedHeroIds).map((heroId) => {
+                const hero = HEROES.find((h) => h.id === heroId);
+                if (!hero) return null;
+                return (
+                  <div key={hero.id} className="text-center">
+                    <div className="relative group">
+                      <img
+                        src={`${OSS_BASE_URL}/${hero.id}.jpg`}
+                        alt={hero.cnName}
+                        className="w-full h-auto rounded-lg border-2 border-zinc-600 group-hover:border-blue-500 transition-colors"
+                      />
+                      <button
+                        onClick={() => handleToggleHero(hero.id)}
+                        className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ×
+                      </button>
                     </div>
-                  )}
-
-                  {/* Jungle Section */}
-                  {selectedHeroesGrouped[HeroRole.JUNGLE].length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-2">
-                        <h3 className="text-xl font-black uppercase tracking-tighter text-emerald-500">
-                          Jungle
-                        </h3>
-                        <span className="text-sm font-bold text-zinc-400">打野</span>
-                        <span className="ml-auto text-xs font-mono bg-zinc-800 px-2 py-1 rounded-full text-zinc-500">
-                          {selectedHeroesGrouped[HeroRole.JUNGLE].length} 个英雄
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                        {selectedHeroesGrouped[HeroRole.JUNGLE].map((hero) => (
-                          <HeroCard
-                            key={hero.id}
-                            hero={hero}
-                            isSelected={true}
-                            onToggle={handleModalToggleHero}
-                            ossBaseUrl={OSS_BASE_URL}
-                            inModal={true}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Carry Section */}
-                  {selectedHeroesGrouped[HeroRole.CARRY].length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-2">
-                        <h3 className="text-xl font-black uppercase tracking-tighter text-red-500">
-                          Carry
-                        </h3>
-                        <span className="text-sm font-bold text-zinc-400">对线 / 核心</span>
-                        <span className="ml-auto text-xs font-mono bg-zinc-800 px-2 py-1 rounded-full text-zinc-500">
-                          {selectedHeroesGrouped[HeroRole.CARRY].length} 个英雄
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                        {selectedHeroesGrouped[HeroRole.CARRY].map((hero) => (
-                          <HeroCard
-                            key={hero.id}
-                            hero={hero}
-                            isSelected={true}
-                            onToggle={handleModalToggleHero}
-                            ossBaseUrl={OSS_BASE_URL}
-                            inModal={true}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+                    <p className="mt-2 text-xs text-zinc-300">{hero.cnName}</p>
+                    <p className="text-xs text-zinc-500">{hero.name}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  handleReset();
+                  setShowSelectedHeroes(false);
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+              >
+                清空所有
+              </button>
+              <button
+                onClick={() => setShowSelectedHeroes(false)}
+                className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-lg text-sm"
+              >
+                关闭
+              </button>
             </div>
           </div>
         </div>
       )}
 
-    </div>
+      {/* Share Modal - temporarily removed */}
+        </div>
+      )}
+    </>
   );
-};
+}
 
 export default App;
