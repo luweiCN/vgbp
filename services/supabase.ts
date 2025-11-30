@@ -8,8 +8,19 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase configuration missing. Online features will be unavailable.');
 }
 
-// 创建 Supabase 客户端
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+// 始终使用原始 Supabase URL，避免代理导致的复杂性
+const getSupabaseUrl = () => {
+  return supabaseUrl || '';
+};
+
+// 创建 Supabase 客户端，启用 Realtime 功能
+export const supabase = createClient(getSupabaseUrl(), supabaseAnonKey || '', {
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
+});
 
 // 导出类型定义
 export interface Database {

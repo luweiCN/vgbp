@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
 import { useRooms, Room } from '../hooks/useRooms';
+import { useAuth } from '../hooks/useAuth';
 
-export const RoomManager: React.FC = () => {
+interface RoomManagerProps {
+  onEnterRoom?: (roomId: string) => void;
+}
+
+export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [joinCode, setJoinCode] = useState('');
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authFormData, setAuthFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [authFormLoading, setAuthFormLoading] = useState(false);
   const [createFormData, setCreateFormData] = useState({
     name: '',
     description: '',
@@ -12,12 +24,13 @@ export const RoomManager: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const { user, loading: authLoading, signIn, signUp, signOut, isConfigured } = useAuth();
+
   const {
     rooms,
     loading: roomsLoading,
     error: roomsError,
     createRoom,
-    joinRoom,
     leaveRoom,
     deleteRoom,
     refetch
@@ -29,9 +42,14 @@ export const RoomManager: React.FC = () => {
     setError('');
 
     try {
-      await createRoom(createFormData);
+      const newRoom = await createRoom(createFormData);
       setCreateFormData({ name: '', description: '', is_public: true });
       setShowCreateForm(false);
+
+      // 创建成功后自动进入房间
+      if (newRoom?.id && onEnterRoom) {
+        onEnterRoom(newRoom.id);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -39,25 +57,7 @@ export const RoomManager: React.FC = () => {
     }
   };
 
-  const handleJoinRoom = async () => {
-    if (!joinCode.trim()) {
-      setError('请输入房间ID');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      await joinRoom(joinCode.trim());
-      setJoinCode('');
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  
   const handleLeaveRoom = async (roomId: string) => {
     if (!confirm('确定要离开这个房间吗？')) return;
 
@@ -78,6 +78,36 @@ export const RoomManager: React.FC = () => {
     }
   };
 
+  // 认证处理函数
+  const handleAuth = async () => {
+    if (authMode === 'register' && authFormData.password !== authFormData.confirmPassword) {
+      setError('两次输入的密码不一致！');
+      return;
+    }
+
+    if (authFormData.password.length < 6) {
+      setError('密码长度至少为6位！');
+      return;
+    }
+
+    setAuthFormLoading(true);
+    setError('');
+
+    try {
+      if (authMode === 'login') {
+        await signIn(authFormData.email, authFormData.password);
+      } else {
+        await signUp(authFormData.email, authFormData.password);
+      }
+      setAuthFormData({ email: '', password: '', confirmPassword: '' });
+      setShowLoginForm(false);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setAuthFormLoading(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('zh-CN', {
       month: 'short',
@@ -87,11 +117,145 @@ export const RoomManager: React.FC = () => {
     });
   };
 
+  // 认证检查
+  if (authLoading) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="text-center py-12">
+          <div className="text-white">加载中...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isConfigured) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="text-center py-12">
+          <div className="text-red-400">在线功能未配置</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    // 显示登录界面
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-white">我的房间</h1>
+        </div>
+
+        <div className="bg-zinc-800 rounded-xl p-8 max-w-md mx-auto">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">
+            {authMode === 'login' ? '登录' : '注册'}
+          </h2>
+
+          {/* 模式切换 */}
+          <div className="flex bg-zinc-700 rounded-full p-1 mb-6">
+            <button
+              onClick={() => setAuthMode('login')}
+              className={`px-4 py-2 text-sm font-medium rounded-full transition-colors flex-1 ${
+                authMode === 'login'
+                  ? "bg-blue-600 text-white"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-600"
+              }`}
+            >
+              登录
+            </button>
+            <button
+              onClick={() => setAuthMode('register')}
+              className={`px-4 py-2 text-sm font-medium rounded-full transition-colors flex-1 ${
+                authMode === 'register'
+                  ? "bg-green-600 text-white"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-600"
+              }`}
+            >
+              注册
+            </button>
+          </div>
+
+          {/* 登录表单 */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">邮箱</label>
+              <input
+                type="email"
+                value={authFormData.email}
+                onChange={(e) => setAuthFormData({...authFormData, email: e.target.value})}
+                className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="请输入邮箱地址"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">密码</label>
+              <input
+                type="password"
+                value={authFormData.password}
+                onChange={(e) => setAuthFormData({...authFormData, password: e.target.value})}
+                className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="请输入密码（至少6位）"
+                required
+              />
+            </div>
+
+            {authMode === 'register' && (
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">确认密码</label>
+                <input
+                  type="password"
+                  value={authFormData.confirmPassword}
+                  onChange={(e) => setAuthFormData({...authFormData, confirmPassword: e.target.value})}
+                  className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="请再次输入密码"
+                  required
+                />
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-900/20 border border-red-800 rounded p-3 text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleAuth}
+              disabled={authFormLoading || !authFormData.email || !authFormData.password}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-all duration-200"
+            >
+              {authFormLoading
+                ? (authMode === 'login' ? '登录中...' : '注册中...')
+                : (authMode === 'login' ? '登录' : '注册')
+              }
+            </button>
+          </div>
+
+          <div className="text-xs text-zinc-500 text-center mt-4 pt-4 border-t border-zinc-700">
+            登录后即可创建和管理房间
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 已登录，显示房间管理界面
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-white">房间管理</h1>
-        <div className="flex gap-3">
+        <h1 className="text-3xl font-bold text-white">我的房间</h1>
+        <div className="flex items-center gap-3">
+          <span className="text-zinc-400 text-sm">
+            欢迎, {user.email}
+          </span>
+          <button
+            onClick={() => signOut()}
+            className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            退出登录
+          </button>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -180,27 +344,7 @@ export const RoomManager: React.FC = () => {
         </div>
       )}
 
-      {/* 加入房间 */}
-      <div className="mb-6 bg-gray-800 rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">加入房间</h2>
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={joinCode}
-            onChange={(e) => setJoinCode(e.target.value)}
-            placeholder="输入房间ID"
-            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            onClick={handleJoinRoom}
-            disabled={loading || !joinCode.trim()}
-            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? '加入中...' : '加入'}
-          </button>
-        </div>
-      </div>
-
+      
       {/* 房间列表 */}
       <div>
         <h2 className="text-xl font-semibold text-white mb-4">我的房间</h2>
@@ -240,6 +384,7 @@ export const RoomManager: React.FC = () => {
 
                   <div className="flex gap-2 ml-4">
                     <button
+                      onClick={() => onEnterRoom?.(room.id)}
                       className="bg-blue-600 text-white px-3 py-1 text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       进入房间
