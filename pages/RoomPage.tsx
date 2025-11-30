@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HEROES } from '../constants';
 import { searchHeroes, getHeroesByRole, ClassificationMode } from '../data/heroes';
 import HeroCard from '../components/HeroCard';
@@ -28,6 +29,8 @@ interface RoomPageProps {
 }
 
 const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
+  const navigate = useNavigate();
+
   // 判断是本地模式还是在线模式
   const isLocalMode = roomId === 'local';
   const pageTitle = isLocalMode ? '本地模式' : `房间 ${roomId}`;
@@ -126,7 +129,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
 
   const handleBack = () => {
     if (isLocalMode) {
-      window.location.href = '/';
+      navigate('/');
     } else {
       onBack();
     }

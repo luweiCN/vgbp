@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { useAuth } from './useAuth';
 
@@ -39,21 +39,34 @@ export interface RoomParticipant {
 
 export const useRooms = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [publicRooms, setPublicRooms] = useState<Room[]>([]);
+  const [allRooms, setAllRooms] = useState<Room[]>([]);
   const [participants, setParticipants] = useState<Record<string, RoomParticipant[]>>({});
   const [loading, setLoading] = useState(false);
-  const [publicRoomsLoading, setPublicRoomsLoading] = useState(false);
+  const [allRoomsLoading, setAllRoomsLoading] = useState(false);
   const [participantsLoading, setParticipantsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalRooms, setTotalRooms] = useState(0);
+  const [pageSize] = useState(12);
   const { user, isConfigured } = useAuth();
 
+  // 请求去重：防止重复请求 (使用 ref 避免依赖循环)
+  const isFetchingUserRoomsRef = useRef(false);
+  const isFetchingPublicRoomsRef = useRef(false);
+
   // 获取用户参与的房间
-  const fetchUserRooms = async () => {
+  const fetchUserRooms = useCallback(async () => {
     if (!isConfigured || !user) {
       setRooms([]);
       return;
     }
 
+    // 防止重复请求
+    if (isFetchingUserRoomsRef.current) {
+      return;
+    }
+
+    isFetchingUserRoomsRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -116,16 +129,16 @@ export const useRooms = () => {
       setError(err.message);
     } finally {
       setLoading(false);
+      isFetchingUserRoomsRef.current = false;
     }
-  };
+  }, [isConfigured, user]);
 
   // 创建新房间
   const createRoom = async (roomData: {
     name: string;
     description?: string;
-    is_public?: boolean;
   }) => {
-    if (!isConfigured || !user) {
+    if (!user || !isConfigured) {
       throw new Error('User not authenticated or Supabase not configured');
     }
 
@@ -136,7 +149,7 @@ export const useRooms = () => {
           name: roomData.name,
           description: roomData.description,
           owner_id: user.id,
-          is_public: roomData.is_public ?? true
+          is_public: true
         })
         .select()
         .single();
@@ -268,22 +281,38 @@ export const useRooms = () => {
 
       // 刷新房间列表
       await fetchUserRooms();
+      await fetchAllRooms(currentPage);
     } catch (err: any) {
       throw new Error(err.message);
     }
   };
 
-  // 获取所有公开房间
-  const fetchPublicRooms = async (page: number = 1, limit: number = 20) => {
+  // 获取所有房间（分页）
+  const fetchAllRooms = useCallback(async (page: number = 1) => {
     if (!isConfigured) {
-      setPublicRooms([]);
+      setAllRooms([]);
+      setTotalRooms(0);
       return;
     }
 
-    setPublicRoomsLoading(true);
+    // 防止重复请求
+    if (isFetchingPublicRoomsRef.current) {
+      return;
+    }
+
+    isFetchingPublicRoomsRef.current = true;
+    setAllRoomsLoading(true);
     setError(null);
 
     try {
+      // 先获取总数
+      const { count, error: countError } = await supabase
+        .from('rooms')
+        .select('*', { count: 'exact', head: true });
+
+      if (countError) throw countError;
+
+      // 获取分页数据
       const { data, error: roomsError } = await supabase
         .from('rooms')
         .select(`
@@ -292,32 +321,39 @@ export const useRooms = () => {
         `)
         .eq('is_public', true)
         .order('created_at', { ascending: false })
-        .range((page - 1) * limit, page * limit - 1);
+        .range((page - 1) * pageSize, page * pageSize - 1);
 
       if (roomsError) throw roomsError;
 
-      setPublicRooms(data || []);
+      setAllRooms(data || []);
+      setTotalRooms(count || 0);
+      setCurrentPage(page);
     } catch (err: any) {
       setError(err.message);
-      setPublicRooms([]);
+      setAllRooms([]);
+      setTotalRooms(0);
     } finally {
-      setPublicRoomsLoading(false);
+      setAllRoomsLoading(false);
+      isFetchingPublicRoomsRef.current = false;
     }
-  };
+  }, [isConfigured, pageSize]);
 
   useEffect(() => {
     fetchUserRooms();
-    fetchPublicRooms();
-  }, [user, isConfigured]);
+    fetchAllRooms();
+  }, [fetchUserRooms, fetchAllRooms]);
 
   return {
     rooms,
-    publicRooms,
+    allRooms,
     loading,
-    publicRoomsLoading,
+    allRoomsLoading,
     error,
+    currentPage,
+    totalRooms,
+    pageSize,
     fetchUserRooms,
-    fetchPublicRooms,
+    fetchAllRooms,
     createRoom,
     joinRoom,
     leaveRoom,

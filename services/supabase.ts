@@ -26,19 +26,28 @@ export const supabase = createClient(getSupabaseUrl(), supabaseAnonKey || '', {
 export interface Database {
   public: {
     Tables: {
-      users: {
+      profiles: {
         Row: {
           id: string;
           email: string;
+          username: string;
+          display_name?: string;
+          avatar_url?: string;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           email: string;
+          username: string;
+          display_name?: string;
+          avatar_url?: string;
         };
         Update: {
           email?: string;
+          username?: string;
+          display_name?: string;
+          avatar_url?: string;
         };
       };
       rooms: {

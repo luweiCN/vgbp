@@ -79,7 +79,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
 
           {/* Online Mode Card */}
           <div
-            onClick={() => setShowRoomManager(true)}
+            onClick={onOnlineMode}
             className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-8 cursor-pointer hover:bg-zinc-900/80 hover:border-blue-600/50 transition-all duration-300 group"
           >
             <div className="flex flex-col items-center text-center">
