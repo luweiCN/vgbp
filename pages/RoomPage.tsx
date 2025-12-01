@@ -435,7 +435,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
 
               {/* Center Section: Search Box - Hidden on mobile, shown on desktop */}
               <div className="hidden md:flex flex-grow justify-center max-w-md mx-4">
-                <div className="flex items-center w-full bg-zinc-800 border border-zinc-600 rounded-lg px-3 py-1.5 gap-2 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50">
+                <div className="flex items-center w-full bg-zinc-800/50 border border-zinc-800 rounded-lg px-3 py-1.5 gap-2">
                   {/* Search Icon */}
                   <svg
                     className="h-4 w-4 text-zinc-400 flex-shrink-0"
@@ -456,7 +456,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                     placeholder="Search / 搜索..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 bg-transparent text-sm text-white placeholder-zinc-400 outline-none border-none"
+                    className="flex-1 bg-transparent text-sm text-white placeholder-zinc-400 outline-none border-none focus:outline-none focus:ring-0"
                   />
                   {/* Clear Button */}
                   {searchTerm && (
@@ -516,7 +516,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
 
             {/* Mobile Search Box - Only shown on mobile */}
             <div className="md:hidden">
-              <div className="flex items-center w-full bg-zinc-800 border border-zinc-600 rounded-lg px-3 py-1.5 gap-2 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50">
+              <div className="flex items-center w-full bg-zinc-800/50 border border-zinc-800 rounded-lg px-3 py-1.5 gap-2">
                 {/* Search Icon */}
                 <svg
                   className="h-4 w-4 text-zinc-400 flex-shrink-0"
@@ -537,7 +537,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                   placeholder="Search / 搜索..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1 bg-transparent text-sm text-white placeholder-zinc-400 outline-none border-none"
+                  className="flex-1 bg-transparent text-sm text-white placeholder-zinc-400 outline-none border-none focus:outline-none focus:ring-0"
                 />
                 {/* Clear Button */}
                 {searchTerm && (
