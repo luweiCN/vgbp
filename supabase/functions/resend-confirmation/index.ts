@@ -168,12 +168,13 @@ serve(async (req) => {
     try {
       // Step 1: Generate confirmation link using Supabase Admin API
       console.log("Generating confirmation link...");
+      const productionDomain = "https://vgbp.luwei.host";
       const { data: linkData, error: linkError } =
         await supabase.auth.admin.generateLink({
           type: "signup",
           email: email.toLowerCase(),
           options: {
-            redirectTo: `${new URL(req.url).origin}/auth/callback`,
+            redirectTo: `${productionDomain}/auth/callback`,
           },
         });
 
