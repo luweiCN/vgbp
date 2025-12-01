@@ -1,0 +1,91 @@
+name: Weekly Supabase Health Check
+
+on:
+  schedule:
+    # 每周一上午 10:00 UTC 运行 (相当于北京时间 18:00)
+    - cron: '0 10 * * 1'
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run Supabase Health Check
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      run: |
+        echo "🔍 开始 Supabase 项目健康检查..."
+
+        # 检查环境变量
+        if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+          echo "❌ 缺少必要的环境变量"
+          exit 1
+        fi
+
+        echo "📡 检查 Supabase API 连接..."
+
+        # 使用 curl 检查 API 健康状态
+        response=$(curl -s -w "%{http_code}" \
+          -H "apikey: $SUPABASE_ANON_KEY" \
+          -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+          "$SUPABASE_URL/rest/v1/" \
+          -o /dev/null)
+
+        if [ "$response" = "200" ]; then
+          echo "✅ Supabase API 连接正常 (HTTP $response)"
+        else
+          echo "❌ Supabase API 连接失败 (HTTP $response)"
+          exit 1
+        fi
+
+        echo "📊 检查数据库连接..."
+
+        # 尝试简单的数据库查询
+        db_response=$(curl -s -w "%{http_code}" \
+          -H "apikey: $SUPABASE_ANON_KEY" \
+          -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+          -H "Content-Type: application/json" \
+          -H "Prefer: return=minimal" \
+          -d '{"select":"1","limit":1}' \
+          "$SUPABASE_URL/rest/v1/rooms" \
+          -o /dev/null)
+
+        if [ "$db_response" = "200" ] || [ "$db_response" = "406" ]; then
+          echo "✅ 数据库连接正常 (HTTP $db_response)"
+        else
+          echo "❌ 数据库连接失败 (HTTP $db_response)"
+          exit 1
+        fi
+
+        echo "🔥 检查 Edge Functions..."
+
+        # 检查 Edge Functions 是否可访问
+        edge_response=$(curl -s -w "%{http_code}" \
+          -H "apikey: $SUPABASE_ANON_KEY" \
+          -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+          "$SUPABASE_URL/functions/v1/check-email" \
+          -o /dev/null)
+
+        if [ "$edge_response" = "404" ] || [ "$edge_response" = "200" ]; then
+          echo "✅ Edge Functions 服务正常 (HTTP $edge_response)"
+        else
+          echo "⚠️ Edge Functions 可能未部署 (HTTP $edge_response)"
+        fi
+
+        echo "🎉 健康检查完成！项目保持活跃状态。"
+        echo "📅 检查时间: $(date)"
+        echo "🌐 项目URL: $SUPABASE_URL"
