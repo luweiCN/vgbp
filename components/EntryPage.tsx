@@ -39,17 +39,17 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
 
   
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-zinc-950 text-white p-4 pt-16">
       <div className="max-w-4xl w-full mx-auto">
         {/* Logo and Title */}
         <div className="text-center mb-8">
-          <div className="w-10 h-10 rounded bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-500/20 mx-auto mb-4">
+          <div className="w-10 h-10 rounded bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-green-500/20 mx-auto mb-4">
             V
           </div>
           <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400 mb-2">
             Vainglory BP
           </h1>
-          <p className="text-zinc-400 text-lg">
+          <p className="text-zinc-400 text-lg uppercase tracking-widest">
             Tactical Draft Assistant
           </p>
         </div>
