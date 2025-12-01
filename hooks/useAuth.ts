@@ -128,53 +128,23 @@ export const useAuth = () => {
     console.log('About to call getInitialSession...');
     getInitialSession();
 
+    // 添加超时保护，防止永远加载
+    const loadingTimeout = setTimeout(() => {
+      setAuthState(prev => {
+        if (prev.loading) {
+          console.log('⚠️ 认证加载超时，强制设置loading为false');
+          return {
+            ...prev,
+            loading: false
+          };
+        }
+        return prev;
+      });
+    }, 5000); // 5秒超时
+
     // 监听认证状态变化
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // 处理SIGNED_IN事件，确保登录后立即更新状态
-        if (event === 'SIGNED_IN') {
-          // 获取用户详细信息，包括username
-          try {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('username, display_name')
-              .eq('id', session.user.id)
-              .maybeSingle();
-
-            // maybeSingle() 在没有找到记录时不会报错
-            if (profileError && profileError.code !== 'PGRST116') {
-              console.warn('获取用户profile失败:', profileError);
-            }
-
-            setAuthState({
-              user: {
-                id: session.user.id,
-                email: session.user.email || '',
-                username: profile?.username || session.user.email?.split('@')[0] || '',
-                display_name: profile?.display_name
-              },
-              session,
-              loading: false,
-              isOnlineMode: true
-            });
-          } catch (error) {
-            console.error('登录后更新状态失败:', error);
-            // 即使获取profile失败，也要设置基本用户信息
-            setAuthState({
-              user: {
-                id: session.user.id,
-                email: session.user.email || '',
-                username: session.user.email?.split('@')[0] || '',
-                display_name: undefined
-              },
-              session,
-              loading: false,
-              isOnlineMode: true
-            });
-          }
-          return;
-        }
-
         // 对于INITIAL_SESSION事件，只有当loading为true时才处理（页面刷新的情况）
         if (event === 'INITIAL_SESSION') {
           if (authState.loading) {
@@ -314,7 +284,10 @@ export const useAuth = () => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(loadingTimeout);
+    };
   }, []); // 空依赖数组，只执行一次
 
   const signIn = async (email: string, password: string) => {
