@@ -24,7 +24,8 @@
       "Bash(kill:*)",
       "Bash(pkill:*)",
       "Bash(xargs:*)",
-      "Bash(npx tailwindcss:*)"
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm info:*)"
     ],
     "deny": [],
     "ask": []
