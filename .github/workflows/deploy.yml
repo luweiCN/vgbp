@@ -1,9 +1,12 @@
-# 简单的 GitHub Pages 部署
+# GitHub Actions 部署配置
+# 包含 Supabase 环境变量的安全配置
+
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/supabase-realtime-sync ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,21 +17,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    - uses: actions/setup-node@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
         node-version: 18
+        cache: 'npm'
 
     - name: Install dependencies
       run: npm install
 
-    - name: Build
-      run: npm run build
+    - name: Build with environment variables
+      run: |
+        # 创建 .env 文件用于构建
+        cat > .env << EOF
+        VITE_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+        GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+        EOF
+        
+        # 构建项目
+        npm run build
 
-    - uses: actions/configure-pages@v4
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
 
-    - uses: actions/upload-pages-artifact@v3
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
       with:
         path: dist
 
@@ -42,5 +59,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-    - uses: actions/deploy-pages@v4
+    - name: Deploy to GitHub Pages
       id: deployment
+      uses: actions/deploy-pages@v4
