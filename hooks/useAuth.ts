@@ -82,7 +82,7 @@ export const useAuth = () => {
               .from('profiles')
               .select('username, display_name')
               .eq('id', session.user.id)
-              .single();
+              .maybeSingle();
             
             let profile, profileError;
             try {
@@ -93,11 +93,13 @@ export const useAuth = () => {
               profileError = raceError;
             }
             
-            if (profileError) {
+            // maybeSingle() 不会在没有找到记录时报错，只会返回 null
+            // 只有在真正的查询错误时才抛出异常
+            if (profileError && profileError.code !== 'PGRST116') {
               throw profileError;
             }
-            
-            // 更新用户信息为详细的profile数据
+
+            // 更新用户信息为详细的profile数据（profile 可能为 null）
             setAuthState(prev => ({
               ...prev,
               user: {
@@ -140,9 +142,10 @@ export const useAuth = () => {
               .from('profiles')
               .select('username, display_name')
               .eq('id', session.user.id)
-              .single();
-            
-            if (profileError) {
+              .maybeSingle();
+
+            // maybeSingle() 在没有找到记录时不会报错
+            if (profileError && profileError.code !== 'PGRST116') {
               throw profileError;
             }
             
@@ -204,9 +207,15 @@ export const useAuth = () => {
       throw new Error('Online features not available - Supabase not configured');
     }
 
+    // 获取当前网站的 URL，用于邮件验证重定向
+    const redirectTo = `${window.location.origin}`;
+
     const { data, error } = await supabase.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        emailRedirectTo: redirectTo
+      }
     });
 
     if (error) throw error;
