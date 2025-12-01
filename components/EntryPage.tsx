@@ -42,8 +42,8 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
     <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4">
       <div className="max-w-4xl w-full mx-auto">
         {/* Logo and Title */}
-        <div className="text-center mb-12">
-          <div className="w-16 h-16 rounded bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-2xl shadow-lg shadow-blue-500/20 mx-auto mb-6">
+        <div className="text-center mb-8">
+          <div className="w-10 h-10 rounded bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-500/20 mx-auto mb-4">
             V
           </div>
           <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400 mb-2">
