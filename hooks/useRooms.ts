@@ -348,8 +348,10 @@ export const useRooms = () => {
               .from('profiles')
               .select('email, username, display_name')
               .eq('id', room.owner_id)
-              .single();
+              .maybeSingle();
             
+            // maybeSingle() 在没有找到记录时不会报错（data 为 null，error 为 null）
+            // 只有在真正的查询错误时 ownerError 才不为 null
             if (!ownerError && data) {
               ownerData = data;
             } else {
