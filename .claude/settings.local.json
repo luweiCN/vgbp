@@ -25,7 +25,9 @@
       "Bash(pkill:*)",
       "Bash(xargs:*)",
       "Bash(npx tailwindcss:*)",
-      "Bash(npm info:*)"
+      "Bash(npm info:*)",
+      "Bash(supabase status:*)",
+      "Bash(supabase login:*)"
     ],
     "deny": [],
     "ask": []
