@@ -7,6 +7,16 @@ export default defineConfig(({ mode }) => {
     return {
       // GitHub Pages 部署配置
       base: mode === 'production' ? '/' : '/', // 自定义域名使用根路径
+      build: {
+        assetsDir: 'assets',
+        rollupOptions: {
+          output: {
+            assetFileNames: 'assets/[name]-[hash][extname]',
+            chunkFileNames: 'assets/[name]-[hash].js',
+            entryFileNames: 'assets/[name]-[hash].js'
+          }
+        }
+      },
       server: {
         port: 3000,
         host: '0.0.0.0',
