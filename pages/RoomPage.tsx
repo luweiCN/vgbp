@@ -435,16 +435,10 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
 
               {/* Center Section: Search Box - Hidden on mobile, shown on desktop */}
               <div className="hidden md:flex flex-grow justify-center max-w-md mx-4">
-                <div className="relative w-full">
-                  <input
-                    type="text"
-                    placeholder="Search / 搜索..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-zinc-950/50 border border-zinc-700 rounded-lg py-1.5 px-4 pl-9 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-zinc-500"
-                  />
+                <div className="flex items-center w-full bg-zinc-800 border border-zinc-600 rounded-lg px-3 py-1.5 gap-2 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50">
+                  {/* Search Icon */}
                   <svg
-                    className="absolute left-2.5 top-2 h-4 w-4 text-zinc-500"
+                    className="h-4 w-4 text-zinc-400 flex-shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -456,10 +450,19 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     />
                   </svg>
+                  {/* Input Field */}
+                  <input
+                    type="text"
+                    placeholder="Search / 搜索..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-white placeholder-zinc-400 outline-none border-none"
+                  />
+                  {/* Clear Button */}
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm("")}
-                      className="absolute right-2.5 top-2 h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors"
+                      className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
                       title="Clear search"
                     >
                       <svg
@@ -513,16 +516,10 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
 
             {/* Mobile Search Box - Only shown on mobile */}
             <div className="md:hidden">
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  placeholder="Search / 搜索..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-zinc-950/50 border border-zinc-700 rounded-lg py-1.5 px-4 pl-9 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-zinc-500"
-                />
+              <div className="flex items-center w-full bg-zinc-800 border border-zinc-600 rounded-lg px-3 py-1.5 gap-2 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50">
+                {/* Search Icon */}
                 <svg
-                  className="absolute left-2.5 top-2 h-4 w-4 text-zinc-500"
+                  className="h-4 w-4 text-zinc-400 flex-shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -534,10 +531,19 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
+                {/* Input Field */}
+                <input
+                  type="text"
+                  placeholder="Search / 搜索..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1 bg-transparent text-sm text-white placeholder-zinc-400 outline-none border-none"
+                />
+                {/* Clear Button */}
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm("")}
-                    className="absolute right-2.5 top-2 h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors"
+                    className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
                     title="Clear search"
                   >
                     <svg
