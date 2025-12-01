@@ -74,8 +74,6 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     totalRooms,
     pageSize,
     createRoom,
-    joinRoom,
-    leaveRoom,
     deleteRoom,
     fetchAllRooms,
     refetch
@@ -111,7 +109,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
   const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!joinFormData.roomId.trim()) {
       setError('请输入房间ID或房间链接！');
       return;
@@ -123,7 +121,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     try {
       // 提取房间ID（支持直接输入ID或链接）
       let roomId = joinFormData.roomId.trim();
-      
+
       // 如果输入的是链接，提取房间ID
       if (roomId.includes('/room/')) {
         const match = roomId.match(/\/room\/([a-zA-Z0-9_-]+)/);
@@ -134,32 +132,25 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
         }
       }
 
-      // 检查房间是否存在
+      // 检查房间是否存在（移除is_public检查，因为所有房间都是公开的）
       if (!isConfigured) {
         throw new Error('在线功能未配置');
       }
 
       const { data: room, error: roomError } = await supabase
         .from('rooms')
-        .select('*')
+        .select('id')
         .eq('id', roomId)
-        .eq('is_public', true)
         .single();
 
       if (roomError || !room) {
         throw new Error('房间不存在');
       }
 
-      // 如果用户已登录，加入房间
-      if (user) {
-        await joinRoom(roomId);
-        showSuccess('成功加入房间！');
-      }
-
-      // 进入房间
+      // 直接跳转到房间，不进行任何参与者相关的操作
       setJoinFormData({ roomId: '' });
       setShowJoinForm(false);
-      
+
       if (onEnterRoom) {
         onEnterRoom(roomId);
       }
@@ -173,15 +164,6 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
   };
 
    
-  const handleLeaveRoom = async (roomId: string) => {
-    if (!confirm('确定要离开这个房间吗？')) return;
-
-    try {
-      await leaveRoom(roomId);
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
 
   const handleDeleteRoom = async (roomId: string) => {
     setShowDeleteConfirm(roomId);
