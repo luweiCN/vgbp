@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useRooms, Room } from '../hooks/useRooms';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { ToastContainer } from '../components/Toast';
+import { UnverifiedEmailModal, VerifiedEmailModal } from '../components/EmailStatusModals';
 import { supabase } from '../services/supabase';
 
 interface RoomManagerProps {
@@ -25,6 +26,17 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     username: ''
   });
   const [authFormLoading, setAuthFormLoading] = useState(false);
+
+  // 邮箱验证相关状态
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [showUnverifiedModal, setShowUnverifiedModal] = useState(false);
+  const [showVerifiedModal, setShowVerifiedModal] = useState(false);
+  const [resendConfirmationLoading, setResendConfirmationLoading] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState<number>(0);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+
+  // 防抖引用
+  const emailCheckTimeoutRef = useRef<NodeJS.Timeout>();
   const [usernameFormData, setUsernameFormData] = useState({
     username: ''
   });
@@ -40,7 +52,17 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
   const [joinLoading, setJoinLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { user, loading: authLoading, signIn, signUp, signOut, updateUsername, isConfigured } = useAuth();
+  const {
+    user,
+    loading: authLoading,
+    signIn,
+    signUp,
+    signOut,
+    updateUsername,
+    isConfigured,
+    checkEmailRegistrationStatus,
+    resendConfirmationEmailService
+  } = useAuth();
   const { toasts, showSuccess, showError, removeToast } = useToast();
 
   const {
@@ -240,6 +262,107 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     } finally {
       setUsernameFormLoading(false);
     }
+  };
+
+  // 邮箱状态检查函数（带防抖）
+  const checkEmailStatus = useCallback(async (emailToCheck: string) => {
+    console.log('🔍 开始邮箱状态检查:', emailToCheck, '登录模式:', authMode);
+
+    if (!emailToCheck || !emailToCheck.includes('@') || authMode === 'login') {
+      console.log('⏭️ 跳过检查 - 邮箱格式不正确或在登录模式');
+      return;
+    }
+
+    // 清除之前的定时器
+    if (emailCheckTimeoutRef.current) {
+      clearTimeout(emailCheckTimeoutRef.current);
+    }
+
+    // 设置新的定时器（500ms 防抖）
+    emailCheckTimeoutRef.current = setTimeout(async () => {
+      console.log('⏰ 防抖计时器触发，开始检查邮箱状态');
+      setEmailChecking(true);
+      setError('');
+
+      try {
+        console.log('📡 调用 checkEmailRegistrationStatus...');
+        const status = await checkEmailRegistrationStatus(emailToCheck);
+        console.log('📧 邮箱状态检查结果:', status);
+
+        switch (status.status) {
+          case 'not_registered':
+            // 继续正常注册流程，不做任何处理
+            break;
+          case 'registered_unverified':
+            // 显示未验证模态框
+            setShowUnverifiedModal(true);
+            setRegisteredEmail(emailToCheck);
+            break;
+          case 'registered_verified':
+            // 显示已验证模态框
+            setShowVerifiedModal(true);
+            setRegisteredEmail(emailToCheck);
+            break;
+        }
+      } catch (err: any) {
+        // 静默失败，不影响正常注册流程
+      } finally {
+        setEmailChecking(false);
+      }
+    }, 500);
+  }, [authMode, checkEmailRegistrationStatus]);
+
+  // 邮箱输入处理
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    console.log('📧 邮箱输入变化:', newEmail, '当前模式:', authMode === 'login' ? '登录' : '注册');
+    setAuthFormData({...authFormData, email: newEmail});
+
+    // 在注册模式下检查邮箱状态
+    if (authMode === 'register' && newEmail) {
+      console.log('✅ 触发邮箱状态检查');
+      checkEmailStatus(newEmail);
+    } else {
+      console.log('❌ 不触发检查 - 在登录模式或邮箱为空');
+    }
+  };
+
+  // 重发确认邮件处理
+  const handleResendConfirmation = async () => {
+    if (!registeredEmail) return;
+
+    setResendConfirmationLoading(true);
+    setCooldownSeconds(60);
+
+    try {
+      const result = await resendConfirmationEmailService(registeredEmail);
+
+      if (result.success) {
+        // 开始倒计时
+        let countdown = 60;
+        const interval = setInterval(() => {
+          countdown -= 1;
+          setCooldownSeconds(countdown);
+
+          if (countdown <= 0) {
+            clearInterval(interval);
+          }
+        }, 1000);
+      } else {
+        setError(result.message || '重发验证邮件失败');
+      }
+    } catch (err: any) {
+      setError(err.message || '重发验证邮件时发生错误');
+    } finally {
+      setResendConfirmationLoading(false);
+    }
+  };
+
+  // 切换到登录模式
+  const handleSwitchToLogin = () => {
+    setAuthMode('login');
+    setShowVerifiedModal(false);
+    setShowUnverifiedModal(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -1224,16 +1347,23 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
                   <input
                     type="email"
                     value={authFormData.email}
-                    onChange={(e) => setAuthFormData({...authFormData, email: e.target.value})}
+                    onChange={handleEmailChange}
                     className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     placeholder="请输入邮箱地址（用于登录）"
                     required
                   />
                 </div>
                 {authMode === 'register' && (
-                  <div className="mt-1 text-xs text-zinc-500">
-                    邮箱地址仅用于登录，不会公开显示
-                  </div>
+                  <>
+                    {emailChecking && (
+                      <div className="text-blue-400 text-sm mt-1">
+                        正在检查邮箱状态...
+                      </div>
+                    )}
+                    <div className="mt-1 text-xs text-zinc-500">
+                      邮箱地址仅用于登录，不会公开显示
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -1511,6 +1641,23 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
           </div>
         </div>
       )}
+
+      {/* 邮箱状态模态框 */}
+      <UnverifiedEmailModal
+        isOpen={showUnverifiedModal}
+        onClose={() => setShowUnverifiedModal(false)}
+        email={registeredEmail}
+        onResendEmail={handleResendConfirmation}
+        resendLoading={resendConfirmationLoading}
+        cooldownSeconds={cooldownSeconds}
+      />
+
+      <VerifiedEmailModal
+        isOpen={showVerifiedModal}
+        onClose={() => setShowVerifiedModal(false)}
+        email={registeredEmail}
+        onSwitchToLogin={handleSwitchToLogin}
+      />
 
       {/* Toast 容器 */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />

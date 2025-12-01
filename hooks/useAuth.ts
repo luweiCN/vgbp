@@ -426,11 +426,14 @@ export const useAuth = () => {
 
   // 检查邮箱注册状态
   const checkEmailRegistrationStatus = async (email: string) => {
-    if (!isSupabaseConfigured()) {
+    // 强制执行邮箱检查，跳过配置检查以测试功能
+    console.log('🔧 强制执行邮箱检查，跳过配置检查');
+    try {
+      return await checkEmailStatus(email);
+    } catch (error) {
+      console.error('邮箱检查失败:', error);
       return { status: 'not_registered' as const };
     }
-
-    return await checkEmailStatus(email);
   };
 
   // 重新发送验证邮件
