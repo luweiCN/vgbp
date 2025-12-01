@@ -103,7 +103,7 @@ serve(async (req) => {
       },
     });
 
-    console.log("Resending confirmation email for:", email);
+    console.log("Resending confirmation email for:", email, domain);
 
     // Check if user exists and is unverified using listUsers (similar to check-email function)
     const { data: users, error: listError } =
@@ -405,4 +405,3 @@ serve(async (req) => {
     );
   }
 });
-
