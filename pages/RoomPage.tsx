@@ -374,7 +374,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
       <div className="min-h-screen bg-zinc-950 text-white pb-20 font-sans">
       {/* Header - 恢复原来的设计 */}
       <header className="sticky top-0 z-40 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 shadow-xl px-4">
-        <div className="max-w-[1400px] mx-auto pt-3 pb-4">
+        <div className="max-w-[1400px] mx-auto pt-3">
           {/* Top Row: Logo, Title, Search, Reset Button */}
           <div className="flex flex-col">
             <div className="flex items-center justify-between gap-4">
@@ -566,7 +566,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
           </div>
 
           {/* Progress and Controls Section */}
-          <div className="border-t border-zinc-800 pt-3 pb-2 sm:px-6">
+          <div className="sm:border-t sm:border-zinc-800 pt-3 pb-2">
             {/* Hide Selected Toggle */}
             <div className="hidden sm:flex items-center justify-between">
               <div className="flex items-center gap-3">
