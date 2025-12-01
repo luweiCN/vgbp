@@ -23,7 +23,7 @@ export const useAuth = () => {
     loading: true,
     isOnlineMode: false
   });
-  
+
   // 使用 ref 来跟踪初始化状态，避免依赖 authState
   const initializedRef = useRef(false);
 
@@ -43,7 +43,7 @@ export const useAuth = () => {
     if (initializedRef.current) {
       return;
     }
-    
+
     initializedRef.current = true;
 
     // 获取初始会话
@@ -130,11 +130,55 @@ export const useAuth = () => {
     // 监听认证状态变化
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // 只处理非INITIAL_SESSION事件，避免重复处理
+        // 处理SIGNED_IN事件，确保登录后立即更新状态
+        if (event === 'SIGNED_IN') {
+          // 获取用户详细信息，包括username
+          try {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('username, display_name')
+              .eq('id', session.user.id)
+              .maybeSingle();
+
+            // maybeSingle() 在没有找到记录时不会报错
+            if (profileError && profileError.code !== 'PGRST116') {
+              console.warn('获取用户profile失败:', profileError);
+            }
+
+            setAuthState({
+              user: {
+                id: session.user.id,
+                email: session.user.email || '',
+                username: profile?.username || session.user.email?.split('@')[0] || '',
+                display_name: profile?.display_name
+              },
+              session,
+              loading: false,
+              isOnlineMode: true
+            });
+          } catch (error) {
+            console.error('登录后更新状态失败:', error);
+            // 即使获取profile失败，也要设置基本用户信息
+            setAuthState({
+              user: {
+                id: session.user.id,
+                email: session.user.email || '',
+                username: session.user.email?.split('@')[0] || '',
+                display_name: undefined
+              },
+              session,
+              loading: false,
+              isOnlineMode: true
+            });
+          }
+          return;
+        }
+
+        // 过滤掉INITIAL_SESSION事件，避免重复处理
         if (event === 'INITIAL_SESSION') {
           return;
         }
-        
+
         // 获取用户详细信息，包括username
         if (session?.user) {
           try {
@@ -240,6 +284,14 @@ export const useAuth = () => {
 
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+
+    // 立即更新本地状态，确保 UI 立即响应
+    setAuthState({
+      user: null,
+      session: null,
+      loading: false,
+      isOnlineMode: false
+    });
   };
 
   const updateUsername = async (newUsername: string) => {
