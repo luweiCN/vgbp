@@ -70,7 +70,7 @@ export const useRooms = () => {
   const isFetchingUserRoomsRef = useRef(false);
   const isFetchingPublicRoomsRef = useRef(false);
 
-  // 获取用户参与的房间
+  // 获取用户拥有的房间
   const fetchUserRooms = useCallback(async () => {
     if (!isConfigured || !user) {
       setRooms([]);
@@ -87,7 +87,7 @@ export const useRooms = () => {
     setError(null);
 
     try {
-      // 先查询用户拥有的房间
+      // 只查询用户拥有的房间
       const { data: ownedRooms, error: ownedError } = await supabase
         .from('rooms')
         .select(`
@@ -99,48 +99,8 @@ export const useRooms = () => {
 
       if (ownedError) throw ownedError;
 
-      // 再查询用户参与的房间
-      const { data: participatedRooms, error: participatedError } = await supabase
-        .from('room_participants')
-        .select(`
-          room_id,
-          rooms(
-            *,
-            owner:profiles(email, username, display_name)
-          )
-        `)
-        .eq('user_id', user.id)
-        .neq('role', 'owner'); // 排除已拥有的房间
-
-      if (participatedError) throw participatedError;
-
-      // 合并结果
-      const allRooms = [
-        ...(ownedRooms || []),
-        ...(participatedRooms?.map(p => p.rooms).flat() || [])
-      ];
-
-      // 去重（根据ID）
-      const uniqueRooms = allRooms.filter((room, index, arr) =>
-        arr.findIndex(r => r.id === room.id) === index
-      );
-
-      // 查询每个房间的准确参与者数量
-      const roomsWithCounts = await Promise.all(
-        uniqueRooms.map(async (room) => {
-          const { data: roomParticipants } = await supabase
-            .from('room_participants')
-            .select('user_id')
-            .eq('room_id', room.id);
-
-          return {
-            ...room,
-            participant_count: roomParticipants?.length || 1
-          };
-        })
-      );
-
-      setRooms(roomsWithCounts);
+      // 直接设置用户拥有的房间，不需要参与者数量统计
+      setRooms(ownedRooms || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -164,22 +124,12 @@ export const useRooms = () => {
         .insert({
           name: roomData.name,
           description: roomData.description,
-          owner_id: user.id,
-          is_public: true
+          owner_id: user.id
         })
         .select()
         .single();
 
       if (createError) throw createError;
-
-      // 创建房间后，添加房主为参与者
-      await supabase
-        .from('room_participants')
-        .insert({
-          room_id: data.id,
-          user_id: user.id,
-          role: 'owner'
-        });
 
       // 创建房间设置
       await supabase
@@ -196,77 +146,8 @@ export const useRooms = () => {
     }
   };
 
-  // 加入房间
-  const joinRoom = async (roomId: string) => {
-    if (!isConfigured || !user) {
-      throw new Error('User not authenticated or Supabase not configured');
-    }
-
-    try {
-      // 检查房间是否存在且公开
-      const { data: room, error: roomError } = await supabase
-        .from('rooms')
-        .select('*')
-        .eq('id', roomId)
-        .eq('is_public', true)
-        .single();
-
-      if (roomError || !room) {
-        throw new Error('Room not found or not public');
-      }
-
-      // 检查是否已加入
-      const { data: participant } = await supabase
-        .from('room_participants')
-        .select('*')
-        .eq('room_id', roomId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (participant) {
-        throw new Error('Already a member of this room');
-      }
-
-      // 加入房间
-      const { error: joinError } = await supabase
-        .from('room_participants')
-        .insert({
-          room_id: roomId,
-          user_id: user.id,
-          role: 'participant'
-        });
-
-      if (joinError) throw joinError;
-
-      // 刷新房间列表
-      await fetchUserRooms();
-    } catch (err: any) {
-      throw new Error(err.message);
-    }
-  };
-
-  // 离开房间
-  const leaveRoom = async (roomId: string) => {
-    if (!isConfigured || !user) {
-      throw new Error('User not authenticated or Supabase not configured');
-    }
-
-    try {
-      const { error } = await supabase
-        .from('room_participants')
-        .delete()
-        .eq('room_id', roomId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      // 刷新房间列表
-      await fetchUserRooms();
-    } catch (err: any) {
-      throw new Error(err.message);
-    }
-  };
-
+  
+  
   // 删除房间（仅房主）
   const deleteRoom = async (roomId: string) => {
     if (!isConfigured || !user) {
@@ -286,7 +167,7 @@ export const useRooms = () => {
         throw new Error('Room not found or not authorized');
       }
 
-      // 删除房间（级联删除相关数据）
+      // 删除房间
       const { error: deleteError } = await supabase
         .from('rooms')
         .delete()
@@ -332,7 +213,6 @@ export const useRooms = () => {
       const { data: roomsData, error: roomsError } = await supabase
         .from('rooms')
         .select('*')
-        .eq('is_public', true)
         .order('created_at', { ascending: false })
         .range((page - 1) * pageSize, page * pageSize - 1);
 
@@ -461,8 +341,6 @@ export const useRooms = () => {
     fetchUserRooms,
     fetchAllRooms,
     createRoom,
-    joinRoom,
-    leaveRoom,
     deleteRoom,
     refetch: fetchUserRooms
   };
