@@ -11,6 +11,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const { signIn, signUp } = useAuth();
 
@@ -18,14 +19,20 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMessage('');
 
     try {
       if (isLogin) {
         await signIn(email, password);
+        onSuccess?.();
       } else {
         await signUp(email, password);
+        // 注册成功，显示邮件验证提示
+        setSuccessMessage('📧 注册成功！验证邮件已发送到您的邮箱，请检查邮箱并点击验证链接完成注册。');
+        // 清空表单
+        setEmail('');
+        setPassword('');
       }
-      onSuccess?.();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -73,6 +80,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           </div>
         )}
 
+        {successMessage && (
+          <div className="text-green-400 text-sm bg-green-900/20 border border-green-800 rounded p-3">
+            {successMessage}
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={loading}
@@ -88,6 +101,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           onClick={() => {
             setIsLogin(!isLogin);
             setError('');
+            setSuccessMessage('');
           }}
           className="text-blue-400 hover:text-blue-300 text-sm"
         >

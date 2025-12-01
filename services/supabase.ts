@@ -5,7 +5,16 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase configuration missing. Online features will be unavailable.');
+  console.error('❌ Supabase configuration missing');
+  console.error('🔧 Required environment variables:');
+  console.error('  - VITE_SUPABASE_URL:', supabaseUrl ? '✅ Set' : '❌ Missing');
+  console.error('  - VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✅ Set' : '❌ Missing');
+
+  if (import.meta.env.PROD) {
+    throw new Error('Supabase configuration is required in production. Please check environment variables.');
+  } else {
+    console.warn('⚠️ Online features will be unavailable in development');
+  }
 }
 
 // 始终使用原始 Supabase URL，避免代理导致的复杂性
@@ -20,7 +29,24 @@ export const supabase = createClient(getSupabaseUrl(), supabaseAnonKey || '', {
       eventsPerSecond: 10,
     },
   },
+  db: {
+    schema: 'public',
+  },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+  // 使用 global.headers 设置
+  global: {
+    headers: {
+      'apikey': supabaseAnonKey || '',
+      'Authorization': `Bearer ${supabaseAnonKey || ''}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+  },
 });
+
 
 // 导出类型定义
 export interface Database {
