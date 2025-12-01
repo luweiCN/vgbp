@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { useAuth } from './useAuth';
+import { HEROES_DATA, getHeroAvatarUrl } from '../data/heroes';
 
 export interface Room {
   id: string;
@@ -11,8 +12,16 @@ export interface Room {
   settings: Record<string, any>;
   created_at: string;
   updated_at: string;
+  bp_updated_at?: string; // BP状态的最新更新时间
+  selected_heroes?: Array<{
+    id: string;
+    name: string;
+    avatarUrl?: string | null;
+  }>;
+  total_selected?: number; // 已选择的英雄数量
   owner?: {
     email: string;
+    username?: string;
     display_name?: string;
   };
   participant_count?: number;
@@ -33,6 +42,7 @@ export interface RoomParticipant {
   joined_at: string;
   user?: {
     email: string;
+    username?: string;
     display_name?: string;
   };
 }
@@ -82,7 +92,7 @@ export const useRooms = () => {
         .from('rooms')
         .select(`
           *,
-          owner:profiles(email, display_name)
+          owner:profiles(email, username, display_name)
         `)
         .eq('owner_id', user.id)
         .order('updated_at', { ascending: false });
@@ -96,7 +106,7 @@ export const useRooms = () => {
           room_id,
           rooms(
             *,
-            owner:profiles(email, display_name)
+            owner:profiles(email, username, display_name)
           )
         `)
         .eq('user_id', user.id)
@@ -318,7 +328,7 @@ export const useRooms = () => {
 
       if (countError) throw countError;
 
-      // 获取分页数据
+      // 获取分页数据，按创建时间排序
       const { data: roomsData, error: roomsError } = await supabase
         .from('rooms')
         .select('*')
@@ -331,16 +341,89 @@ export const useRooms = () => {
       // 获取创建者信息
       const roomsWithOwners = await Promise.all(
         (roomsData || []).map(async (room) => {
-          const { data: ownerData } = await supabase
-            .from('profiles')
-            .select('email, display_name')
-            .eq('id', room.owner_id)
-            .single();
+          let ownerData = null;
+          
+          try {
+            const { data: data, error: ownerError } = await supabase
+              .from('profiles')
+              .select('email, username, display_name')
+              .eq('id', room.owner_id)
+              .single();
+            
+            if (!ownerError && data) {
+              ownerData = data;
+            } else {
+              // 如果查询失败或数据不存在，显示未知用户
+              ownerData = {
+                username: null,
+                display_name: null,
+                email: null
+              };
+            }
+          } catch (err) {
+            console.warn('Failed to fetch owner data for room:', room.id, err);
+            // 查询失败时显示未知用户
+            ownerData = {
+              username: null,
+              display_name: null,
+              email: null
+            };
+          }
 
-          return {
+          // 获取BP状态信息
+          let bpLastUpdated = room.updated_at; // 默认使用房间更新时间
+          let selectedHeroes: any[] = [];
+          let totalSelected = 0;
+          
+          try {
+            // 获取BP状态的最新更新时间和已选择的英雄
+            const { data: bpData, error: bpError } = await supabase
+              .from('bp_states')
+              .select('hero_id, is_selected, selection_type, updated_at')
+              .eq('room_id', room.id)
+              .eq('is_selected', true)
+              .order('updated_at', { ascending: false });
+            
+            if (!bpError && bpData) {
+              // 获取最新更新时间
+              bpLastUpdated = bpData.length > 0 ? bpData[0].updated_at : room.updated_at;
+              
+              // 统计已选择的英雄
+              totalSelected = bpData.length;
+              
+              // 获取前5个已选择英雄的详细信息
+              const heroIds = [...new Set(bpData.map(bp => bp.hero_id))].slice(0, 5);
+              
+              if (heroIds.length > 0) {
+                const OSS_BASE_URL = "https://www.luwei.space:4014/default/vainglory/heroes";
+                selectedHeroes = heroIds.map(heroId => {
+                  const hero = HEROES_DATA.find(h => h.id === heroId);
+                  return {
+                    id: heroId,
+                    name: hero ? hero.cnName || hero.name : heroId,
+                    avatarUrl: hero ? getHeroAvatarUrl(hero, OSS_BASE_URL) : null
+                  };
+                });
+              }
+            }
+          } catch (err) {
+            // 如果没有BP数据，使用默认的房间更新时间
+            console.log('No BP data found for room:', room.id);
+          }
+
+          // 只有当有选择的英雄时才包含英雄相关字段
+          const result: any = {
             ...room,
-            owner: ownerData
+            owner: ownerData,
+            bp_updated_at: bpLastUpdated
           };
+          
+          if (totalSelected > 0) {
+            result.selected_heroes = selectedHeroes;
+            result.total_selected = totalSelected;
+          }
+          
+          return result;
         })
       );
 
