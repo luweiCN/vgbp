@@ -29,8 +29,8 @@ const OnlineModeIndicator: React.FC<OnlineModeIndicatorProps> = ({
   }
 
   return (
-    <div className="border-t border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
-      <div className="max-w-[1400px] mx-auto px-4 py-3">
+    <div className="bg-zinc-900/50 backdrop-blur-sm">
+      <div className="max-w-[1400px] mx-auto py-3">
         <div className="flex justify-between items-center">
           {/* 左侧：实时状态指示 */}
           <div className="flex items-center gap-4">

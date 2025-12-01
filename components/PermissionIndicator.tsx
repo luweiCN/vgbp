@@ -58,62 +58,19 @@ const PermissionIndicator: React.FC<PermissionIndicatorProps> = ({
   return (
     <div className="flex items-center gap-2">
       {/* 基础权限指示器 */}
-      <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${roleInfo.color} bg-opacity-20 border ${roleInfo.color} border-opacity-50`}>
+      <div className={`flex items-center gap-2 px-2 sm:px-3 py-1 rounded-full ${roleInfo.color} bg-opacity-20 border ${roleInfo.color} border-opacity-50 whitespace-nowrap`}>
         <span className="text-sm">{roleInfo.icon}</span>
         <span className={`text-sm font-medium ${roleInfo.textColor}`}>
           {roleInfo.text}
         </span>
         {canEdit && (
-          <span className={`text-xs ${roleInfo.textColor} opacity-75`}>
+          <span className={`text-xs ${roleInfo.textColor} opacity-75 hidden sm:inline`}>
             (可编辑)
           </span>
         )}
       </div>
 
-      {/* 详细权限信息 */}
-      {showDetails && (
-        <div className="relative group">
-          <button className="text-zinc-400 hover:text-white transition-colors">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </button>
 
-          {/* 权限详情弹窗 */}
-          <div className="absolute right-0 top-full mt-2 w-64 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-            <div className="space-y-3">
-              <div>
-                <h4 className="font-medium text-white mb-1">当前权限</h4>
-                <p className="text-xs text-zinc-400">{roleInfo.description}</p>
-              </div>
-
-              <div className="border-t border-zinc-700 pt-3">
-                <h4 className="font-medium text-white mb-2">具体权限</h4>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${canEdit ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                    <span className="text-xs text-zinc-300">编辑英雄选择</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${canManageRoom ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                    <span className="text-xs text-zinc-300">管理房间设置</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${canDeleteRoom ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                    <span className="text-xs text-zinc-300">删除房间</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${canInviteUsers ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                    <span className="text-xs text-zinc-300">邀请用户</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

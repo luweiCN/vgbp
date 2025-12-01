@@ -13,6 +13,7 @@ interface SelectedHeroesModalProps {
   onToggleHero: (heroId: string) => void;
   ossBaseUrl: string;
   onReset: () => void;
+  canEdit: boolean;
 }
 
 const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
@@ -22,6 +23,7 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
   onToggleHero,
   ossBaseUrl,
   onReset,
+  canEdit,
 }) => {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -68,32 +70,34 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                             src={`${ossBaseUrl}/${hero.id}.jpg`}
                             alt={hero.cnName}
                             className="w-full h-auto rounded-lg border-2 border-zinc-600 group-hover:border-blue-500 transition-colors cursor-pointer sm:cursor-default"
-                            onClick={() => {
-                              // 移动端点击删除
-                              if (window.innerWidth < 640) {
-                                onToggleHero(hero.id);
-                              }
-                            }}
-                          />
-                          <button
-                            onClick={() => onToggleHero(hero.id)}
-                            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
-                          >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                        <p className="text-xs text-zinc-400 mt-1 font-medium">{hero.cnName}</p>
-                        <p className="text-xs text-zinc-500">{hero.name}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                             onClick={() => {
+                               // 移动端点击删除（仅编辑模式）
+                               if (window.innerWidth < 640 && canEdit) {
+                                 onToggleHero(hero.id);
+                               }
+                             }}
+                           />
+                           {canEdit && (
+                             <button
+                               onClick={() => onToggleHero(hero.id)}
+                               className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
+                             >
+                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                               </svg>
+                             </button>
+                           )}
+                         </div>
+                         <p className="text-xs text-zinc-400 mt-1 font-medium">{hero.cnName}</p>
+                         <p className="text-xs text-zinc-500">{hero.name}</p>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               )}
 
-              {/* Jungle Section */}
-              {selectedHeroesGrouped[HeroRole.JUNGLE].length > 0 && (
+               {/* Jungle Section */}
+               {selectedHeroesGrouped[HeroRole.JUNGLE].length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-2">
                     <h3 className="text-xl font-black uppercase tracking-tighter text-emerald-500">
@@ -118,26 +122,28 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                                 onToggleHero(hero.id);
                               }
                             }}
-                          />
-                          <button
-                            onClick={() => onToggleHero(hero.id)}
-                            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
-                          >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                        <p className="text-xs text-zinc-400 mt-1 font-medium">{hero.cnName}</p>
-                        <p className="text-xs text-zinc-500">{hero.name}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                           />
+                           {canEdit && (
+                             <button
+                               onClick={() => onToggleHero(hero.id)}
+                               className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
+                             >
+                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                               </svg>
+                             </button>
+                           )}
+                         </div>
+                         <p className="text-xs text-zinc-400 mt-1 font-medium">{hero.cnName}</p>
+                         <p className="text-xs text-zinc-500">{hero.name}</p>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               )}
 
-              {/* Carry Section */}
-              {selectedHeroesGrouped[HeroRole.CARRY].length > 0 && (
+               {/* Carry Section */}
+               {selectedHeroesGrouped[HeroRole.CARRY].length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-2">
                     <h3 className="text-xl font-black uppercase tracking-tighter text-red-500">
@@ -156,21 +162,23 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                             src={`${ossBaseUrl}/${hero.id}.jpg`}
                             alt={hero.cnName}
                             className="w-full h-auto rounded-lg border-2 border-zinc-600 group-hover:border-blue-500 transition-colors cursor-pointer sm:cursor-default"
-                            onClick={() => {
-                              // 移动端点击删除
-                              if (window.innerWidth < 640) {
-                                onToggleHero(hero.id);
-                              }
-                            }}
-                          />
-                          <button
-                            onClick={() => onToggleHero(hero.id)}
-                            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
-                          >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
+                             onClick={() => {
+                               // 移动端点击删除（仅编辑模式）
+                               if (window.innerWidth < 640 && canEdit) {
+                                 onToggleHero(hero.id);
+                               }
+                             }}
+                           />
+                           {canEdit && (
+                             <button
+                               onClick={() => onToggleHero(hero.id)}
+                               className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
+                             >
+                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                               </svg>
+                             </button>
+                           )}
                         </div>
                         <p className="text-xs text-zinc-400 mt-1 font-medium">{hero.cnName}</p>
                         <p className="text-xs text-zinc-500">{hero.name}</p>
@@ -187,17 +195,19 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
         {selectedHeroes.size > 0 && (
           <div className="flex-shrink-0 p-6 border-t border-zinc-800">
             <div className="flex justify-end gap-3">
-              <button
-                onClick={onReset}
-                disabled={selectedHeroes.size === 0}
-                className={`px-4 py-2 text-sm font-bold uppercase tracking-wider rounded-lg border transition-colors flex items-center gap-2 whitespace-nowrap ${
-                  selectedHeroes.size === 0
-                    ? "bg-zinc-800 text-zinc-600 border-zinc-700 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 shadow-lg shadow-red-500/20"
-                }`}
-              >
-                重置BP
-              </button>
+              {canEdit && (
+                <button
+                  onClick={onReset}
+                  disabled={selectedHeroes.size === 0}
+                  className={`px-4 py-2 text-sm font-bold uppercase tracking-wider rounded-lg border transition-colors flex items-center gap-2 whitespace-nowrap ${
+                    selectedHeroes.size === 0
+                      ? "bg-zinc-800 text-zinc-600 border-zinc-700 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 shadow-lg shadow-red-500/20"
+                  }`}
+                >
+                  重置BP
+                </button>
+              )}
               <button
                 onClick={onClose}
                 className="px-4 py-2 text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"

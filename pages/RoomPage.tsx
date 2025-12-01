@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HEROES } from '../constants';
 import { searchHeroes, getHeroesByRole, ClassificationMode } from '../data/heroes';
@@ -11,8 +11,11 @@ import ClassificationToggle from '../components/ClassificationToggle';
 import LayoutToggle from '../components/LayoutToggle';
 import { Hero, HeroRole } from '../types';
 import { useBPState } from '../hooks/useBPState';
+import { useHeroChangeToast } from '../hooks/useHeroChangeToast';
 import { useToast } from '../hooks/useToast';
 import { ToastContainer } from '../components/Toast';
+import HeroSelectionToastContainer from '../components/HeroSelectionToastContainer';
+import { supabase } from '../services/supabase';
 
 // 本地存储的key
 const STORAGE_KEY = 'vainglory-draft-selected-heroes';
@@ -35,6 +38,10 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
   const pageTitle = isLocalMode ? '本地模式' : `房间 ${roomId}`;
   const pageSubtitle = isLocalMode ? '本地BP功能' : '在线BP功能';
 
+  const { showError, showInfo, toasts, removeToast } = useToast();
+
+
+
   // 使用BP状态管理hook
   const {
     selectedHeroes,
@@ -51,7 +58,14 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
     clearAllHeroes
   } = useBPState(isLocalMode ? null : roomId);
 
-  const { showError, toasts, removeToast } = useToast();
+  // 分离英雄选择相关的Toast和其他Toast
+  const heroSelectionToasts = toasts.filter(toast => toast.type === 'info' && (toast.addedHeroIds || toast.removedHeroIds));
+  const otherToasts = toasts.filter(toast => toast.type !== 'info' || (!toast.addedHeroIds && !toast.removedHeroIds));
+
+  // 使用英雄变化Toast hook
+  useHeroChangeToast(selectedHeroes, (message: string, addedHeroIds: string[], removedHeroIds: string[]) => {
+    showInfo(message, addedHeroIds, removedHeroIds);
+  });
 
   // 搜索和过滤状态
   const [searchTerm, setSearchTerm] = useState('');
@@ -80,6 +94,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
   const [showClassificationInfo, setShowClassificationInfo] = useState(false);
   const [layoutMode, setLayoutMode] = useState<"auto" | "3" | "4" | "5">("auto");
   const [currentVisibleSection, setCurrentVisibleSection] = useState<"captain" | "jungle" | "carry" | null>(null);
+  const [roomName, setRoomName] = useState<string | null>(null);
 
   // 保存分类模式到本地存储
   const saveClassificationMode = useCallback((mode: ClassificationMode) => {
@@ -133,6 +148,29 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
       onBack();
     }
   };
+
+  // 获取房间名称
+  useEffect(() => {
+    const fetchRoomName = async () => {
+      if (isOnlineMode && roomId) {
+        try {
+          const { data: room, error } = await supabase
+            .from('rooms')
+            .select('name')
+            .eq('id', roomId)
+            .single();
+          
+          if (!error && room) {
+            setRoomName(room.name);
+          }
+        } catch (error) {
+          console.error('Failed to fetch room name:', error);
+        }
+      }
+    };
+
+    fetchRoomName();
+  }, [isOnlineMode, roomId]);
 
   // Handle scroll detection for current visible section
   useEffect(() => {
@@ -322,15 +360,26 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white pb-20 font-sans">
+    <>
+      {/* Toast Containers - 移到最外层确保最高层级 */}
+      <HeroSelectionToastContainer
+        toasts={heroSelectionToasts}
+        onRemove={removeToast}
+      />
+      <ToastContainer
+        toasts={otherToasts}
+        onRemove={removeToast}
+      />
+      
+      <div className="min-h-screen bg-zinc-950 text-white pb-20 font-sans">
       {/* Header - 恢复原来的设计 */}
       <header className="sticky top-0 z-40 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 shadow-xl px-4">
         <div className="max-w-[1400px] mx-auto pt-3 pb-4">
           {/* Top Row: Logo, Title, Search, Reset Button */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col">
             <div className="flex items-center justify-between gap-4">
               {/* Left Section: Back Button, Logo, Title */}
-              <div className="flex items-center gap-3 flex-1">
+              <div className="flex items-center gap-3 overflow-hidden" style={{width: canEdit ? '60vw' : '80vw', maxWidth: canEdit ? '60vw' : '80vw'}}>
                 {(isOnlineMode || isLocalMode) && (
                   <button
                     onClick={handleBack}
@@ -341,7 +390,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                     </svg>
                   </button>
                 )}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className={`w-8 h-8 rounded flex items-center justify-center font-bold text-lg shadow-lg flex-shrink-0 ${
                     isOnlineMode
                       ? 'bg-gradient-to-br from-green-600 to-emerald-600 shadow-green-500/20'
@@ -349,25 +398,32 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                   }`}>
                     V
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
+                  <div className="min-w-0 flex-1">
+                    {/* 桌面端：显示Logo和房间名称 */}
+                    <div className="hidden sm:flex items-center gap-2">
+                      <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400 flex-shrink-0">
                         Vainglory BP
                       </h1>
-                      {isOnlineMode && (
-                        <div className="flex items-center gap-1">
-                          <div className={`w-2 h-2 rounded-full animate-pulse ${
-                            canEdit ? 'bg-green-500' : 'bg-orange-500'
-                          }`}></div>
-                          <span className={`text-xs font-medium ${
-                            canEdit ? 'text-green-400' : 'text-orange-400'
-                          }`}>
-                            {isOwner ? '房主' : '查看模式'}
+                      {isOnlineMode && roomName && (
+                        <>
+                          <span className="text-xs text-zinc-400 flex-shrink-0">|</span>
+                          <span className="text-xs text-zinc-300 font-medium truncate" title={roomName}>
+                            {roomName}
                           </span>
-                          {roomId && (
-                            <span className="text-xs text-zinc-500">房间: {roomId}</span>
-                          )}
-                        </div>
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* 移动端：只显示房间名称 */}
+                    <div className="sm:hidden">
+                      {isOnlineMode && roomName ? (
+                         <span className="text-sm text-zinc-300 font-medium truncate block" title={roomName}>
+                          {roomName}
+                        </span>
+                      ) : (
+                        <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
+                          Vainglory BP
+                        </h1>
                       )}
                     </div>
                     <p className="text-[10px] text-zinc-500 uppercase tracking-widest hidden sm:block">
@@ -424,23 +480,36 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                 </div>
               </div>
 
-               {/* Right Section: Reset Button */}
-               <div className="flex items-center gap-3">
-
-                {/* Reset BP Button */}
-                <button
-                  onClick={handleResetClick}
-                  disabled={selectedHeroes.size === 0}
-                  className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg border transition-colors flex items-center gap-2 whitespace-nowrap ${
-                    selectedHeroes.size === 0
-                      ? "bg-zinc-900 text-zinc-600 border-zinc-800 cursor-not-allowed"
-                      : "bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 shadow-lg shadow-red-500/20"
-                  }`}
-                >
-                  重置BP
-                </button>
-              </div>
+               {/* Right Section: Reset Button - Only show for room owners */}
+               {canEdit && (
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  {/* Reset BP Button */}
+                  <button
+                    onClick={handleResetClick}
+                    disabled={selectedHeroes.size === 0}
+                    className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg border transition-colors flex items-center gap-2 whitespace-nowrap ${
+                      selectedHeroes.size === 0
+                        ? "bg-zinc-900 text-zinc-600 border-zinc-800 cursor-not-allowed"
+                        : "bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 shadow-lg shadow-red-500/20"
+                    }`}
+                  >
+                    重置BP
+                  </button>
+                </div>
+              )}
             </div>
+
+            {/* Online Mode Indicator - Below Logo, Above Search Box */}
+            <OnlineModeIndicator
+              roomId={roomId}
+              isConnected={isRealtimeConnected}
+              lastSyncTime={lastSyncTime}
+              lastSendTime={lastSendTime}
+              syncMethod={syncMethod}
+              isOnlineMode={isOnlineMode}
+              isOwner={isOwner}
+              canEdit={canEdit}
+            />
 
             {/* Mobile Search Box - Only shown on mobile */}
             <div className="md:hidden">
@@ -489,18 +558,6 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
               </div>
             </div>
           </div>
-
-          {/* 在线模式指示栏 */}
-          <OnlineModeIndicator
-            roomId={roomId}
-            isConnected={isRealtimeConnected}
-            lastSyncTime={lastSyncTime}
-            lastSendTime={lastSendTime}
-            syncMethod={syncMethod}
-            isOnlineMode={isOnlineMode}
-            isOwner={isOwner}
-            canEdit={canEdit}
-          />
 
           {/* Progress and Controls Section */}
           <div className="border-t border-zinc-800 pt-3 pb-2 sm:px-6">
@@ -566,21 +623,16 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                   <span className="text-xs text-zinc-500">隐藏已选</span>
                   <button
                     onClick={() => {
-                    if (selectedHeroes.size > 0) {
                       const newValue = !hideSelected;
                       setHideSelected(newValue);
                       saveHideSelected(newValue);
-                    }
-                  }}
-                    disabled={selectedHeroes.size === 0}
+                    }}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      selectedHeroes.size === 0
-                        ? "bg-zinc-700 cursor-not-allowed opacity-50"
-                        : hideSelected
+                      hideSelected
                         ? "bg-orange-600"
                         : "bg-zinc-600"
                     }`}
-                    title={selectedHeroes.size === 0 ? "请先选择英雄" : (hideSelected ? "显示已选英雄" : "隐藏已选英雄")}
+                    title={hideSelected ? "显示已选英雄" : "隐藏已选英雄"}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -670,18 +722,6 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
           </div>
         </div>
       </header>
-
-      {/* 在线模式指示栏 */}
-      <OnlineModeIndicator
-        roomId={roomId}
-        isConnected={isRealtimeConnected}
-        lastSyncTime={lastSyncTime}
-        lastSendTime={lastSendTime}
-        syncMethod={syncMethod}
-        isOnlineMode={isOnlineMode}
-        isOwner={isOwner}
-        canEdit={canEdit}
-      />
 
       {/* BP Loading & Error States */}
       {bpLoading && (
@@ -794,15 +834,21 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
           onToggleHero={handleToggleHero}
           ossBaseUrl={OSS_BASE_URL}
           onReset={handleResetClick}
+          canEdit={canEdit}
         />
       )}
 
-      {/* Toast Container */}
+      {/* Toast Containers - 移到页面最前面确保最高层级 */}
+      <HeroSelectionToastContainer
+        toasts={heroSelectionToasts}
+        onRemove={removeToast}
+      />
       <ToastContainer
-        toasts={toasts}
+        toasts={otherToasts}
         onRemove={removeToast}
       />
     </div>
+    </>
   );
 };
 

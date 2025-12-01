@@ -55,17 +55,17 @@ const RealtimeStatus: React.FC<RealtimeStatusProps> = ({
 
   const getStatusText = () => {
     if (syncMethod === 'realtime' && isConnected) {
-      return '实时连接正常';
+      return '连接正常';
     } else if (syncMethod === 'realtime' && hasRecentActivity) {
-      return '实时同步中';
+      return '同步中';
     } else if (syncMethod === 'polling' && hasRecentActivity) {
-      return '轮询同步中';
+      return '轮询中';
     } else if (syncMethod === 'realtime') {
-      return '实时连接断开';
-    } else if (syncMethod === 'polling') {
-      return '轮询同步断开';
-    } else {
       return '连接断开';
+    } else if (syncMethod === 'polling') {
+      return '轮询断开';
+    } else {
+      return '已断开';
     }
   };
 
@@ -99,6 +99,7 @@ const RealtimeStatus: React.FC<RealtimeStatusProps> = ({
           className={`w-2 h-2 rounded-full ${getStatusColor()} ${
             hasRecentActivity ? 'animate-pulse' : ''
           }`}
+          title={getStatusText()}
         />
         <span>{getStatusText()}</span>
       </div>
@@ -110,14 +111,21 @@ const RealtimeStatus: React.FC<RealtimeStatusProps> = ({
         </span>
       </div>
 
-      {/* 最后同步时间 */}
+      {/* 最后同步时间 - 桌面端显示完整文字，移动端只显示时间 */}
       <div className="flex items-center gap-1">
-        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg 
+          className="w-3 h-3" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
+          title={`最后活动: ${formatSyncTime(getLastActivityTime())}`}
+        >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <span>最后活动: {formatSyncTime(getLastActivityTime())}</span>
+        <span className="hidden sm:inline">最后活动: {formatSyncTime(getLastActivityTime())}</span>
+        <span className="sm:hidden">{formatSyncTime(getLastActivityTime())}</span>
       </div>
 
       {/* 详细信息提示 */}

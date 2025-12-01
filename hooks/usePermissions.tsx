@@ -50,7 +50,7 @@ export interface PermissionResult {
 
 export const usePermissions = (roomId?: string): PermissionResult => {
   const { user, isConfigured } = useAuth();
-  const { isOwner, isOnlineMode, canEdit } = useBPState(roomId);
+  const { isOwner, isOnlineMode, canEdit } = useBPState(roomId, undefined);
 
   const permissions = useMemo(() => {
     // 如果不是在线模式，返回匿名用户权限

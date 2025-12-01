@@ -5,13 +5,17 @@ interface ToastProps {
   type: 'error' | 'success' | 'warning' | 'info';
   duration?: number;
   onClose: () => void;
+  addedHeroIds?: string[]; // 新增的英雄ID
+  removedHeroIds?: string[]; // 减少的英雄ID
 }
 
 const Toast: React.FC<ToastProps> = ({
   message,
   type,
   duration = 5000,
-  onClose
+  onClose,
+  addedHeroIds,
+  removedHeroIds
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -36,7 +40,7 @@ const Toast: React.FC<ToastProps> = ({
   };
 
   const getToastStyles = () => {
-    const baseStyles = "fixed top-4 right-4 z-[9999] max-w-sm p-4 rounded-lg shadow-xl border backdrop-blur-sm transform transition-all duration-300 ease-in-out";
+    const baseStyles = "fixed top-4 right-4 max-w-sm p-4 rounded-lg shadow-xl border backdrop-blur-sm transform transition-all duration-300 ease-in-out";
 
     let typeStyles = "";
     let icon = "";
@@ -81,14 +85,70 @@ const Toast: React.FC<ToastProps> = ({
     ));
   };
 
-  return (
-    <div className={getToastStyles()}>
+    return (
+      <div className={getToastStyles()} style={{ zIndex: 999999 }}>
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 text-xl">
           {type === 'error' && '❌'}
           {type === 'success' && '✅'}
           {type === 'warning' && '⚠️'}
           {type === 'info' && 'ℹ️'}
+        </div>
+
+        {/* 英雄头像 */}
+        <div className="flex-shrink-0 flex items-center gap-1">
+          {/* 新增的英雄头像 */}
+          {addedHeroIds && addedHeroIds.length > 0 && (
+            <div className="flex items-center">
+              {addedHeroIds.slice(0, 5).map((heroId, index) => (
+                <img 
+                  key={heroId}
+                  src={`https://www.luwei.space:4014/default/vainglory/heroes/${heroId}.jpg`}
+                  alt="英雄头像"
+                  className="w-4 h-4 rounded border border-green-500 relative z-10"
+                  style={{ marginLeft: index === 0 ? '0' : '-2px' }}
+                  onError={(e) => {
+                    // 图片加载失败时隐藏
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              ))}
+              {addedHeroIds.length > 5 && (
+                <div className="w-4 h-4 rounded border border-green-500 bg-green-600 flex items-center justify-center text-xs text-white relative z-10" style={{ marginLeft: '-2px' }}>
+                  +{addedHeroIds.length - 5}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* 分隔符 */}
+          {addedHeroIds && addedHeroIds.length > 0 && removedHeroIds && removedHeroIds.length > 0 && (
+            <span className="text-zinc-400 mx-1">→</span>
+          )}
+          
+          {/* 减少的英雄头像 */}
+          {removedHeroIds && removedHeroIds.length > 0 && (
+            <div className="flex items-center">
+              {removedHeroIds.slice(0, 5).map((heroId, index) => (
+                <img 
+                  key={heroId}
+                  src={`https://www.luwei.space:4014/default/vainglory/heroes/${heroId}.jpg`}
+                  alt="英雄头像"
+                  className="w-4 h-4 rounded border border-red-500 relative z-10 opacity-60"
+                  style={{ marginLeft: index === 0 ? '0' : '-2px' }}
+                  onError={(e) => {
+                    // 图片加载失败时隐藏
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              ))}
+              {removedHeroIds.length > 5 && (
+                <div className="w-4 h-4 rounded border border-red-500 bg-red-600 flex items-center justify-center text-xs text-white relative z-10 opacity-60" style={{ marginLeft: '-2px' }}>
+                  +{removedHeroIds.length - 5}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -117,18 +177,22 @@ interface ToastContainerProps {
     id: string;
     message: string;
     type: 'error' | 'success' | 'warning' | 'info';
+    addedHeroIds?: string[];
+    removedHeroIds?: string[];
   }>;
   onRemove: (id: string) => void;
 }
 
 const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove }) => {
   return (
-    <div className="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-none">
+    <div className="fixed top-4 right-4 space-y-2 pointer-events-none" style={{ zIndex: 999999 }}>
       {toasts.map((toast) => (
         <div key={toast.id} className="pointer-events-auto">
           <Toast
             message={toast.message}
             type={toast.type}
+            addedHeroIds={toast.addedHeroIds}
+            removedHeroIds={toast.removedHeroIds}
             onClose={() => onRemove(toast.id)}
           />
         </div>
