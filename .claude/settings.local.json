@@ -23,7 +23,11 @@
       "Bash(chmod:*)",
       "Bash(kill:*)",
       "Bash(pkill:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm info:*)",
+      "Bash(supabase status:*)",
+      "Bash(supabase login:*)"
     ],
     "deny": [],
     "ask": []
