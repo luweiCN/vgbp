@@ -23,7 +23,8 @@
       "Bash(chmod:*)",
       "Bash(kill:*)",
       "Bash(pkill:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(npx tailwindcss:*)"
     ],
     "deny": [],
     "ask": []

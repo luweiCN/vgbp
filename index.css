@@ -24,3 +24,16 @@
     background: #64748b;
   }
 }
+
+/* 强制移除所有input的默认背景 */
+input[type="text"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  background: transparent !important;
+}
+
+input[type="text"]:focus {
+  background-color: transparent !important;
+  background-image: none !important;
+  background: transparent !important;
+}
