@@ -657,7 +657,7 @@ export const getHeroAvatarUrl = (hero: Hero, ossBaseUrl: string): string => {
   if (hero.avatar) {
     return hero.avatar;
   }
-  return `${ossBaseUrl}/heroes/${hero.id}.jpg`;
+  return `${ossBaseUrl}/${hero.id}.jpg`;
 };
 
 // 模糊搜索函数 - 支持不连续字符匹配

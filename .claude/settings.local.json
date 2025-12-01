@@ -9,7 +9,21 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(npm run dev:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(npx tailwindcss --help:*)",
+      "Bash(npx postcss:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(curl:*)",
+      "Bash(timeout 10s npm run dev:*)",
+      "WebSearch",
+      "Bash(openspec:*)",
+      "Bash(git checkout:*)",
+      "Bash(chmod:*)",
+      "Bash(kill:*)",
+      "Bash(pkill:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []
