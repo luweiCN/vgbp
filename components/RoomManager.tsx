@@ -7,9 +7,10 @@ import { supabase } from '../services/supabase';
 
 interface RoomManagerProps {
   onEnterRoom?: (roomId: string) => void;
+  onBack?: () => void;
 }
 
-export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
+export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
@@ -295,12 +296,23 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded flex items-center justify-center font-bold text-lg shadow-lg flex-shrink-0 bg-gradient-to-br from-blue-600 to-indigo-600 shadow-blue-500/20">
+              {/* 返回首页按钮 */}
+              <button
+                onClick={onBack}
+                className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800/60 rounded-lg transition-colors flex-shrink-0"
+                title="返回首页"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </button>
+              
+              <div className="w-8 h-8 rounded flex items-center justify-center font-bold text-lg shadow-lg flex-shrink-0 bg-gradient-to-br from-green-600 to-emerald-600 shadow-green-500/20">
                 V
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
+                  <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400 flex-shrink-0">
                     Vainglory BP
                   </h1>
                 </div>
@@ -335,19 +347,18 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
                   setShowLoginForm(true);
                   return;
                 }
-                const now = new Date();
-                const dateStr = now.toLocaleDateString('zh-CN', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit'
-                }).replace(/\//g, '-');
-                const timeStr = now.toLocaleTimeString('zh-CN', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false
-                });
-                setCreateFormData({
-                  name: `${user?.username || ''}的房间 ${dateStr} ${timeStr}`,
+                 const now = new Date();
+                 const dateStr = now.toLocaleDateString('zh-CN', {
+                   month: '2-digit',
+                   day: '2-digit'
+                 }).replace(/\//g, '-');
+                 const timeStr = now.toLocaleTimeString('zh-CN', {
+                   hour: '2-digit',
+                   minute: '2-digit',
+                   hour12: false
+                 });
+                 setCreateFormData({
+                   name: `${user?.username || ''}的房间 ${dateStr} ${timeStr}`,
                   description: ''
                 });
                 setShowCreateForm(true);
@@ -371,37 +382,34 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
               </svg>
             </button>
 
-            {/* 用户按钮：未登录显示登录按钮，已登录显示用户头像按钮 */}
-            {user ? (
-              <div 
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-full cursor-pointer hover:bg-slate-800/80 transition-all duration-200"
-                onClick={() => setShowMobileMenu(!showMobileMenu)}
-              >
-                <div className="relative">
-                  <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                    {user.username.charAt(0).toUpperCase()}
+            {/* 用户按钮：统一显示头像按钮，登录状态不同 */}
+            <div 
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-full cursor-pointer hover:bg-slate-800/80 transition-all duration-200"
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+            >
+              <div className="relative">
+                {user ? (
+                  <>
+                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                      {user.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-slate-800"></div>
+                  </>
+                ) : (
+                  <div className="w-6 h-6 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
                   </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-slate-800"></div>
-                </div>
-                <span className="text-white text-sm font-medium">
-                  {user.username}
-                </span>
-                <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                )}
               </div>
-            ) : (
-              <button
-                onClick={() => setShowLoginForm(true)}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-0 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/20 flex items-center gap-1 sm:gap-2"
-              >
-                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-                <span className="hidden sm:inline">登录</span>
-                <span className="sm:hidden">登录</span>
-              </button>
-            )}
+              <span className="text-white text-sm font-medium">
+                {user ? user.username : '游客'}
+              </span>
+              <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </div>
           </div>
 
           {/* 移动端：右侧按钮组 */}
@@ -418,32 +426,30 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
             </button>
 
             {/* 移动端：用户按钮 */}
-            {user ? (
-              <div 
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-full cursor-pointer hover:bg-slate-800/80 transition-all duration-200"
-                onClick={() => setShowMobileMenu(!showMobileMenu)}
-              >
-                <div className="relative">
-                  <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                    {user.username.charAt(0).toUpperCase()}
+            <div 
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-full cursor-pointer hover:bg-slate-800/80 transition-all duration-200"
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+            >
+              <div className="relative">
+                {user ? (
+                  <>
+                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                      {user.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-slate-800"></div>
+                  </>
+                ) : (
+                  <div className="w-6 h-6 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
                   </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-slate-800"></div>
-                </div>
-                <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                )}
               </div>
-            ) : (
-              <button
-                onClick={() => setShowLoginForm(true)}
-                className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800/60 rounded-lg transition-all duration-200"
-                title="登录"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-              </button>
-            )}
+              <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -656,19 +662,33 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
               {/* 菜单内容 */}
               <div className="space-y-4">
                 {/* 用户信息显示 */}
-                {user && (
-                  <div className="p-4 bg-zinc-800/50 border border-zinc-700/50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                        {user.username.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-white font-medium truncate">{user.username}</div>
-                        <div className="text-zinc-400 text-sm truncate">{user.email}</div>
-                      </div>
-                    </div>
+                <div className="p-4 bg-zinc-800/50 border border-zinc-700/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    {user ? (
+                      <>
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                          {user.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-medium truncate">{user.username}</div>
+                          <div className="text-zinc-400 text-sm truncate">{user.email}</div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-medium truncate">游客模式</div>
+                          <div className="text-zinc-400 text-sm truncate">登录后可使用完整功能</div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                )}
+                </div>
 
                 {/* 用户操作区域 */}
                 <div className="space-y-3">
@@ -733,8 +753,8 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
                   )}
                 </div>
 
-                {/* 移动端房间操作区域 */}
-                <div className="sm:hidden space-y-3">
+                {/* 房间操作区域 - 所有用户都可见 */}
+                <div className="space-y-3">
                   <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">房间操作</h4>
                   
                   <button
@@ -762,19 +782,18 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
                         setShowMobileMenu(false);
                         return;
                       }
-                      const now = new Date();
-                      const dateStr = now.toLocaleDateString('zh-CN', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit'
-                      }).replace(/\//g, '-');
-                      const timeStr = now.toLocaleTimeString('zh-CN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                      });
-                      setCreateFormData({
-                        name: `${user?.username || ''}的房间 ${dateStr} ${timeStr}`,
+                       const now = new Date();
+                       const dateStr = now.toLocaleDateString('zh-CN', {
+                         month: '2-digit',
+                         day: '2-digit'
+                       }).replace(/\//g, '-');
+                       const timeStr = now.toLocaleTimeString('zh-CN', {
+                         hour: '2-digit',
+                         minute: '2-digit',
+                         hour12: false
+                       });
+                       setCreateFormData({
+                         name: `${user?.username || ''}的房间 ${dateStr} ${timeStr}`,
                         description: ''
                       });
                       setShowCreateForm(true);
@@ -789,7 +808,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
                     </div>
                     <div>
                       <div>创建房间</div>
-                      <div className="text-xs text-green-100">创建新的房间</div>
+                      <div className="text-xs text-green-100">{user ? '创建新的房间' : '需要登录后创建'}</div>
                     </div>
                   </button>
                 </div>
@@ -829,36 +848,94 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
                     }`}
                   >
                     <div className="p-4">
-                      <div className="flex items-center justify-between gap-4">
-                        {/* 左侧：房间信息 */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-base font-semibold text-white truncate group-hover:text-blue-400 transition-colors">
-                              {room.name}
-                            </h3>
-                            {room.description && (
-                              <span className="text-xs text-gray-500 bg-gray-700/50 px-2 py-1 rounded-full truncate max-w-xs">
-                                {room.description}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-4 text-xs text-gray-400">
-                            <span className="flex items-center gap-1">
-                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                              {room.owner?.display_name || room.owner?.email || '未知用户'}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              {formatDate(room.created_at)}
-                            </span>
-                          </div>
-                        </div>
+                         <div className="flex items-start justify-between gap-4">
+                         {/* 左侧：房间信息 */}
+                         <div className="flex-1 min-w-0">
+                           <div className="flex items-center gap-3 mb-2">
+                             <h3 className="text-base font-semibold text-white truncate group-hover:text-blue-400 transition-colors">
+                               {room.name}
+                             </h3>
+                             {room.description && (
+                               <span className="text-xs text-gray-500 bg-gray-700/50 px-2 py-1 rounded-full truncate max-w-xs">
+                                 {room.description}
+                               </span>
+                             )}
+                           </div>
+                           <div className="flex items-center gap-4 text-xs text-gray-400">
+                             <span className="flex items-center gap-1">
+                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                               </svg>
+                               {room.owner?.username || room.owner?.display_name || room.owner?.email || '未知用户'}
+                             </span>
+                             <div className="flex items-center gap-3">
+                               <span className="flex items-center gap-1" title="创建时间">
+                                 <svg className="w-3 h-3 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                 </svg>
+                                 <span className="text-blue-400">创建</span>
+                                 {formatDate(room.created_at)}
+                               </span>
+                               <span className="flex items-center gap-1" title="最后活动时间">
+                                 <svg className="w-3 h-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                 </svg>
+                                 <span className="text-green-400">更新</span>
+                                 {formatDate(room.bp_updated_at || room.updated_at)}
+                               </span>
+                             </div>
+                           </div>
 
-                        {/* 右侧：操作按钮 */}
+                           {/* 英雄选择信息 - 单独一行 */}
+                           {room.total_selected && room.total_selected > 0 && (
+                             <div className="flex items-center gap-3 mt-3">
+                               <div className="flex items-center gap-2 text-xs text-gray-400">
+                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                 </svg>
+                                 <span>已选择 {room.total_selected} 个英雄</span>
+                               </div>
+                               
+                               {room.selected_heroes && room.selected_heroes.length > 0 && (
+                                 <div className="flex items-center gap-1">
+                                   {room.selected_heroes.map((hero, index) => (
+                                     <div
+                                       key={hero.id}
+                                       className="w-6 h-6 rounded-full bg-gray-600 border border-gray-500 flex items-center justify-center overflow-hidden"
+                                       title={hero.name}
+                                     >
+                                       {hero.avatarUrl ? (
+                                         <img
+                                           src={hero.avatarUrl}
+                                           alt={hero.name}
+                                           className="w-full h-full object-cover"
+                                           onError={(e) => {
+                                             // 如果图片加载失败，显示首字母
+                                             const target = e.target as HTMLImageElement;
+                                             target.style.display = 'none';
+                                             target.parentElement!.textContent = hero.name.charAt(0);
+                                             target.parentElement!.className = 'w-6 h-6 rounded-full bg-blue-600 border border-blue-500 flex items-center justify-center text-white text-xs font-bold';
+                                           }}
+                                         />
+                                       ) : (
+                                         <div className="w-full h-full bg-blue-600 border border-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                                           {hero.name.charAt(0)}
+                                         </div>
+                                       )}
+                                     </div>
+                                   ))}
+                                   {room.total_selected > 5 && (
+                                     <div className="w-6 h-6 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center text-gray-300 text-xs font-medium">
+                                       +{room.total_selected - 5}
+                                     </div>
+                                   )}
+                                 </div>
+                               )}
+                             </div>
+                           )}
+                         </div>
+
+                         {/* 右侧：操作按钮 */}
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {/* 删除按钮 - 第一个 */}
                           {user && room.owner_id === user.id && (
@@ -927,20 +1004,76 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom }) => {
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-3 text-xs text-gray-500 mb-4">
-                    <span className="flex items-center gap-1">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="space-y-2 text-xs text-gray-500 mb-4">
+                    <div className="flex items-center gap-1">
+                      <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      {room.owner?.display_name || room.owner?.email || '未知用户'}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <span className="truncate">{room.owner?.username || room.owner?.display_name || room.owner?.email || '未知用户'}</span>
+                    </div>
+                    <div className="flex items-center gap-1" title="创建时间">
+                      <svg className="w-3 h-3 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      {formatDate(room.created_at)}
-                    </span>
+                      <span className="text-blue-400">创建</span>
+                      <span>{formatDate(room.created_at)}</span>
+                    </div>
+                    <div className="flex items-center gap-1" title="最后活动时间">
+                      <svg className="w-3 h-3 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      <span className="text-green-400">更新</span>
+                      <span>{formatDate(room.bp_updated_at || room.updated_at)}</span>
+                    </div>
                   </div>
+
+                  {/* 英雄选择信息 */}
+                  {room.total_selected && room.total_selected > 0 && (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        <span>已选择 {room.total_selected} 个英雄</span>
+                      </div>
+                      
+                          {room.selected_heroes && room.selected_heroes.length > 0 && (
+                            <div className="flex items-center gap-1">
+                              {room.selected_heroes.map((hero) => (
+                                <div
+                                  key={hero.id}
+                                  className="w-8 h-8 rounded-full bg-gray-600 border border-gray-500 flex items-center justify-center overflow-hidden"
+                                  title={hero.name}
+                                >
+                                  {hero.avatarUrl ? (
+                                    <img
+                                      src={hero.avatarUrl}
+                                      alt={hero.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        // 如果图片加载失败，显示首字母
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        target.parentElement!.textContent = hero.name.charAt(0);
+                                        target.parentElement!.className = 'w-8 h-8 rounded-full bg-blue-600 border border-blue-500 flex items-center justify-center text-white text-sm font-bold';
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-blue-600 border border-blue-500 flex items-center justify-center text-white text-sm font-bold">
+                                      {hero.name.charAt(0)}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                              {room.total_selected > 5 && (
+                                <div className="w-8 h-8 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center text-gray-300 text-sm font-medium">
+                                  +{room.total_selected - 5}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                    </div>
+                  )}
 
                   {/* 底部两个固定按钮 */}
                   <div className="grid grid-cols-2 gap-2">
