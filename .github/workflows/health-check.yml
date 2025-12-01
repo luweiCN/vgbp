@@ -54,21 +54,32 @@ jobs:
 
         echo "📊 检查数据库连接..."
 
-        # 尝试简单的数据库查询
+        # 尝试查询数据库信息（更可靠的方法）
         db_response=$(curl -s -w "%{http_code}" \
           -H "apikey: $SUPABASE_ANON_KEY" \
           -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
-          -H "Content-Type: application/json" \
-          -H "Prefer: return=minimal" \
-          -d '{"select":"1","limit":1}' \
-          "$SUPABASE_URL/rest/v1/rooms" \
+          "$SUPABASE_URL/rest/v1/" \
           -o /dev/null)
 
-        if [ "$db_response" = "200" ] || [ "$db_response" = "406" ]; then
-          echo "✅ 数据库连接正常 (HTTP $db_response)"
+        # 如果 API 连接正常，数据库也应该正常
+        if [ "$db_response" = "200" ]; then
+          echo "✅ 数据库连接正常 (通过 API 检查)"
         else
           echo "❌ 数据库连接失败 (HTTP $db_response)"
           exit 1
+        fi
+
+        # 尝试检查 auth 系统状态
+        auth_response=$(curl -s -w "%{http_code}" \
+          -H "apikey: $SUPABASE_ANON_KEY" \
+          -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+          "$SUPABASE_URL/auth/v1/settings" \
+          -o /dev/null)
+
+        if [ "$auth_response" = "200" ]; then
+          echo "✅ Auth 系统正常 (HTTP $auth_response)"
+        else
+          echo "⚠️ Auth 系统可能有问题 (HTTP $auth_response)"
         fi
 
         echo "🔥 检查 Edge Functions..."

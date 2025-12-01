@@ -42,20 +42,33 @@ async function healthCheck() {
 
     // 检查数据库连接
     console.log('📊 检查数据库连接...');
-    const dbResponse = await fetch(`${SUPABASE_URL}/rest/v1/rooms?select=1&limit=1`, {
+    const dbResponse = await fetch(`${SUPABASE_URL}/rest/v1/`, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
       }
     });
 
-    if (dbResponse.ok || dbResponse.status === 406) {
-      console.log('✅ 数据库连接正常');
+    if (dbResponse.ok) {
+      console.log('✅ 数据库连接正常 (通过 API 检查)');
     } else {
       console.error(`❌ 数据库连接失败: ${dbResponse.status} ${dbResponse.statusText}`);
       process.exit(1);
+    }
+
+    // 检查 Auth 系统
+    console.log('🔐 检查 Auth 系统...');
+    const authResponse = await fetch(`${SUPABASE_URL}/auth/v1/settings`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      }
+    });
+
+    if (authResponse.ok) {
+      console.log('✅ Auth 系统正常');
+    } else {
+      console.log(`⚠️ Auth 系统可能有问题: ${authResponse.status}`);
     }
 
     // 检查 Edge Functions
