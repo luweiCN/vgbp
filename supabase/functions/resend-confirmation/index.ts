@@ -9,6 +9,7 @@ const corsHeaders = {
 
 interface ResendRequest {
   email: string;
+  domain?: string;
 }
 
 interface ResendResponse {
@@ -56,7 +57,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email }: ResendRequest = await req.json();
+    const { email, domain }: ResendRequest = await req.json();
     const clientIP =
       req.headers.get("x-forwarded-for") ||
       req.headers.get("x-real-ip") ||
@@ -168,13 +169,13 @@ serve(async (req) => {
     try {
       // Step 1: Generate confirmation link using Supabase Admin API
       console.log("Generating confirmation link...");
-      const productionDomain = "https://vgbp.luwei.host";
+      const targetDomain = domain || "https://vgbp.luwei.host";
       const { data: linkData, error: linkError } =
         await supabase.auth.admin.generateLink({
           type: "signup",
           email: email.toLowerCase(),
           options: {
-            redirectTo: `${productionDomain}/auth/callback`,
+            redirectTo: `${targetDomain}/auth/callback`,
           },
         });
 

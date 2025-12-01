@@ -56,11 +56,19 @@ export const checkEmailStatus = async (email: string): Promise<CheckEmailRespons
  * 重发确认邮件
  * 调用 Edge Functions 重新发送验证邮件
  */
-export const resendConfirmationEmail = async (email: string): Promise<ResendConfirmationResponse> => {
+export const resendConfirmationEmail = async (email: string, domain?: string): Promise<ResendConfirmationResponse> => {
   try {
+    // 如果没有传入domain，使用当前页面的origin
+    const currentDomain = domain || (typeof window !== 'undefined' ? window.location.origin : '');
+
     console.log('🔍 尝试调用 Edge Function: resend-confirmation');
+    console.log('📧 Email:', email, '🌐 Domain:', currentDomain);
+
     const { data, error } = await supabase.functions.invoke('resend-confirmation', {
-      body: { email }
+      body: {
+        email,
+        domain: currentDomain
+      }
     });
 
     if (error) {
