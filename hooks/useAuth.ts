@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
+import { checkEmailStatus, resendConfirmationEmail } from '../services/userCheckService';
 
 export interface AuthUser {
   id: string;
@@ -174,8 +175,92 @@ export const useAuth = () => {
           return;
         }
 
-        // 过滤掉INITIAL_SESSION事件，避免重复处理
+        // 对于INITIAL_SESSION事件，只有当loading为true时才处理（页面刷新的情况）
         if (event === 'INITIAL_SESSION') {
+          if (authState.loading) {
+            console.log('🔄 处理INITIAL_SESSION事件 - 页面刷新场景');
+            if (session?.user) {
+              const basicUserInfo = {
+                id: session.user.id,
+                email: session.user.email || '',
+                username: session.user.email?.split('@')[0] || '',
+                display_name: undefined
+              };
+
+              setAuthState({
+                user: basicUserInfo,
+                session,
+                loading: false,
+                isOnlineMode: true
+              });
+            } else {
+              setAuthState({
+                user: null,
+                session,
+                loading: false,
+                isOnlineMode: false
+              });
+            }
+          }
+          return;
+        }
+
+        // 处理SIGNED_IN事件，确保登录后立即更新状态
+        if (event === 'SIGNED_IN') {
+          console.log('🎉 处理SIGNED_IN事件，立即设置用户状态');
+
+          // 立即设置基本用户信息，确保loading为false
+          const basicUserInfo = {
+            id: session.user.id,
+            email: session.user.email || '',
+            username: session.user.email?.split('@')[0] || '',
+            display_name: undefined
+          };
+
+          setAuthState({
+            user: basicUserInfo,
+            session,
+            loading: false,
+            isOnlineMode: true
+          });
+
+          // 异步获取详细profile信息，不阻塞主流程
+          supabase
+            .from('profiles')
+            .select('username, display_name')
+            .eq('id', session.user.id)
+            .maybeSingle()
+            .then(({ data: profile, error: profileError }) => {
+              if (profileError && profileError.code !== 'PGRST116') {
+                console.warn('获取用户profile失败:', profileError);
+                return;
+              }
+
+              // 更新用户信息为详细的profile数据
+              setAuthState(prev => ({
+                ...prev,
+                user: {
+                  ...basicUserInfo,
+                  username: profile?.username || basicUserInfo.username,
+                  display_name: profile?.display_name
+                }
+              }));
+            })
+            .catch(error => {
+              console.warn('异步获取profile失败:', error);
+            });
+          return;
+        }
+
+        // 处理SIGNED_OUT事件，确保退出登录后立即清空状态
+        if (event === 'SIGNED_OUT') {
+          console.log('👋 处理SIGNED_OUT事件，清空用户状态');
+          setAuthState({
+            user: null,
+            session,
+            loading: false,
+            isOnlineMode: false
+          });
           return;
         }
 
@@ -339,12 +424,58 @@ export const useAuth = () => {
     }
   };
 
+  // 检查邮箱注册状态
+  const checkEmailRegistrationStatus = async (email: string) => {
+    if (!isSupabaseConfigured()) {
+      return { status: 'not_registered' as const };
+    }
+
+    return await checkEmailStatus(email);
+  };
+
+  // 重新发送验证邮件
+  const resendVerificationEmail = async (email: string) => {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Online features not available - Supabase not configured');
+    }
+
+    const result = await resendConfirmationEmail(email);
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    return result;
+  };
+
+  // 重发确认邮件服务（与UI组件配合使用）
+  const resendConfirmationEmailService = resendVerificationEmail;
+
+  // 发送验证码（暂时返回默认值，后续可以实现）
+  const sendVerificationCode = async (email: string) => {
+    // 临时实现，返回成功状态
+    return {
+      success: true,
+      message: '验证码发送功能开发中...'
+    };
+  };
+
+  // 使用验证码注册（暂时返回默认值，后续可以实现）
+  const signUpWithVerificationCode = async (email: string, code: string, password: string) => {
+    // 临时实现，直接调用普通注册
+    return await signUp(email, password);
+  };
+
   return {
     ...authState,
     signIn,
     signUp,
     signOut,
     updateUsername,
+    checkEmailRegistrationStatus,
+    resendVerificationEmail,
+    resendConfirmationEmailService,
+    sendVerificationCode,
+    signUpWithVerificationCode,
     isConfigured: isSupabaseConfigured()
   };
 };
