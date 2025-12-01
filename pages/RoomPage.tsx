@@ -145,7 +145,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
     if (isLocalMode) {
       navigate('/');
     } else {
-      onBack();
+      // 在线房间返回到房间列表
+      navigate('/rooms');
     }
   };
 
