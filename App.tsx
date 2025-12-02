@@ -23,9 +23,17 @@ const RoomPageWrapper: React.FC = () => {
 };
 
 const AppWithRouter: React.FC = () => {
-  // GitHub Pages 部署到 /vgbp/ 子路径时需要 basename
-  // Vercel 部署使用根路径，不需要 basename
-  const basename = import.meta.env.VERCEL === '1' ? '/' : '/vgbp/';
+  // 更可靠的环境检测方法
+  // 检测当前 URL 来判断部署环境
+  const hostname = window.location.hostname;
+  const isVercel = hostname.includes('vercel.app') ||
+                  hostname === 'vgbp.luwei.host' ||
+                  hostname.endsWith('.luwei.host');
+
+  const basename = isVercel ? '/' : '/vgbp/';
+
+  // 调试信息（开发环境可以取消注释）
+  console.log('🔍 环境检测:', { hostname, isVercel, basename });
 
   return (
     <Router basename={basename}>
