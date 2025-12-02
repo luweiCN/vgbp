@@ -56,6 +56,8 @@ jobs:
         VITE_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
         VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
         GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+        # GitHub Pages 子路径配置
+        VERCEL=false
         EOF
 
         # 验证环境变量设置（不显示完整值以保证安全）
