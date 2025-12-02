@@ -4,14 +4,14 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
-    // 更可靠的环境检测
-    const isVercel = process.env.VERCEL === '1' ||
-                    process.env.VERCEL_ENV === 'production' ||
-                    process.env.VERCEL_ENV === 'preview';
+    // 检测是否是 GitHub Pages 构建
+    // GitHub Actions 会设置 GITHUB_ACTIONS=true，GitHub Pages 需要特殊处理
+    const isGitHubPages = process.env.GITHUB_ACTIONS === '1';
 
     return {
       // 双平台部署配置
-      base: isVercel ? '/' : '/vgbp/', // Vercel 使用根路径，GitHub Pages 使用子路径
+      // GitHub Pages 使用子路径，其他平台（Vercel）使用根路径
+      base: isGitHubPages ? '/vgbp/' : '/',
       build: {
         assetsDir: 'assets',
         rollupOptions: {
@@ -52,11 +52,11 @@ export default defineConfig(({ mode }) => {
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
         'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-        'process.env.VERCEL': JSON.stringify(isVercel),
+        'process.env.GITHUB_ACTIONS': JSON.stringify(isGitHubPages),
         // 关键：添加 import.meta.env 支持，确保与代码使用方式一致
         'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
         'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-        'import.meta.env.VERCEL': JSON.stringify(isVercel)
+        'import.meta.env.GITHUB_ACTIONS': JSON.stringify(isGitHubPages)
       },
       resolve: {
         alias: {
