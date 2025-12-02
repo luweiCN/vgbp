@@ -277,13 +277,12 @@ export const useRooms = () => {
               const heroIds = [...new Set(bpData.map(bp => bp.hero_id))].slice(0, 5);
               
               if (heroIds.length > 0) {
-                const OSS_BASE_URL = "https://www.luwei.space:4014/default/vainglory/heroes";
                 selectedHeroes = heroIds.map(heroId => {
                   const hero = HEROES_DATA.find(h => h.id === heroId);
                   return {
                     id: heroId,
                     name: hero ? hero.cnName || hero.name : heroId,
-                    avatarUrl: hero ? getHeroAvatarUrl(hero, OSS_BASE_URL) : null
+                    avatarUrl: hero ? getHeroAvatarUrl(hero) : null // 现在使用 Vercel Blob
                   };
                 });
               }
