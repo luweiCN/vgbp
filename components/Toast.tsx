@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { HEROES } from '../constants';
+import { getHeroAvatarUrl } from '../data/heroes';
 
 interface ToastProps {
   message: string;
@@ -103,7 +105,7 @@ const Toast: React.FC<ToastProps> = ({
               {addedHeroIds.slice(0, 5).map((heroId, index) => (
                 <img 
                   key={heroId}
-                  src={`https://www.luwei.space:4014/default/vainglory/heroes/${heroId}.jpg`}
+                  src={getHeroAvatarUrl(HEROES.find(h => h.id === heroId) || { id: heroId })}
                   alt="英雄头像"
                   className="w-4 h-4 rounded border border-green-500 relative z-10"
                   style={{ marginLeft: index === 0 ? '0' : '-2px' }}
@@ -132,7 +134,7 @@ const Toast: React.FC<ToastProps> = ({
               {removedHeroIds.slice(0, 5).map((heroId, index) => (
                 <img 
                   key={heroId}
-                  src={`https://www.luwei.space:4014/default/vainglory/heroes/${heroId}.jpg`}
+                  src={getHeroAvatarUrl(HEROES.find(h => h.id === heroId) || { id: heroId })}
                   alt="英雄头像"
                   className="w-4 h-4 rounded border border-red-500 relative z-10 opacity-60"
                   style={{ marginLeft: index === 0 ? '0' : '-2px' }}
