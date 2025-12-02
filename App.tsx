@@ -23,17 +23,12 @@ const RoomPageWrapper: React.FC = () => {
 };
 
 const AppWithRouter: React.FC = () => {
-  // 更可靠的环境检测方法
-  // 检测当前 URL 来判断部署环境
-  const hostname = window.location.hostname;
-  const isVercel = hostname.includes('vercel.app') ||
-                  hostname === 'vgbp.luwei.host' ||
-                  hostname.endsWith('.luwei.host');
+  // 检测是否是 GitHub Pages 构建
+  // GitHub Pages 部署需要特殊的路径前缀 /vgbp/
+  const isGitHubPages = import.meta.env.GITHUB_ACTIONS === 'true';
 
-  const basename = isVercel ? '/' : '/vgbp/';
-
-  // 调试信息（开发环境可以取消注释）
-  console.log('🔍 环境检测:', { hostname, isVercel, basename });
+  // GitHub Pages 使用子路径，其他平台（Vercel）使用根路径
+  const basename = isGitHubPages ? '/vgbp/' : '/';
 
   return (
     <Router basename={basename}>
