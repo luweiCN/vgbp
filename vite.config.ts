@@ -10,13 +10,6 @@ export default defineConfig(({ mode }) => {
     const npmScript = process.env.npm_config_script || process.env.npm_lifecycle_event;
     const isGitHubPages = npmScript === 'build:github-pages';
 
-    // 构建时调试信息
-    console.log('🔧 Vite 构建调试信息:');
-    console.log('  mode:', mode);
-    console.log('  npmScript:', npmScript);
-    console.log('  isGitHubPages:', isGitHubPages);
-    console.log('  base path:', isGitHubPages ? '/vgbp/' : '/');
-
     return {
       // 双平台部署配置
       // GitHub Pages 使用子路径，Vercel 使用根路径
