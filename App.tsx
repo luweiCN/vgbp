@@ -23,8 +23,12 @@ const RoomPageWrapper: React.FC = () => {
 };
 
 const AppWithRouter: React.FC = () => {
+  // GitHub Pages 部署到 /vgbp/ 子路径时需要 basename
+  // Vercel 部署使用根路径，不需要 basename
+  const basename = import.meta.env.VERCEL === '1' ? '/' : '/vgbp/';
+
   return (
-    <Router>
+    <Router basename={basename}>
       <AppContent />
     </Router>
   );
