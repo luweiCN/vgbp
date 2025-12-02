@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp dist/index.html dist/404.html && node scripts/fix-404-assets.cjs",
+    "build": "vite build",
     "build:vercel": "vite build",
+    "build:github-pages": "vite build && cp dist/index.html dist/404.html && node scripts/fix-404-assets.cjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -4,13 +4,15 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
-    // 检测是否是 GitHub Pages 构建
-    // GitHub Actions 会设置 GITHUB_ACTIONS=true，GitHub Pages 需要特殊处理
-    const isGitHubPages = process.env.GITHUB_ACTIONS === '1';
+
+    // 通过 NPM_SCRIPT 环境变量检测构建类型
+    // build:github-pages 会设置 NPM_SCRIPT=github-pages
+    const npmScript = process.env.npm_config_script || process.env.npm_lifecycle_event;
+    const isGitHubPages = npmScript === 'build:github-pages';
 
     return {
       // 双平台部署配置
-      // GitHub Pages 使用子路径，其他平台（Vercel）使用根路径
+      // GitHub Pages 使用子路径，Vercel 使用根路径
       base: isGitHubPages ? '/vgbp/' : '/',
       build: {
         assetsDir: 'assets',
@@ -52,11 +54,11 @@ export default defineConfig(({ mode }) => {
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
         'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-        'process.env.GITHUB_ACTIONS': JSON.stringify(isGitHubPages),
+        'process.env.IS_GITHUB_PAGES': JSON.stringify(isGitHubPages),
         // 关键：添加 import.meta.env 支持，确保与代码使用方式一致
         'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
         'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-        'import.meta.env.GITHUB_ACTIONS': JSON.stringify(isGitHubPages)
+        'import.meta.env.IS_GITHUB_PAGES': JSON.stringify(isGitHubPages)
       },
       resolve: {
         alias: {

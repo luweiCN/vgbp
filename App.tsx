@@ -25,7 +25,7 @@ const RoomPageWrapper: React.FC = () => {
 const AppWithRouter: React.FC = () => {
   // 检测是否是 GitHub Pages 构建
   // GitHub Pages 部署需要特殊的路径前缀 /vgbp/
-  const isGitHubPages = import.meta.env.GITHUB_ACTIONS === 'true';
+  const isGitHubPages = import.meta.env.IS_GITHUB_PAGES === 'true';
 
   // GitHub Pages 使用子路径，其他平台（Vercel）使用根路径
   const basename = isGitHubPages ? '/vgbp/' : '/';
