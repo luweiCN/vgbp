@@ -30,6 +30,14 @@ const AppWithRouter: React.FC = () => {
   // GitHub Pages 使用子路径，其他平台（Vercel）使用根路径
   const basename = isGitHubPages ? '/vgbp/' : '/';
 
+  // 运行时调试信息
+  console.log('🚀 React Router 调试信息:');
+  console.log('  hostname:', window.location.hostname);
+  console.log('  pathname:', window.location.pathname);
+  console.log('  IS_GITHUB_PAGES:', import.meta.env.IS_GITHUB_PAGES);
+  console.log('  isGitHubPages:', isGitHubPages);
+  console.log('  basename:', basename);
+
   return (
     <Router basename={basename}>
       <AppContent />
