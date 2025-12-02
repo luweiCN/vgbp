@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(read:*)",
+      "Bash(cat:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run preview:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(npx tailwindcss --help:*)",
+      "Bash(npx postcss:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(curl:*)",
+      "Bash(timeout 10s npm run dev:*)",
+      "WebSearch",
+      "Bash(openspec:*)",
+      "Bash(git checkout:*)",
+      "Bash(chmod:*)",
+      "Bash(kill:*)",
+      "Bash(pkill:*)",
+      "Bash(xargs:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm info:*)",
+      "Bash(supabase status:*)",
+      "Bash(supabase login:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

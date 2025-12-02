@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #0f172a; /* Slate 900 */
+  color: #e2e8f0; /* Slate 200 */
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* 强制移除所有input的默认背景 */
+input[type="text"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  background: transparent !important;
+}
+
+input[type="text"]:focus {
+  background-color: transparent !important;
+  background-image: none !important;
+  background: transparent !important;
+}
