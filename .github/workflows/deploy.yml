@@ -67,8 +67,8 @@ jobs:
         echo "  - GEMINI_API_KEY: $(if [[ -n "${{ secrets.GEMINI_API_KEY }}" ]]; then echo "✅ Set"; else echo "❌ Not set"; fi)"
 
         # 构建项目
-        echo "🏗️ Starting build process..."
-        npm run build
+        echo "🏗️ Starting GitHub Pages build process..."
+        npm run build:github-pages
 
     - name: Setup Pages
       uses: actions/configure-pages@v4
