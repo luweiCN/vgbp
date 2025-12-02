@@ -6,18 +6,18 @@ interface HeroCardProps {
   hero: Hero;
   isSelected: boolean;
   onToggle: (id: string) => void;
-  ossBaseUrl?: string;
+  ossBaseUrl?: string; // 保留用于向后兼容，但现在可选
   inModal?: boolean;
   disabled?: boolean;
 }
 
-const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBaseUrl = 'https://www.luwei.space:4014/default/vainglory/heroes', inModal = false, disabled = false }) => {
+const HeroCard: React.FC<HeroCardProps> = ({ hero, isSelected, onToggle, ossBaseUrl, inModal = false, disabled = false }) => {
   const handleClick = () => {
     // 在弹窗内或禁用状态下不允许交互
     if (inModal || disabled) return;
     onToggle(hero.id);
   };
-  // 使用 OSS 存储的英雄头像
+  // 使用 Vercel Blob 存储的英雄头像
   const imageUrl = getHeroAvatarUrl(hero, ossBaseUrl);
 
   // 分离称号和名字

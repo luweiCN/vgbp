@@ -22,8 +22,7 @@ const STORAGE_KEY = 'vainglory-draft-selected-heroes';
 const CLASSIFICATION_MODE_KEY = 'vainglory-draft-classification-mode';
 const HIDE_SELECTED_KEY = 'vainglory-draft-hide-selected';
 
-// OSS 配置
-const OSS_BASE_URL = "https://www.luwei.space:4014/default/vainglory/heroes";
+// 现在使用 Vercel Blob，不再需要 OSS 配置
 
 interface RoomPageProps {
   roomId: string;
@@ -347,7 +346,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
               hero={hero}
               isSelected={selectedHeroes.has(hero.id)}
               onToggle={isOnlineMode && !canEdit ? undefined : handleToggleHero}
-              ossBaseUrl={OSS_BASE_URL}
+              // 不再需要 ossBaseUrl，默认使用 Vercel Blob
               disabled={isOnlineMode && !canEdit}
             />
           ))}
@@ -839,7 +838,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
           selectedHeroesGrouped={selectedHeroesGrouped}
           onClose={() => setShowSelectedHeroes(false)}
           onToggleHero={handleToggleHero}
-          ossBaseUrl={OSS_BASE_URL}
+          // 不再需要 ossBaseUrl，默认使用 Vercel Blob
           onReset={handleResetClick}
           canEdit={canEdit}
         />

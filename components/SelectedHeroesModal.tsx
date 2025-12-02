@@ -1,6 +1,7 @@
 import React from 'react';
 import { HeroRole } from '../constants';
 import { Hero } from '../types';
+import { getHeroAvatarUrl } from '../data/heroes';
 
 interface SelectedHeroesModalProps {
   selectedHeroes: Set<string>;
@@ -11,7 +12,7 @@ interface SelectedHeroesModalProps {
   };
   onClose: () => void;
   onToggleHero: (heroId: string) => void;
-  ossBaseUrl: string;
+  ossBaseUrl?: string; // 现在可选，默认使用 Vercel Blob
   onReset: () => void;
   canEdit: boolean;
 }
@@ -67,7 +68,7 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                       <div key={hero.id} className="text-center">
                         <div className="relative group">
                           <img
-                            src={`${ossBaseUrl}/${hero.id}.jpg`}
+                            src={getHeroAvatarUrl(hero, ossBaseUrl)}
                             alt={hero.cnName}
                             className="w-full h-auto rounded-lg border-2 border-zinc-600 group-hover:border-blue-500 transition-colors cursor-pointer sm:cursor-default"
                              onClick={() => {
@@ -113,7 +114,7 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                       <div key={hero.id} className="text-center">
                         <div className="relative group">
                           <img
-                            src={`${ossBaseUrl}/${hero.id}.jpg`}
+                            src={getHeroAvatarUrl(hero, ossBaseUrl)}
                             alt={hero.cnName}
                             className="w-full h-auto rounded-lg border-2 border-zinc-600 group-hover:border-blue-500 transition-colors cursor-pointer sm:cursor-default"
                             onClick={() => {
@@ -159,7 +160,7 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                       <div key={hero.id} className="text-center">
                         <div className="relative group">
                           <img
-                            src={`${ossBaseUrl}/${hero.id}.jpg`}
+                            src={getHeroAvatarUrl(hero, ossBaseUrl)}
                             alt={hero.cnName}
                             className="w-full h-auto rounded-lg border-2 border-zinc-600 group-hover:border-blue-500 transition-colors cursor-pointer sm:cursor-default"
                              onClick={() => {

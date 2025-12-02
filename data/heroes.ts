@@ -652,12 +652,23 @@ export const getHeroesByRole = (
   }
 };
 
+// Vercel Blob 配置
+const VERCEL_BLOB_BASE_URL = 'https://blob.vercel-storage.com/heroes';
+
 // 获取英雄头像URL的函数
-export const getHeroAvatarUrl = (hero: Hero, ossBaseUrl: string): string => {
+export const getHeroAvatarUrl = (hero: Hero, ossBaseUrl?: string): string => {
+  // 优先使用英雄自定义头像
   if (hero.avatar) {
     return hero.avatar;
   }
-  return `${ossBaseUrl}/${hero.id}.jpg`;
+
+  // 如果提供了自定义 OSS URL（向后兼容）
+  if (ossBaseUrl) {
+    return `${ossBaseUrl}/${hero.id}.jpg`;
+  }
+
+  // 默认使用 Vercel Blob
+  return `${VERCEL_BLOB_BASE_URL}/${hero.id}.jpg`;
 };
 
 // 模糊搜索函数 - 支持不连续字符匹配
