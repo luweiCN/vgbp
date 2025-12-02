@@ -7,8 +7,8 @@ export default defineConfig(({ mode }) => {
     const isVercel = process.env.VERCEL === '1';
 
     return {
-      // GitHub Pages 部署配置
-      base: mode === 'production' ? '/' : '/', // 自定义域名使用根路径
+      // 双平台部署配置
+      base: isVercel ? '/' : '/vgbp/', // Vercel 使用根路径，GitHub Pages 使用子路径
       build: {
         assetsDir: 'assets',
         rollupOptions: {
