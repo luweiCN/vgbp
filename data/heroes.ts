@@ -652,8 +652,9 @@ export const getHeroesByRole = (
   }
 };
 
-// Vercel Blob 配置
-const VERCEL_BLOB_BASE_URL = 'https://blob.vercel-storage.com/heroes';
+// 使用自定义域名访问图片
+// 通过 Vercel rewrite 代理到 Vercel Blob
+const VERCEL_BLOB_BASE_URL = 'https://vgbp.luwei.host/heroes';
 
 // 获取英雄头像URL的函数
 export const getHeroAvatarUrl = (hero: Hero, ossBaseUrl?: string): string => {
