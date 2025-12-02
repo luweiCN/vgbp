@@ -8,7 +8,6 @@
     "build": "vite build",
     "build:vercel": "vite build",
     "build:github-pages": "vite build && cp dist/index.html dist/404.html && node scripts/fix-404-assets.cjs",
-    "build:debug": "vite build --mode debug",
     "preview": "vite preview"
   },
   "dependencies": {
