@@ -4,7 +4,10 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
-    const isVercel = process.env.VERCEL === '1';
+    // 更可靠的环境检测
+    const isVercel = process.env.VERCEL === '1' ||
+                    process.env.VERCEL_ENV === 'production' ||
+                    process.env.VERCEL_ENV === 'preview';
 
     return {
       // 双平台部署配置
