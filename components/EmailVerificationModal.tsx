@@ -1,49 +1,60 @@
 import React from 'react';
 import { useCountdown } from '../hooks/useCountdown';
 
-// 邮箱验证弹窗的类型
-export type EmailModalType = 'registration-success' | 'unverified-email' | 'verified-email';
+// 邮箱验证弹窗的变体类型
+export type EmailVerificationVariant = 'registration-success' | 'login-check' | 'signup-check';
 
 interface BaseEmailModalProps {
   isOpen: boolean;
   onClose: () => void;
   email: string;
-}
-
-interface RegistrationSuccessModalProps extends BaseEmailModalProps {
-  type: 'registration-success';
-  onResendEmail: () => Promise<void>;
-  resendLoading?: boolean;
-}
-
-interface UnverifiedEmailModalProps extends BaseEmailModalProps {
-  type: 'unverified-email';
-  onResendEmail: () => void;
+  onResendEmail: () => Promise<void> | void;
   resendLoading?: boolean;
   initialCooldownSeconds?: number;
-  onSwitchToLogin?: () => void;
-  confirmationLink?: string;
 }
 
-interface VerifiedEmailModalProps extends BaseEmailModalProps {
-  type: 'verified-email';
-  onSwitchToLogin: () => void;
+interface RegistrationSuccessProps extends BaseEmailModalProps {
+  variant: 'registration-success';
+}
+
+interface LoginCheckProps extends BaseEmailModalProps {
+  variant: 'login-check';
+  onSwitchToLogin?: () => void;
+}
+
+interface SignupCheckProps extends BaseEmailModalProps {
+  variant: 'signup-check';
+  onSwitchToLogin?: () => void;
 }
 
 type EmailVerificationModalProps =
-  | RegistrationSuccessModalProps
-  | UnverifiedEmailModalProps
-  | VerifiedEmailModalProps;
+  | RegistrationSuccessProps
+  | LoginCheckProps
+  | SignupCheckProps;
 
 /**
  * 统一的邮箱验证弹窗组件
- * 支持三种场景：注册成功、未验证邮箱、已验证邮箱
+ * 支持三种场景：注册成功、登录检查、注册检查
  */
 export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = (props) => {
-  const { isOpen, onClose, email } = props;
+  const { isOpen, onClose, email, onResendEmail, resendLoading = false, initialCooldownSeconds = 60 } = props;
+  const countdown = useCountdown({ initialTime: initialCooldownSeconds });
+
+  const handleResendEmail = async () => {
+    if (countdown.isActive || resendLoading) return;
+
+    try {
+      await onResendEmail();
+      countdown.start();
+    } catch (error) {
+      // Error handling is done in parent
+    }
+  };
+
+  if (!isOpen) return null;
 
   // 注册成功后的邮箱验证弹窗
-  if (props.type === 'registration-success') {
+  if (props.variant === 'registration-success') {
     const countdown = useCountdown({ initialTime: 60 });
 
     const handleResendEmail = async () => {
@@ -194,7 +205,7 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = (pr
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
                 <div>
-                  <p className="text-yellow-200 font-medium">邮箱已注册但未验证</p>
+                  <p className="text-yellow-200 font-medium">该邮箱已经注册，但是还未进行验证</p>
                   <p className="text-yellow-300 text-sm mt-1">
                     我们已经向 <span className="font-mono bg-yellow-900/30 px-1 rounded">{email}</span> 发送了验证邮件，请检查邮箱并点击验证链接。
                   </p>
