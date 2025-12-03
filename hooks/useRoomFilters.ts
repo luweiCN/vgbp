@@ -68,14 +68,13 @@ export const useRoomFilters = (): UseRoomFiltersReturn => {
 
   // 从URL初始化筛选状态
   const [filters, setFiltersState] = useState<RoomFilterParams>(() => {
-    if (typeof window !== 'undefined') {
-      return parseURLParams(searchParams);
-    }
-    return DEFAULT_FILTER_PARAMS as RoomFilterParams;
+    // 直接从URL参数解析，不要检查window
+    const parsed = parseURLParams(searchParams);
+    return { ...DEFAULT_FILTER_PARAMS, ...parsed };
   });
 
-  // 防抖搜索（300ms延迟）
-  const debouncedSearch = useDebouncedValue(filters.search || '', 300);
+  // 防抖搜索（200ms延迟）
+  const debouncedSearch = useDebouncedValue(filters.search || '', 200);
 
   // 统计活跃筛选条件数量
   const activeFiltersCount = useMemo(() =>
@@ -126,7 +125,8 @@ export const useRoomFilters = (): UseRoomFiltersReturn => {
   // 监听URL参数变化（浏览器前进后退）
   useEffect(() => {
     const currentFilters = parseURLParams(searchParams);
-    setFiltersState(currentFilters);
+    const mergedFilters = { ...DEFAULT_FILTER_PARAMS, ...currentFilters };
+    setFiltersState(mergedFilters);
   }, [searchParams]);
 
   // 自动同步到URL（当筛选条件变化时）

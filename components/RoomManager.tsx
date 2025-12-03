@@ -81,6 +81,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     deleteRoom,
     fetchAllRooms,
     fetchFilteredRooms,
+    fetchTotalRoomCount,
     refetch
   } = useRooms();
 
@@ -99,45 +100,97 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
   const [filteredLoading, setFilteredLoading] = useState(false);
   const [filteredTotal, setFilteredTotal] = useState(0);
 
+  // 加载筛选数据的函数
+  const loadFilteredData = useCallback(async () => {
+    if (!user) {
+      return;
+    }
+
+    setFilteredLoading(true);
+    try {
+      const ownerId = filters.owner === 'me' ? user.id : undefined;
+
+      const result = await fetchFilteredRooms({
+        ownerId,
+        page: filters.page,
+        search: debouncedSearch,
+        sortBy: filters.sort,
+        sortOrder: filters.order
+      });
+
+      setFilteredRooms(result.data || []);
+      setFilteredTotal(result.total || 0);
+    } catch (error: any) {
+      setFilteredRooms([]);
+      setFilteredTotal(0);
+    } finally {
+      setFilteredLoading(false);
+    }
+  }, [user, filters, debouncedSearch, fetchFilteredRooms]);
+
+  // 加载筛选公开数据的函数（用户未登录时）
+  const loadFilteredPublicData = useCallback(async () => {
+    setFilteredLoading(true);
+    try {
+      const result = await fetchFilteredRooms({
+        ownerId: undefined,
+        page: filters.page,
+        search: debouncedSearch,
+        sortBy: filters.sort,
+        sortOrder: filters.order
+      });
+
+      setFilteredRooms(result.data || []);
+      setFilteredTotal(result.total || 0);
+    } catch (error: any) {
+      setFilteredRooms([]);
+      setFilteredTotal(0);
+    } finally {
+      setFilteredLoading(false);
+    }
+  }, [filters, debouncedSearch, fetchFilteredRooms]);
+
   // 当前显示的数据和状态
   const hasAnyFilter = filters.owner !== 'all' || debouncedSearch || filters.sort;
   const displayRooms = filters.owner === 'me' ? rooms : (hasAnyFilter ? filteredRooms : allRooms);
   const displayLoading = filters.owner === 'me' ? roomsLoading : (hasAnyFilter ? filteredLoading : allRoomsLoading);
-  const displayTotal = filters.owner === 'me' ? rooms.length : (hasAnyFilter ? filteredTotal : totalRooms);
+  const displayTotal = hasAnyFilter ? filteredTotal : totalRooms;
 
-  // 当筛选条件变化时重新获取数据
+  // 处理URL参数变化的数据加载（包含筛选条件）
   useEffect(() => {
-    const loadFilteredRooms = async () => {
-      // 只要有筛选条件（所有者、搜索、排序、分页变化），就重新获取数据
-      if (filters.owner !== 'all' || debouncedSearch || filters.sort || filters.page) {
-        setFilteredLoading(true);
-        try {
-          const ownerId = filters.owner === 'me' && user ? user.id : undefined;
-          const result = await fetchFilteredRooms({
-            ownerId,
-            page: filters.page,
-            search: debouncedSearch,
-            sortBy: filters.sort,
-            sortOrder: filters.order
-          });
-          setFilteredRooms(result.data || []);
-          setFilteredTotal(result.total || 0);
-        } catch (error: any) {
-          console.error('加载筛选房间失败:', error);
-          setFilteredRooms([]);
-          setFilteredTotal(0);
-        } finally {
-          setFilteredLoading(false);
-        }
-      } else {
-        // 如果没有筛选条件，使用原有的allRooms
-        setFilteredRooms([]);
-        setFilteredTotal(0);
-      }
-    };
+    if (!isConfigured) {
+      return;
+    }
 
-    loadFilteredRooms();
-  }, [debouncedSearch, filters.owner, filters.sort, filters.order, filters.page, user, fetchFilteredRooms]);
+    // 如果有筛选条件且用户已登录，使用筛选加载
+    if (hasAnyFilter && user) {
+      loadFilteredData();
+    } else if (hasAnyFilter && !user) {
+      // 如果有筛选条件但用户未登录，只加载公开房间数据
+      loadFilteredPublicData();
+    } else {
+      loadDefaultData();
+    }
+  }, [debouncedSearch, filters.owner, filters.sort, filters.order, filters.page, isConfigured, hasAnyFilter, user, loadFilteredData, loadDefaultData]);
+
+  // 处理用户认证状态变化
+  useEffect(() => {
+    if (!isConfigured) {
+      return;
+    }
+
+    if (user) {
+      // 用户登录后，根据当前筛选条件决定加载方式
+      if (hasAnyFilter) {
+        loadFilteredData();
+      } else {
+        loadDefaultData();
+      }
+    } else {
+      // 用户未登录时，始终加载公开房间
+      fetchAllRooms();
+    }
+  }, [user, isConfigured, hasAnyFilter, fetchAllRooms, loadFilteredData, loadDefaultData]);
 
   const handleCreateRoom = () => {
     // 检查用户是否登录
@@ -163,7 +216,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     }
 
     // 刷新房间列表
-    fetchAllRooms(currentPage); // 刷新房间列表
+    handleRefresh(); // 刷新房间列表
   };
 
   // 编辑房间相关函数
@@ -230,6 +283,32 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
    
 
+  // 统一的刷新函数
+  const handleRefresh = async () => {
+    setFilteredLoading(true);
+    try {
+      // 1. 获取数据库中所有房间的总数（这会更新 totalRooms 状态）
+      await fetchTotalRoomCount();
+
+      // 2. 如果有筛选条件，刷新筛选结果
+      if (hasAnyFilter) {
+        const ownerId = filters.owner === 'me' && user ? user.id : undefined;
+        await fetchFilteredRooms({
+          ownerId,
+          page: filters.page,
+          search: debouncedSearch,
+          sortBy: filters.sort,
+          sortOrder: filters.order
+        });
+      } else {
+        // 没有筛选条件，刷新所有房间
+        await fetchAllRooms();
+      }
+    } finally {
+      setFilteredLoading(false);
+    }
+  };
+
   const handleDeleteRoom = async (roomId: string) => {
     setShowDeleteConfirm(roomId);
   };
@@ -240,6 +319,8 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     try {
       await deleteRoom(roomId);
       showSuccess('房间删除成功！');
+      // 删除后刷新
+      await handleRefresh();
     } catch (err: any) {
       const errorMessage = err.message || '删除房间失败，请稍后重试';
       setError(errorMessage);
@@ -855,10 +936,10 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
               ) : (
                 <>
                   <span className="hidden sm:inline">
-                    {filters.owner === 'me' ? '只看我的' : hasAnyFilter ? '当前筛选条件' : '所有'}共 {displayTotal} 个房间，总共 {totalRooms} 个房间
+                    当前筛选条件下共 {displayTotal} 个房间，总共 {totalRooms} 个房间
                   </span>
                   <span className="sm:hidden">
-                    {displayTotal}/{totalRooms}
+                    共{displayTotal}/{totalRooms}个房间
                   </span>
                 </>
               )}
@@ -880,22 +961,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
               {/* 刷新按钮 - 紧贴搜索框 */}
               <RefreshButton
-                onRefresh={async () => {
-                  // 刷新始终基于当前筛选条件
-                  setFilteredLoading(true);
-                  try {
-                    const ownerId = filters.owner === 'me' && user ? user.id : undefined;
-                    await fetchFilteredRooms({
-                      ownerId,
-                      page: filters.page,
-                      search: debouncedSearch,
-                      sortBy: filters.sort,
-                      sortOrder: filters.order
-                    });
-                  } finally {
-                    setFilteredLoading(false);
-                  }
-                }}
+                onRefresh={handleRefresh}
                 loading={filteredLoading}
                 className="flex-shrink-0"
               />

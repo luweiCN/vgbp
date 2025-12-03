@@ -113,8 +113,20 @@ export const useRooms = () => {
         countQuery = countQuery.or(`name.ilike.%${search.trim()}%,description.ilike.%${search.trim()}%`);
       }
 
+      // 获取当前查询条件下的数量
       const { count, error: countError } = await countQuery;
       if (countError) throw countError;
+
+      // 获取数据库中所有房间的总数（用于更新 totalRooms）
+      let totalCount = 0;
+      try {
+        const { count: dbTotalCount } = await supabase
+          .from('rooms')
+          .select('*', { count: 'exact', head: true });
+        totalCount = dbTotalCount || 0;
+      } catch (err) {
+        console.error('获取数据库总数失败:', err);
+      }
 
       // 排序逻辑
       let sortField: string;
@@ -142,7 +154,8 @@ export const useRooms = () => {
         setAllRooms(roomsData || []);
       }
 
-      setTotalRooms(count || 0);
+      // 始终更新 totalRooms 为数据库中的总数
+      setTotalRooms(totalCount);
       setCurrentPage(page);
 
       // 返回数据和总数
@@ -172,6 +185,28 @@ export const useRooms = () => {
     if (!user) return;
     return fetchRooms({ ownerId: user.id, page });
   }, [fetchRooms, user]);
+
+  // 获取数据库中所有房间的总数（不带任何筛选条件）
+  const fetchTotalRoomCount = useCallback(async () => {
+    if (!isConfigured) {
+      return 0;
+    }
+
+    try {
+      const { count, error } = await supabase
+        .from('rooms')
+        .select('*', { count: 'exact', head: true });
+
+      if (error) throw error;
+      const totalCount = count || 0;
+      // 更新 totalRooms 状态
+      setTotalRooms(totalCount);
+      return totalCount;
+    } catch (err: any) {
+      console.error('获取房间总数失败:', err);
+      return 0;
+    }
+  }, [isConfigured]);
 
   // 新增：获取筛选后的房间（支持搜索、排序等）
   const fetchFilteredRooms = useCallback(async (options: RoomFetchOptions) => {
@@ -241,6 +276,7 @@ export const useRooms = () => {
     fetchUserRooms,
     fetchAllRooms,
     fetchFilteredRooms, // 新增：支持筛选的房间获取函数
+    fetchTotalRoomCount, // 新增：获取数据库中所有房间总数
     deleteRoom,
     refetch: fetchUserRooms
   };
