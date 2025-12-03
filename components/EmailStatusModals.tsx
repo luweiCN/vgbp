@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCountdown } from '../hooks/useCountdown';
 
 interface UnverifiedEmailModalProps {
   isOpen: boolean;
@@ -6,7 +7,7 @@ interface UnverifiedEmailModalProps {
   email: string;
   onResendEmail: () => void;
   resendLoading: boolean;
-  cooldownSeconds: number;
+  initialCooldownSeconds?: number;
   confirmationLink?: string;
 }
 
@@ -27,9 +28,22 @@ export const UnverifiedEmailModal: React.FC<UnverifiedEmailModalProps> = ({
   email,
   onResendEmail,
   resendLoading,
-  cooldownSeconds,
+  initialCooldownSeconds = 0,
   confirmationLink
 }) => {
+  const countdown = useCountdown({ initialTime: initialCooldownSeconds });
+
+  const handleResendEmail = async () => {
+    if (countdown.isActive || resendLoading) return;
+
+    try {
+      await onResendEmail();
+      countdown.start();
+    } catch (error) {
+      // Error handling is done in parent
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -77,8 +91,8 @@ export const UnverifiedEmailModal: React.FC<UnverifiedEmailModalProps> = ({
             </button>
 
             <button
-              onClick={onResendEmail}
-              disabled={resendLoading || cooldownSeconds > 0}
+              onClick={handleResendEmail}
+              disabled={resendLoading || countdown.isActive}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
             >
               {resendLoading ? (
@@ -86,8 +100,8 @@ export const UnverifiedEmailModal: React.FC<UnverifiedEmailModalProps> = ({
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   发送中...
                 </>
-              ) : cooldownSeconds > 0 ? (
-                `重新发送 (${cooldownSeconds}s)`
+              ) : countdown.isActive ? (
+                `重新发送 (${countdown.timeLeft}s)`
               ) : (
                 '重新发送邮件'
               )}
