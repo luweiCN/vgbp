@@ -23,20 +23,20 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
       onClick={onRefresh}
       disabled={disabled || loading}
       className={`
-        px-3 py-2 md:py-1.5 bg-zinc-800/50 border border-zinc-800 rounded-lg text-sm text-zinc-300
-        hover:bg-zinc-700/50 hover:text-white transition-all duration-200
+        px-3 py-2 md:py-1.5 bg-blue-600/80 hover:bg-blue-600 border border-blue-500/50 rounded-lg text-sm text-white
+        transition-all duration-200
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         ${loading ? 'border-blue-500/50' : ''}
         ${className}
       `}
-      title="刷新房间列表"
+      title="搜索房间"
     >
       {loading ? (
         <span className="flex items-center gap-2">
-          <span>刷新</span>
+          <span>搜索</span>
         </span>
       ) : (
-        "刷新"
+        "搜索"
       )}
     </button>
   );
