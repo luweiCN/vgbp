@@ -9,6 +9,7 @@ export interface RoomFilterParams {
   owner?: 'me' | 'all';    // 我创建的 vs 所有房间
   sort?: 'created' | 'updated'; // 排序字段
   order?: 'asc' | 'desc';  // 排序方向，默认desc
+  pageSize?: number;       // 每页数量，默认移动端5，PC端10
 }
 
 // 排序选项定义
@@ -40,7 +41,8 @@ export const DEFAULT_FILTER_PARAMS: Partial<RoomFilterParams> = {
   page: 1,
   owner: 'all',
   sort: 'updated',
-  order: 'desc'
+  order: 'desc',
+  pageSize: undefined // 让组件决定默认值
 };
 
 // 筛选条件显示映射
@@ -49,7 +51,8 @@ export const FILTER_LABELS: Record<keyof RoomFilterParams, string> = {
   search: '搜索',
   owner: '所有者',
   sort: '排序',
-  order: '排序方向'
+  order: '排序方向',
+  pageSize: '每页数量'
 };
 
 // 筛选值显示映射

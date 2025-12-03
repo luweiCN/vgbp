@@ -5,6 +5,17 @@
 import { RoomFilterParams, DEFAULT_FILTER_PARAMS } from '../types/roomFilters';
 
 /**
+ * 检查是否为默认的 pageSize
+ */
+const isDefaultPageSize = (pageSize: number): boolean => {
+  if (typeof window !== 'undefined') {
+    const defaultSize = window.innerWidth < 640 ? 5 : 10;
+    return pageSize === defaultSize;
+  }
+  return pageSize === 10; // 默认PC端
+};
+
+/**
  * 将URLSearchParams转换为RoomFilterParams
  */
 export const parseURLParams = (searchParams: URLSearchParams): RoomFilterParams => {
@@ -43,6 +54,15 @@ export const parseURLParams = (searchParams: URLSearchParams): RoomFilterParams 
     params.order = order;
   }
 
+  // 解析每页数量
+  const pageSize = searchParams.get('pageSize');
+  if (pageSize) {
+    const pageSizeNum = parseInt(pageSize, 10);
+    if (!isNaN(pageSizeNum) && pageSizeNum > 0 && [5, 10, 15, 20].includes(pageSizeNum)) {
+      params.pageSize = pageSizeNum;
+    }
+  }
+
   return { ...DEFAULT_FILTER_PARAMS, ...params };
 };
 
@@ -71,6 +91,10 @@ export const buildURLParams = (filters: RoomFilterParams): URLSearchParams => {
 
   if (filters.order && filters.order !== 'desc') {
     params.set('order', filters.order);
+  }
+
+  if (filters.pageSize) {
+    params.set('pageSize', filters.pageSize.toString());
   }
 
   return params;
