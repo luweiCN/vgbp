@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { useAuth } from './useAuth';
 import { RoomFetchOptions } from '../types/roomFilters';
@@ -60,8 +60,8 @@ export const useRooms = () => {
   const [filteredTotal, setFilteredTotal] = useState(0); // 当前筛选条件下的总数
 
   
-  // 最新的请求序号，用于避免竞态条件
-  const latestRequestIdRef = useRef(0);
+  // 请求序号，用于避免竞态条件
+  const requestIdRef = useRef(0);
 
   // 统一的房间获取函数，支持多种筛选和搜索选项
   const fetchRooms = useCallback(async (options?: RoomFetchOptions & { requestId?: number }) => {
@@ -75,9 +75,9 @@ export const useRooms = () => {
       requestId
     } = options || {};
 
-    // 更新最新请求序号
-    if (requestId && requestId > latestRequestIdRef.current) {
-      latestRequestIdRef.current = requestId;
+    // 更新请求序号
+    if (requestId && requestId > requestIdRef.current) {
+      requestIdRef.current = requestId;
     }
 
   setLoading(true);
@@ -176,8 +176,8 @@ export const useRooms = () => {
       });
 
       // 竞态条件检查：确保这是最新的请求
-      if (requestId && requestId < latestRequestIdRef.current) {
-        console.log(`⚠️ useRooms: 请求 ${requestId} 已过期，忽略状态更新 (最新: ${latestRequestIdRef.current})`);
+      if (requestId && requestId < requestIdRef.current) {
+        console.log(`⚠️ useRooms: 请求 ${requestId} 已过期，忽略状态更新 (最新: ${requestIdRef.current})`);
         return {
           data: [],
           total: 0
@@ -196,7 +196,7 @@ export const useRooms = () => {
     };
   } catch (err: any) {
       // 竞态条件检查：确保这是最新的请求
-      if (requestId && requestId < latestRequestIdRef.current) {
+      if (requestId && requestId < requestIdRef.current) {
         console.log(`⚠️ useRooms: 请求 ${requestId} 已过期，忽略错误处理`);
         return {
           data: [],
@@ -219,9 +219,31 @@ export const useRooms = () => {
     }
   }, [searchParams, getCurrentPagination]);
 
-  
-  
-  
+  // 智能数据加载函数 - 类似于RoomManager中的loadRoomData
+  const loadRoomData = useCallback((filters?: {
+    search?: string;
+    owner?: string;
+    sort?: string;
+    order?: string;
+    page?: number;
+    pageSize?: number;
+  }) => {
+    // 生成新的请求序号
+    const currentRequestId = ++requestIdRef.current;
+
+    // 计算有效的owner条件（用户未登录时忽略owner筛选条件）
+    const effectiveOwnerId = user && filters?.owner === "me" ? user.id : undefined;
+
+    return fetchRooms({
+      ownerId: effectiveOwnerId,
+      page: filters?.page,
+      search: filters?.search,
+      sortBy: filters?.sort,
+      sortOrder: filters?.order,
+      requestId: currentRequestId,
+    });
+  }, [user?.id, fetchRooms]);
+
   // 删除房间（仅房主）
   const deleteRoom = async (roomId: string) => {
     if (!user) {
@@ -268,6 +290,7 @@ export const useRooms = () => {
     totalRooms,
     filteredTotal,
     fetchRooms,
+    loadRoomData,
     deleteRoom,
     getCurrentPagination,
   };

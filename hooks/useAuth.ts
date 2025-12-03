@@ -409,21 +409,6 @@ export const useAuth = () => {
   // 重发确认邮件服务（与UI组件配合使用）
   const resendConfirmationEmailService = resendVerificationEmail;
 
-  // 发送验证码（暂时返回默认值，后续可以实现）
-  const sendVerificationCode = async (email: string) => {
-    // 临时实现，返回成功状态
-    return {
-      success: true,
-      message: '验证码发送功能开发中...'
-    };
-  };
-
-  // 使用验证码注册（暂时返回默认值，后续可以实现）
-  const signUpWithVerificationCode = async (email: string, code: string, password: string) => {
-    // 临时实现，直接调用普通注册
-    return await signUp(email, password);
-  };
-
   return {
     ...authState,
     signIn,
@@ -433,8 +418,6 @@ export const useAuth = () => {
     checkEmailRegistrationStatus,
     resendVerificationEmail,
     resendConfirmationEmailService,
-    sendVerificationCode,
-    signUpWithVerificationCode,
     isConfigured: isSupabaseConfigured()
   };
 };
