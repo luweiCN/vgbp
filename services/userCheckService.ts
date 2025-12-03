@@ -27,8 +27,7 @@ export interface SendConfirmationResponse {
  */
 export const checkEmailStatus = async (email: string): Promise<CheckEmailResponse> => {
   try {
-    console.log('🔍 尝试调用 Edge Function: check-email');
-
+    
     const { data, error } = await supabase.functions.invoke('check-email', {
       body: { email }
     });
@@ -61,9 +60,7 @@ export const resendConfirmationEmail = async (email: string, domain?: string): P
     // 如果没有传入domain，使用当前页面的origin
     const currentDomain = domain || (typeof window !== 'undefined' ? window.location.origin : '');
 
-    console.log('🔍 尝试调用 Edge Function: resend-confirmation');
-    console.log('📧 Email:', email, '🌐 Domain:', currentDomain);
-
+    
     const { data, error } = await supabase.functions.invoke('resend-confirmation', {
       body: {
         email,
@@ -103,8 +100,7 @@ export const resendConfirmationEmail = async (email: string, domain?: string): P
  */
 export const sendConfirmationEmail = async (email: string, confirmationLink?: string): Promise<SendConfirmationResponse> => {
   try {
-    console.log('🔍 尝试调用 Edge Function: send-confirmation');
-    const { data, error } = await supabase.functions.invoke('send-confirmation', {
+        const { data, error } = await supabase.functions.invoke('send-confirmation', {
       body: { email, confirmationLink }
     });
 

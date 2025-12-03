@@ -90,7 +90,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
               </div>
               <h2 className="text-xl font-bold text-blue-400 mb-2">在线模式</h2>
               <p className="text-zinc-300 text-sm leading-relaxed">
-                浏览公开房间列表，创建自己的房间或加入他人房间，支持数据云端存储和共享
+                浏览房间列表，创建自己的房间或加入他人房间，支持数据云端存储和共享
               </p>
               <div className="mt-4 text-xs text-zinc-500">
                 • 房间管理 • 数据存储 • 云端同步 • 多人使用

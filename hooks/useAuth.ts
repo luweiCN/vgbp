@@ -358,24 +358,7 @@ export const useAuth = () => {
     }
 
     try {
-      // 检查用户名是否已存在（使用更安全的方式）
-      const { data: existingUser, error: checkError } = await supabase
-        .from('profiles')
-        .select('id, username')
-        .neq('id', authState.user!.id);
-
-      if (checkError) {
-        console.error('Error checking existing username:', checkError);
-        // 如果检查失败，继续尝试更新（可能是网络问题）
-      } else {
-        // 在客户端检查用户名是否已存在
-        const usernameExists = existingUser?.some(profile => profile.username === newUsername);
-        if (usernameExists) {
-          throw new Error('用户名已存在');
-        }
-      }
-
-      // 更新用户名
+      // 直接更新用户名，不检查唯一性，允许用户名重复
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ username: newUsername })

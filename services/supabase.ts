@@ -82,7 +82,6 @@ export interface Database {
           name: string;
           description?: string;
           owner_id: string;
-          is_public: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -91,25 +90,11 @@ export interface Database {
           name: string;
           description?: string;
           owner_id: string;
-          is_public?: boolean;
         };
         Update: {
           name?: string;
           description?: string;
-          is_public?: boolean;
         };
-      };
-      room_participants: {
-        Row: {
-          room_id: string;
-          user_id: string;
-          joined_at: string;
-        };
-        Insert: {
-          room_id: string;
-          user_id: string;
-        };
-        Update: never;
       };
       bp_states: {
         Row: {

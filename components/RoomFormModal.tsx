@@ -94,13 +94,6 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
         if (createError) throw createError;
 
-        // 创建房间设置
-        await supabase
-          .from('room_settings')
-          .insert({
-            room_id: newRoom.id
-          });
-
         onSuccess?.('房间创建成功', newRoom);
       } else if (room) {
         // 编辑房间：检查权限
