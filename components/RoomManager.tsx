@@ -6,9 +6,8 @@ import { Pagination } from "./Pagination";
 import { useRoomFilters } from "../hooks/useRoomFilters";
 import { ToastContainer } from "../components/Toast";
 import {
-  UnverifiedEmailModal,
-  VerifiedEmailModal,
-} from "../components/EmailStatusModals";
+  EmailVerificationModal,
+} from "../components/EmailVerificationModal";
 import { RoomFormModal } from "./RoomFormModal";
 import {
   checkEmailStatus,
@@ -2044,16 +2043,18 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
         )}
 
         {/* 邮箱状态模态框 */}
-        <UnverifiedEmailModal
+        <EmailVerificationModal
+          type="unverified-email"
           isOpen={showUnverifiedModal}
           onClose={() => setShowUnverifiedModal(false)}
           email={registeredEmail}
           onResendEmail={handleResendConfirmation}
           resendLoading={resendConfirmationLoading}
-          cooldownSeconds={cooldownSeconds}
+          initialCooldownSeconds={cooldownSeconds}
         />
 
-        <VerifiedEmailModal
+        <EmailVerificationModal
+          type="verified-email"
           isOpen={showVerifiedModal}
           onClose={() => setShowVerifiedModal(false)}
           email={registeredEmail}

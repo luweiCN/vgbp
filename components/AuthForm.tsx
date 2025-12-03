@@ -1,9 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useCountdown } from '../hooks/useCountdown';
 import { EmailVerificationModal } from './EmailVerificationModal';
 import { VerificationCodeForm } from './VerificationCodeForm';
-import { UnverifiedEmailModal, VerifiedEmailModal } from './EmailStatusModals';
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -306,6 +304,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
       {/* 邮件验证模态框 */}
       <EmailVerificationModal
+        type="registration-success"
         isOpen={showVerificationModal}
         onClose={() => setShowVerificationModal(false)}
         email={registeredEmail}
