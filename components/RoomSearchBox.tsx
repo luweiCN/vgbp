@@ -9,6 +9,7 @@ export interface RoomSearchBoxProps {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  onSearch: (value: string) => void;
   placeholder?: string;
   loading?: boolean;
   disabled?: boolean;
@@ -19,23 +20,39 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
   value,
   onChange,
   onClear,
+  onSearch,
   placeholder = "Search / 搜索...",
   loading = false,
   disabled = false,
   className = ""
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [searchInput, setSearchInput] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // 处理输入变化
+  // 同步外部value到本地状态
+  useEffect(() => {
+    setSearchInput(value);
+  }, [value]);
+
+  // 处理输入变化（只更新本地状态）
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
-    onChange(e.target.value);
+    const newValue = e.target.value;
+    setSearchInput(newValue);
+    onChange(newValue);
+  };
+
+  // 处理搜索
+  const handleSearch = () => {
+    if (disabled) return;
+    onSearch(searchInput);
   };
 
   // 处理清除
   const handleClear = () => {
     if (disabled) return;
+    setSearchInput('');
     onClear();
     inputRef.current?.focus();
   };
@@ -44,7 +61,9 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (disabled) return;
     if (e.key === 'Escape') {
-      onClear();
+      handleClear();
+    } else if (e.key === 'Enter') {
+      handleSearch();
     }
   };
 
@@ -84,7 +103,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
             ref={inputRef}
             type="text"
             placeholder={placeholder}
-            value={value}
+            value={searchInput}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
@@ -94,8 +113,19 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
             className="flex-1 bg-transparent text-sm text-white placeholder-zinc-400 outline-none border-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed"
           />
 
+          {/* Search Button */}
+          <button
+            onClick={handleSearch}
+            disabled={disabled || !searchInput.trim()}
+            className="h-6 px-2 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            title="搜索房间"
+          >
+            搜索
+          </button>
+
+  
           {/* Clear Button */}
-          {value && !disabled && (
+          {searchInput && !disabled && (
             <button
               onClick={handleClear}
               className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
@@ -153,7 +183,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
             ref={inputRef}
             type="text"
             placeholder={placeholder}
-            value={value}
+            value={searchInput}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
@@ -163,8 +193,19 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
             className="flex-1 bg-transparent text-sm text-white placeholder-zinc-400 outline-none border-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed"
           />
 
+          {/* Search Button */}
+          <button
+            onClick={handleSearch}
+            disabled={disabled || !searchInput.trim()}
+            className="h-6 px-2 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            title="搜索房间"
+          >
+            搜索
+          </button>
+
+  
           {/* Clear Button */}
-          {value && !disabled && (
+          {searchInput && !disabled && (
             <button
               onClick={handleClear}
               className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
