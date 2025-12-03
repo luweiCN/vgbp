@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { EmailVerificationModal } from './EmailVerificationModal';
-import { VerificationCodeForm } from './VerificationCodeForm';
+import { useCountdown } from '../hooks/useCountdown';
+import { UnverifiedEmailModal, VerifiedEmailModal } from './EmailStatusModals';
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -12,11 +12,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
-  const [showVerificationCodeForm, setShowVerificationCodeForm] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
 
   // 新增状态：邮箱状态检查相关
@@ -24,6 +21,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [showUnverifiedModal, setShowUnverifiedModal] = useState(false);
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const [resendConfirmationLoading, setResendConfirmationLoading] = useState(false);
+  const [showRegistrationSuccess, setShowRegistrationSuccess] = useState(false);
   const countdown = useCountdown({ initialTime: 60 });
 
   // 防抖引用
@@ -32,9 +30,6 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const {
     signIn,
     signUp,
-    resendVerificationEmail,
-    sendVerificationCode,
-    signUpWithVerificationCode,
     checkEmailRegistrationStatus,
     resendConfirmationEmailService
   } = useAuth();
@@ -69,12 +64,15 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             // 继续正常注册流程，不做任何处理
             break;
           case 'registered_unverified':
-            // 显示未验证模态框
+            // 显示未验证模态框（邮箱状态检查场景，不显示成功横幅）
+            console.log('📧 邮箱状态检查：已注册但未验证，不显示成功横幅');
+            setShowRegistrationSuccess(false);
             setShowUnverifiedModal(true);
             setRegisteredEmail(emailToCheck);
             break;
           case 'registered_verified':
             // 显示已验证模态框
+            console.log('✅ 邮箱状态检查：已验证邮箱，显示登录提示');
             setShowVerifiedModal(true);
             setRegisteredEmail(emailToCheck);
             break;
@@ -102,26 +100,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     }
   };
 
-  const handleResendVerification = async () => {
-    if (!registeredEmail) {
-      setError('请先输入邮箱地址');
-      return;
-    }
-
-    setResendLoading(true);
-    setError('');
-
-    try {
-      await resendVerificationEmail(registeredEmail);
-      // 成功重新发送后，可以显示一个 toast 或者保持模态框打开
-      // 这里我们可以暂时不显示额外信息，因为模态框本身已经包含了说明
-    } catch (err: any) {
-      setError(err.message || '重新发送验证邮件失败，请稍后重试。');
-    } finally {
-      setResendLoading(false);
-    }
-  };
-
+  
   // 重发确认邮件处理
   const handleResendConfirmation = async () => {
     if (!registeredEmail || countdown.isActive) return;
@@ -152,7 +131,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     setShowUnverifiedModal(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -164,37 +143,19 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         onSuccess?.();
       } else {
         console.log('🔄 开始注册流程，邮箱:', email);
-        const result = await signUp(email, password);
-        console.log('✅ 注册完成，结果:', result);
+        await signUp(email, password);
+        console.log('✅ 注册完成');
 
         // 保存注册的邮箱
         setRegisteredEmail(email);
 
-        // 检查是否需要验证码
-        if (result?.needsVerificationCode) {
-          // 需要验证码流程
-          console.log('🔢 需要验证码，发送验证码...');
-          const codeResult = await sendVerificationCode(email);
-
-          if (codeResult.success) {
-            setSuccessMessage(codeResult.message);
-            setShowVerificationCodeForm(true);
-          } else {
-            setError(codeResult.message);
-          }
-        } else if (result?.isDuplicate) {
-          // 重复邮箱，显示特殊提示
-          const message = '📧 ' + (result.message || '检测到您的邮箱已注册，验证邮件已重新发送');
-          setSuccessMessage(message);
-          console.log('📧 显示重复邮箱提示:', message);
-          setShowVerificationModal(true);
-        } else {
-          // 新用户注册成功
-          const message = '🎉 注册成功！验证邮件已发送到您的邮箱。';
-          setSuccessMessage(message);
-          console.log('🎉 显示注册成功提示:', message);
-          setShowVerificationModal(true);
-        }
+        // 显示注册成功提示
+        const message = '🎉 注册成功！验证邮件已发送到您的邮箱。';
+        setSuccessMessage(message);
+        console.log('🎉 注册成功流程：设置显示成功横幅');
+        console.log('📊 状态设置：showRegistrationSuccess = true, email =', email);
+        setShowRegistrationSuccess(true);
+        setShowUnverifiedModal(true);
 
         // 清空表单
         setEmail('');
@@ -207,27 +168,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     }
   };
 
-  // 处理验证码验证成功
-  const handleVerificationSuccess = async () => {
-    console.log('✅ 验证码验证成功，完成注册...');
-    setShowVerificationCodeForm(false);
-
-    try {
-      // 这里需要用户重新输入密码来完成注册
-      // 为了简化，我们可以让用户重新进行注册流程
-      setSuccessMessage('验证码验证成功！请重新提交注册信息以完成账户创建。');
-      setError('');
-    } catch (err: any) {
-      setError('完成注册时出错: ' + err.message);
-    }
-  };
-
-  // 处理验证码表单取消
-  const handleVerificationCancel = () => {
-    setShowVerificationCodeForm(false);
-    setSuccessMessage('');
-  };
-
+  
   return (
     <div className="min-h-[400px] bg-gray-800 rounded-lg p-6 max-w-md mx-auto">
       <h2 className="text-2xl font-bold text-white mb-6 text-center">
@@ -261,7 +202,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           <input
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
             minLength={6}
@@ -302,25 +243,6 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         </button>
       </div>
 
-      {/* 邮件验证模态框 */}
-      <EmailVerificationModal
-        type="registration-success"
-        isOpen={showVerificationModal}
-        onClose={() => setShowVerificationModal(false)}
-        email={registeredEmail}
-        onResendEmail={handleResendVerification}
-        resendLoading={resendLoading}
-      />
-
-      {/* 验证码表单 */}
-      {showVerificationCodeForm && (
-        <VerificationCodeForm
-          email={registeredEmail}
-          onVerified={handleVerificationSuccess}
-          onCancel={handleVerificationCancel}
-        />
-      )}
-
       {/* 邮箱状态模态框 */}
       <UnverifiedEmailModal
         isOpen={showUnverifiedModal}
@@ -329,6 +251,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         onResendEmail={handleResendConfirmation}
         resendLoading={resendConfirmationLoading}
         cooldownSeconds={countdown.timeLeft}
+        showSuccessBanner={showRegistrationSuccess}
       />
 
       <VerifiedEmailModal

@@ -60,8 +60,13 @@ export const useCountdown = (options: UseCountdownOptions = {}): UseCountdownRet
       }, 1000);
     }
 
-    return clearTimer;
-  }, [isActive, timeLeft, clearTimer, autoReset, initialTime]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isActive, timeLeft, autoReset, initialTime]);
 
   const start = useCallback((seconds?: number) => {
     clearTimer();
