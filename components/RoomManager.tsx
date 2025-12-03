@@ -15,6 +15,8 @@ import {
   resendConfirmationEmail,
 } from "../services/userCheckService";
 import { supabase } from "../services/supabase";
+import { getHeroAvatarUrl } from '../data/heroes';
+import { HEROES } from '../constants';
 
 // 新组件导入
 import { RoomManagerLayout } from "./RoomManagerLayout";
@@ -636,16 +638,22 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
                           {room.selected_heroes &&
                             room.selected_heroes.length > 0 && (
                               <div className="flex items-center gap-1">
-                                {room.selected_heroes.map((hero: any, index: number) => (
+                                {room.selected_heroes.slice(0, 10).map((hero: any, index: number) => {
+                                  // 从HEROES数据中获取英雄详细信息
+                                  const heroData = HEROES.find(h => h.id === hero.id);
+                                  const avatarUrl = heroData ? getHeroAvatarUrl(heroData) : null;
+                                  const displayName = heroData ? (heroData.cnName || heroData.name) : hero.name;
+
+                                  return (
                                   <div
                                     key={hero.id}
                                     className="w-6 h-6 rounded-full bg-gray-600 border border-gray-500 flex items-center justify-center overflow-hidden"
-                                    title={hero.name}
+                                    title={displayName}
                                   >
-                                    {hero.avatarUrl ? (
+                                    {avatarUrl ? (
                                       <img
-                                        src={hero.avatarUrl}
-                                        alt={hero.name}
+                                        src={avatarUrl}
+                                        alt={displayName}
                                         className="w-full h-full object-cover"
                                         onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                                           // 如果图片加载失败，显示首字母
@@ -653,21 +661,22 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
                                             e.target as HTMLImageElement;
                                           target.style.display = "none";
                                           target.parentElement!.textContent =
-                                            hero.name.charAt(0);
+                                            displayName.charAt(0);
                                           target.parentElement!.className =
                                             "w-6 h-6 rounded-full bg-blue-600 border border-blue-500 flex items-center justify-center text-white text-xs font-bold";
                                         }}
                                       />
                                     ) : (
                                       <div className="w-full h-full bg-blue-600 border border-blue-500 flex items-center justify-center text-white text-xs font-bold">
-                                        {hero.name.charAt(0)}
+                                        {displayName.charAt(0)}
                                       </div>
                                     )}
                                   </div>
-                                ))}
-                                {room.total_selected > 5 && (
+                                );
+                                })}
+                                {room.total_selected > 10 && (
                                   <div className="w-6 h-6 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center text-gray-300 text-xs font-medium">
-                                    +{room.total_selected - 5}
+                                    +{room.total_selected - 10}
                                   </div>
                                 )}
                               </div>
@@ -919,16 +928,22 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
                   {room.selected_heroes &&
                     room.selected_heroes.length > 0 && (
                       <div className="flex items-center gap-1">
-                        {room.selected_heroes.map((hero: any) => (
+                        {room.selected_heroes.slice(0, 8).map((hero: any) => {
+                          // 从HEROES数据中获取英雄详细信息
+                          const heroData = HEROES.find(h => h.id === hero.id);
+                          const avatarUrl = heroData ? getHeroAvatarUrl(heroData) : null;
+                          const displayName = heroData ? (heroData.cnName || heroData.name) : hero.name;
+
+                          return (
                           <div
                             key={hero.id}
                             className="w-8 h-8 rounded-full bg-gray-600 border border-gray-500 flex items-center justify-center overflow-hidden"
-                            title={hero.name}
+                            title={displayName}
                           >
-                            {hero.avatarUrl ? (
+                            {avatarUrl ? (
                               <img
-                                src={hero.avatarUrl}
-                                alt={hero.name}
+                                src={avatarUrl}
+                                alt={displayName}
                                 className="w-full h-full object-cover"
                                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                                   // 如果图片加载失败，显示首字母
@@ -936,21 +951,22 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
                                     e.target as HTMLImageElement;
                                   target.style.display = "none";
                                   target.parentElement!.textContent =
-                                    hero.name.charAt(0);
+                                    displayName.charAt(0);
                                   target.parentElement!.className =
                                     "w-8 h-8 rounded-full bg-blue-600 border border-blue-500 flex items-center justify-center text-white text-sm font-bold";
                                 }}
                               />
                             ) : (
                               <div className="w-full h-full bg-blue-600 border border-blue-500 flex items-center justify-center text-white text-sm font-bold">
-                                {hero.name.charAt(0)}
+                                {displayName.charAt(0)}
                               </div>
                             )}
                           </div>
-                        ))}
-                        {room.total_selected > 5 && (
+                        );
+                        })}
+                        {room.total_selected > 8 && (
                           <div className="w-8 h-8 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center text-gray-300 text-sm font-medium">
-                            +{room.total_selected - 5}
+                            +{room.total_selected - 8}
                           </div>
                         )}
                       </div>
