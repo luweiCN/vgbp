@@ -72,9 +72,9 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
       {/* Desktop Version */}
       <div className={`hidden md:flex flex-grow justify-center max-w-md ${className}`}>
         <div className={`
-          flex items-center w-full bg-zinc-800/50 border border-zinc-800 rounded-lg px-3 py-1.5 gap-2
+          flex items-center w-full bg-slate-950/30 border border-zinc-800 rounded-lg px-3 py-1.5 gap-2
           transition-all duration-200
-          ${isFocused ? 'border-blue-500/50 bg-zinc-800/70' : 'border-zinc-800'}
+          ${isFocused ? 'border-blue-500/50 bg-slate-950/50' : 'border-zinc-800'}
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
           ${loading ? 'border-blue-500/50' : ''}
         `}>
@@ -152,9 +152,9 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
       {/* Mobile Version */}
       <div className={`md:hidden ${className}`}>
         <div className={`
-          flex items-center w-full bg-zinc-800/50 border border-zinc-800 rounded-lg px-3 py-2 gap-2
+          flex items-center w-full bg-slate-950/30 border border-zinc-800 rounded-lg px-3 py-2 gap-2
           transition-all duration-200
-          ${isFocused ? 'border-blue-500/50 bg-zinc-800/70' : 'border-zinc-800'}
+          ${isFocused ? 'border-blue-500/50 bg-slate-950/50' : 'border-zinc-800'}
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
           ${loading ? 'border-blue-500/50' : ''}
         `}>

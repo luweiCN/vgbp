@@ -26,7 +26,7 @@ export const SORT_OPTIONS: SortOption[] = [
     value: 'created',
     label: '创建时间',
     field: 'created_at',
-    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' // 时钟图标
+    icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' // 日历图标，与列表页面保持一致
   },
   {
     value: 'updated',
