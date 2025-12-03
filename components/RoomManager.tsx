@@ -1,10 +1,16 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useRooms, Room } from '../hooks/useRooms';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
+import { useRoomFilters } from '../hooks/useRoomFilters';
 import { ToastContainer } from '../components/Toast';
 import { UnverifiedEmailModal, VerifiedEmailModal } from '../components/EmailStatusModals';
 import { RoomFormModal } from './RoomFormModal';
+import { RoomSearchBox } from './RoomSearchBox';
+import RoomSortToggle from './RoomSortToggle';
+import OwnerToggle from './OwnerToggle';
+import FilterChips from './FilterChips';
+import { RefreshButton } from './RefreshButton';
 import { checkEmailStatus, resendConfirmationEmail } from '../services/userCheckService';
 import { supabase } from '../services/supabase';
 
@@ -72,10 +78,131 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     currentPage,
     totalRooms,
     pageSize,
-    deleteRoom,
+    fetchUserRooms,
     fetchAllRooms,
+    fetchFilteredRooms,
+    fetchTotalRoomCount,
+    deleteRoom,
     refetch
   } = useRooms();
+
+  // 筛选和搜索状态管理
+  const {
+    filters,
+    debouncedSearch,
+    setFilter,
+    setFilters,
+    clearFilters,
+    activeFiltersCount
+  } = useRoomFilters();
+
+  // 筛选后的房间数据
+  const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
+  const [filteredLoading, setFilteredLoading] = useState(false);
+  const [filteredTotal, setFilteredTotal] = useState(0);
+
+  // 加载筛选数据的函数
+  const loadFilteredData = useCallback(async () => {
+    if (!user) {
+      return;
+    }
+
+    setFilteredLoading(true);
+    try {
+      const ownerId = filters.owner === 'me' ? user.id : undefined;
+
+      const result = await fetchFilteredRooms({
+        ownerId,
+        page: filters.page,
+        search: debouncedSearch,
+        sortBy: filters.sort,
+        sortOrder: filters.order
+      });
+
+      setFilteredRooms(result.data || []);
+      setFilteredTotal(result.total || 0);
+    } catch (error: any) {
+      setFilteredRooms([]);
+      setFilteredTotal(0);
+    } finally {
+      setFilteredLoading(false);
+    }
+  }, [user, filters, debouncedSearch, fetchFilteredRooms]);
+
+  // 加载筛选公开数据的函数（用户未登录时）
+  const loadFilteredPublicData = useCallback(async () => {
+    setFilteredLoading(true);
+    try {
+      const result = await fetchFilteredRooms({
+        ownerId: undefined,
+        page: filters.page,
+        search: debouncedSearch,
+        sortBy: filters.sort,
+        sortOrder: filters.order
+      });
+
+      setFilteredRooms(result.data || []);
+      setFilteredTotal(result.total || 0);
+    } catch (error: any) {
+      setFilteredRooms([]);
+      setFilteredTotal(0);
+    } finally {
+      setFilteredLoading(false);
+    }
+  }, [filters, debouncedSearch, fetchFilteredRooms]);
+
+  // 加载默认数据的函数（无筛选条件时）
+  const loadDefaultData = useCallback(async () => {
+    if (user) {
+      // 用户已登录，加载用户房间
+      await fetchUserRooms();
+    } else {
+      // 用户未登录，加载所有公开房间
+      await fetchAllRooms();
+    }
+  }, [user, fetchUserRooms, fetchAllRooms]);
+
+  // 当前显示的数据和状态
+  const hasAnyFilter = filters.owner !== 'all' || debouncedSearch || filters.sort;
+  const displayRooms = filters.owner === 'me' ? rooms : (hasAnyFilter ? filteredRooms : allRooms);
+  const displayLoading = filters.owner === 'me' ? roomsLoading : (hasAnyFilter ? filteredLoading : allRoomsLoading);
+  const displayTotal = hasAnyFilter ? filteredTotal : totalRooms;
+
+  // 处理URL参数变化的数据加载（包含筛选条件）
+  useEffect(() => {
+    if (!isConfigured) {
+      return;
+    }
+
+    // 如果有筛选条件且用户已登录，使用筛选加载
+    if (hasAnyFilter && user) {
+      loadFilteredData();
+    } else if (hasAnyFilter && !user) {
+      // 如果有筛选条件但用户未登录，只加载公开房间数据
+      loadFilteredPublicData();
+    } else {
+      loadDefaultData();
+    }
+  }, [debouncedSearch, filters.owner, filters.sort, filters.order, filters.page, isConfigured, hasAnyFilter, user, loadFilteredData, loadDefaultData]);
+
+  // 处理用户认证状态变化
+  useEffect(() => {
+    if (!isConfigured) {
+      return;
+    }
+
+    if (user) {
+      // 用户登录后，根据当前筛选条件决定加载方式
+      if (hasAnyFilter) {
+        loadFilteredData();
+      } else {
+        loadDefaultData();
+      }
+    } else {
+      // 用户未登录时，始终加载公开房间
+      fetchAllRooms();
+    }
+  }, [user, isConfigured, hasAnyFilter, fetchAllRooms, loadFilteredData, loadDefaultData]);
 
   const handleCreateRoom = () => {
     // 检查用户是否登录
@@ -101,7 +228,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     }
 
     // 刷新房间列表
-    fetchAllRooms(currentPage); // 刷新房间列表
+    handleRefresh(); // 刷新房间列表
   };
 
   // 编辑房间相关函数
@@ -168,6 +295,32 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
    
 
+  // 统一的刷新函数
+  const handleRefresh = async () => {
+    setFilteredLoading(true);
+    try {
+      // 1. 获取数据库中所有房间的总数（这会更新 totalRooms 状态）
+      await fetchTotalRoomCount();
+
+      // 2. 如果有筛选条件，刷新筛选结果
+      if (hasAnyFilter) {
+        const ownerId = filters.owner === 'me' && user ? user.id : undefined;
+        await fetchFilteredRooms({
+          ownerId,
+          page: filters.page,
+          search: debouncedSearch,
+          sortBy: filters.sort,
+          sortOrder: filters.order
+        });
+      } else {
+        // 没有筛选条件，刷新所有房间
+        await fetchAllRooms();
+      }
+    } finally {
+      setFilteredLoading(false);
+    }
+  };
+
   const handleDeleteRoom = async (roomId: string) => {
     setShowDeleteConfirm(roomId);
   };
@@ -178,6 +331,8 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     try {
       await deleteRoom(roomId);
       showSuccess('房间删除成功！');
+      // 删除后刷新
+      await handleRefresh();
     } catch (err: any) {
       const errorMessage = err.message || '删除房间失败，请稍后重试';
       setError(errorMessage);
@@ -461,10 +616,9 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
         </div>
         
-        <div className="flex items-center justify-between gap-2 sm:gap-3">
-          {/* 桌面端：显示所有按钮 */}
-          <div className="hidden sm:flex items-center gap-2 sm:gap-3">
-            {/* 房间操作按钮 */}
+        <div className="flex items-center justify-between gap-2">
+          {/* 左侧：操作按钮 - 移动端隐藏 */}
+          <div className="hidden sm:flex items-center gap-2">
             <button
               onClick={() => setShowJoinForm(true)}
               className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-0 rounded-lg transition-all duration-200 shadow-lg hover:shadow-purple-500/20 flex items-center gap-1 sm:gap-2"
@@ -475,7 +629,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
               <span className="hidden sm:inline">加入房间</span>
               <span className="sm:hidden">加入</span>
             </button>
-            
+
             <button
               onClick={handleCreateRoom}
               className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-0 rounded-lg transition-all duration-200 shadow-lg hover:shadow-green-500/20 flex items-center gap-1 sm:gap-2"
@@ -486,85 +640,35 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
               <span className="hidden sm:inline">创建房间</span>
               <span className="sm:hidden">创建</span>
             </button>
-            
-            <button
-              onClick={() => fetchAllRooms(currentPage)}
-              className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-200"
-              title="刷新房间列表"
-            >
-              <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-
-            {/* 用户按钮：统一显示头像按钮，登录状态不同 */}
-            <div 
-              className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-full cursor-pointer hover:bg-slate-800/80 transition-all duration-200"
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-            >
-              <div className="relative">
-                {user ? (
-                  <>
-                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                      {user.username.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-slate-800"></div>
-                  </>
-                ) : (
-                  <div className="w-6 h-6 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-              <span className="text-white text-sm font-medium">
-                {user ? user.username : '游客'}
-              </span>
-              <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </div>
           </div>
 
-          {/* 移动端：右侧按钮组 */}
-          <div className="flex items-center gap-2 sm:hidden">
-            {/* 移动端：刷新按钮 */}
-            <button
-              onClick={() => fetchAllRooms(currentPage)}
-              className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800/60 rounded-lg transition-all duration-200"
-              title="刷新房间列表"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-
-            {/* 移动端：用户按钮 */}
-            <div 
-              className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-full cursor-pointer hover:bg-slate-800/80 transition-all duration-200"
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-            >
-              <div className="relative">
-                {user ? (
-                  <>
-                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                      {user.username.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-slate-800"></div>
-                  </>
-                ) : (
-                  <div className="w-6 h-6 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+          {/* 右侧：用户信息 */}
+          <div
+            className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-full cursor-pointer hover:bg-slate-800/80 transition-all duration-200"
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+          >
+            <div className="relative">
+              {user ? (
+                <>
+                  <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                    {user.username.charAt(0).toUpperCase()}
                   </div>
-                )}
-              </div>
-              <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-slate-800"></div>
+                </>
+              ) : (
+                <div className="w-6 h-6 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+              )}
             </div>
+            <span className="text-white text-sm font-medium hidden sm:inline">
+              {user ? user.username : '游客'}
+            </span>
+            <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
           </div>
         </div>
       </div>
@@ -831,31 +935,96 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
       {/* 房间列表 */}
       <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-white">
-            房间列表
-          </h2>
-          <div className="text-sm text-gray-400">
-            共 {totalRooms} 个房间
+        {/* 房间列表标题和搜索区域 */}
+        <div className="mb-4 space-y-3">
+          {/* 标题和统计 */}
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-white">
+              房间列表
+            </h2>
+            <div className="text-sm text-blue-400">
+              {displayTotal === totalRooms ? (
+                <span>总共 {totalRooms} 个房间</span>
+              ) : (
+                <>
+                  <span className="hidden sm:inline">
+                    当前筛选条件下共 {displayTotal} 个房间，总共 {totalRooms} 个房间
+                  </span>
+                  <span className="sm:hidden">
+                    共{displayTotal}/{totalRooms}个房间
+                  </span>
+                </>
+              )}
+            </div>
           </div>
+
+          {/* 搜索和筛选控件 */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            {/* 搜索和刷新区域 - 紧密排列 */}
+            <div className="flex items-center gap-2 w-full sm:flex-1 sm:max-w-md">
+              {/* 搜索框 - 占据主要空间 */}
+              <RoomSearchBox
+                value={filters.search || ''}
+                onChange={(value) => setFilter('search', value)}
+                onClear={() => setFilter('search', '')}
+                loading={filteredLoading}
+                className="flex-1"
+              />
+
+              {/* 刷新按钮 - 紧贴搜索框 */}
+              <RefreshButton
+                onRefresh={handleRefresh}
+                loading={filteredLoading}
+                className="flex-shrink-0"
+              />
+            </div>
+
+            {/* 右侧控制区 - 筛选和排序，与左侧拉开距离 */}
+            <div className="flex items-center gap-3">
+              {/* "我创建的"开关 */}
+              {user && (
+                <OwnerToggle
+                  isChecked={filters.owner === 'me'}
+                  onChange={(checked) => setFilter('owner', checked ? 'me' : 'all')}
+                  className="mx-2"
+                />
+              )}
+
+              {/* 排序切换 */}
+              <RoomSortToggle
+                sortBy={filters.sort || 'updated'}
+                sortOrder={filters.order || 'desc'}
+                onChange={(sortBy, sortOrder) => {
+                  setFilters({ sort: sortBy, order: sortOrder });
+                }}
+              />
+            </div>
+          </div>
+
+          {/* 筛选条件显示 */}
+          <FilterChips
+            filters={filters}
+            onFilterChange={setFilter}
+            onClearAll={clearFilters}
+          />
         </div>
 
-        {allRoomsLoading ? (
+        {displayLoading ? (
           <div className="text-center py-8 text-gray-400">加载中...</div>
-        ) : allRooms.length === 0 ? (
+        ) : displayRooms.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
-            {user ? '还没有房间，点击创建房间按钮开始创建房间！' : '还没有房间，登录后可以创建自己的房间！'}
+            <p>暂无符合条件的房间</p>
           </div>
         ) : (
           <>
             {/* 桌面端：列表式布局 */}
             <div className="hidden sm:block">
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700">
-                {allRooms.map((room, index) => (
-                  <div 
-                    key={room.id} 
+                {displayRooms.map((room, index) => (
+                  <div
+                    key={room.id}
                     className={`group hover:bg-gray-700/30 transition-all duration-200 ${
-                      index !== allRooms.length - 1 ? 'border-b border-gray-700' : ''
+                      index !== displayRooms.length - 1 ? 'border-b border-gray-700' : ''
                     }`}
                   >
                     <div className="p-4">
@@ -1006,7 +1175,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
             {/* 移动端：紧凑卡片布局 */}
             <div className="sm:hidden space-y-3">
-              {allRooms.map((room) => (
+              {displayRooms.map((room) => (
                 <div key={room.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700 relative">
                   {/* 右上角按钮组 */}
                   <div className="absolute top-3 right-3 flex gap-2">
@@ -1501,16 +1670,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
             <div className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  当前用户名
-                </label>
-                <div className="px-4 py-3 bg-zinc-700/50 border border-zinc-600 rounded-lg text-zinc-300">
-                  {user?.username}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  新用户名 <span className="text-red-400">*</span>
+                  用户名 <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

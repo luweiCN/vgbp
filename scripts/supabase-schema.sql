@@ -65,7 +65,10 @@ CREATE TABLE IF NOT EXISTS room_settings (
 -- 创建索引以优化查询性能
 CREATE INDEX IF NOT EXISTS idx_rooms_owner_id ON rooms(owner_id);
 CREATE INDEX IF NOT EXISTS idx_rooms_created_at ON rooms(created_at);
+CREATE INDEX IF NOT EXISTS idx_rooms_updated_at ON rooms(updated_at);
 CREATE INDEX IF NOT EXISTS idx_rooms_is_public ON rooms(is_public);
+-- 优化房间名称和描述搜索的复合索引
+CREATE INDEX IF NOT EXISTS idx_rooms_search ON rooms USING gin(to_tsvector('english', name || ' ' || COALESCE(description, '')));
 CREATE INDEX IF NOT EXISTS idx_room_participants_room_id ON room_participants(room_id);
 CREATE INDEX IF NOT EXISTS idx_room_participants_user_id ON room_participants(user_id);
 CREATE INDEX IF NOT EXISTS idx_bp_states_room_id ON bp_states(room_id);
