@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 
 interface RoomManagerLayoutProps {
   roomHeader: React.ReactNode;
@@ -24,7 +24,11 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
 
   useEffect(() => {
     const updateContentArea = () => {
-      if (headerRef.current && filterRef.current && paginationContainerRef.current) {
+      if (
+        headerRef.current &&
+        filterRef.current &&
+        paginationContainerRef.current
+      ) {
         // 获取头部底部距离屏幕顶部的距离
         const headerBottom = headerRef.current.getBoundingClientRect().bottom;
 
@@ -35,27 +39,61 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
         const filterBottom = filterRef.current.getBoundingClientRect().bottom;
 
         // 获取分页容器顶部距离屏幕顶部的距离
-        const paginationContainerTop = paginationContainerRef.current.getBoundingClientRect().top;
+        const paginationContainerTop =
+          paginationContainerRef.current.getBoundingClientRect().top;
+
+        // 获取分页容器的实际高度
+        const paginationContainerHeight =
+          paginationContainerRef.current.getBoundingClientRect().height;
 
         // 计算内容区域的可用高度
         const availableHeight = paginationContainerTop - filterBottom;
 
         setContentStyle({
           marginTop: `${filterBottom}px`,
-          marginBottom: `${window.innerHeight - paginationContainerTop}px`,
-          minHeight: `${availableHeight}px`
+          marginBottom: `${paginationContainerHeight}px`,
+          minHeight: `${availableHeight}px`,
         });
+      }
+    };
+
+    // 创建 ResizeObserver 监听关键元素的尺寸变化
+    let resizeObserver: ResizeObserver | null = null;
+
+    const setupObservers = () => {
+      if (
+        headerRef.current &&
+        filterRef.current &&
+        paginationContainerRef.current
+      ) {
+        resizeObserver = new ResizeObserver(() => {
+          updateContentArea();
+        });
+
+        // 监听所有关键元素
+        resizeObserver.observe(headerRef.current);
+        resizeObserver.observe(filterRef.current);
+        resizeObserver.observe(paginationContainerRef.current);
       }
     };
 
     updateContentArea();
 
-    const timer = setTimeout(updateContentArea, 100); // 等待DOM更新
+    // 等待DOM稳定后设置观察器
+    const timer = setTimeout(() => {
+      setupObservers();
+    }, 100);
 
-    window.addEventListener('resize', updateContentArea);
+    window.addEventListener("resize", updateContentArea);
+
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('resize', updateContentArea);
+      window.removeEventListener("resize", updateContentArea);
+
+      // 清理 ResizeObserver
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
     };
   }, []);
 
@@ -70,9 +108,7 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
         className="fixed top-0 left-0 right-0 z-30 bg-slate-950/70 backdrop-blur-xl border-b border-slate-700/30"
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div data-header-content>
-            {roomHeader}
-          </div>
+          <div data-header-content>{roomHeader}</div>
         </div>
       </div>
 
@@ -83,17 +119,12 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
         style={{ top: `${filterTop}px` }}
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div data-filter-content>
-            {filterHeader}
-          </div>
+          <div data-filter-content>{filterHeader}</div>
         </div>
       </div>
 
       {/* Main content area - 使用fixed定位和margin留白 */}
-      <div
-        ref={contentRef}
-        className="fixed inset-0 z-20 overflow-y-auto"
-      >
+      <div ref={contentRef} className="fixed inset-0 z-20 overflow-y-auto">
         <div
           className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4"
           style={contentStyle}
@@ -114,11 +145,7 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
       </div>
 
       {/* Modal container */}
-      {modals && (
-        <div className="relative z-[90]">
-          {modals}
-        </div>
-      )}
+      {modals && <div className="relative z-[90]">{modals}</div>}
 
       {/* Enhanced backdrop blur support */}
       <style jsx global>{`
@@ -148,3 +175,4 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
     </div>
   );
 };
+
