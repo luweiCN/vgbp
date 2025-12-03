@@ -849,12 +849,18 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
             <h2 className="text-xl font-semibold text-white">
               房间列表
             </h2>
-            <div className="text-sm text-gray-400">
-              共 {displayTotal} 个房间
-              {displayTotal !== totalRooms && (
-                <span className="ml-2 text-blue-400">
-                  (总共 {totalRooms} 个)
-                </span>
+            <div className="text-sm text-blue-400">
+              {displayTotal === totalRooms ? (
+                <span>总共 {totalRooms} 个房间</span>
+              ) : (
+                <>
+                  <span className="hidden sm:inline">
+                    {filters.owner === 'me' ? '只看我的' : hasAnyFilter ? '当前筛选条件' : '所有'}共 {displayTotal} 个房间，总共 {totalRooms} 个房间
+                  </span>
+                  <span className="sm:hidden">
+                    {displayTotal}/{totalRooms}
+                  </span>
+                </>
               )}
             </div>
           </div>
