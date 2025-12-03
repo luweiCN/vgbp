@@ -89,7 +89,8 @@ export const useRooms = () => {
         .from('rooms')
         .select(`
           *,
-          owner:profiles!rooms_owner_id_fkey(email, username, display_name)
+          owner:profiles!rooms_owner_id_fkey(email, username, display_name),
+          bp_states!bp_states_room_id_fkey(hero_id, is_selected)
         `);
 
       // 所有者筛选（用户未登录时忽略此条件）
@@ -145,6 +146,35 @@ export const useRooms = () => {
       const { data: roomsData, error: roomsError } = await query;
       if (roomsError) throw roomsError;
 
+      // 处理英雄信息
+      const processedRoomsData = roomsData.map(room => {
+        if (!room.bp_states || room.bp_states.length === 0) {
+          return {
+            ...room,
+            selected_heroes: [],
+            total_selected: 0
+          };
+        }
+
+        // 获取已选择的英雄ID列表
+        const selectedHeroIds = room.bp_states
+          .filter((bpState: any) => bpState.is_selected)
+          .map((bpState: any) => bpState.hero_id);
+
+        // 构建英雄信息数组
+        const selectedHeroes = selectedHeroIds.map(heroId => ({
+          id: heroId,
+          name: heroId,
+          avatarUrl: null // 让UI组件使用getHeroAvatarUrl方法获取
+        }));
+
+        return {
+          ...room,
+          selected_heroes: selectedHeroes,
+          total_selected: selectedHeroes.length
+        };
+      });
+
       // 竞态条件检查：确保这是最新的请求
       if (requestId && requestId < latestRequestIdRef.current) {
         console.log(`⚠️ useRooms: 请求 ${requestId} 已过期，忽略状态更新 (最新: ${latestRequestIdRef.current})`);
@@ -155,13 +185,13 @@ export const useRooms = () => {
       }
 
     // 更新统一的状态
-    setRooms(roomsData || []);
+    setRooms(processedRoomsData || []);
     setTotalRooms(totalCount);
     setFilteredTotal(count || 0);
 
     // 返回数据和总数
     return {
-      data: roomsData || [],
+      data: processedRoomsData || [],
       total: count || 0
     };
   } catch (err: any) {
