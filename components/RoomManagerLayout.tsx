@@ -147,31 +147,7 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
       {/* Modal container */}
       {modals && <div className="relative z-[90]">{modals}</div>}
 
-      {/* Enhanced backdrop blur support */}
-      <style jsx global>{`
-        .backdrop-blur-xl {
-          backdrop-filter: blur(16px) saturate(200%) brightness(1.1);
-          -webkit-backdrop-filter: blur(16px) saturate(200%) brightness(1.1);
-          background-color: rgba(15, 23, 42, 0.6);
-        }
-
-        @supports not (backdrop-filter: blur(16px)) {
-          .backdrop-blur-xl {
-            background: linear-gradient(
-              to bottom,
-              rgba(15, 23, 42, 0.85) 0%,
-              rgba(15, 23, 42, 0.6) 100%
-            );
-          }
-        }
-
-        @media screen and (-webkit-min-device-pixel-ratio: 0) {
-          .backdrop-blur-xl {
-            -webkit-backdrop-filter: blur(16px);
-            backdrop-filter: blur(16px);
-          }
-        }
-      `}</style>
+      {/* Enhanced backdrop blur support - 移动到全局 CSS */}
     </div>
   );
 };
