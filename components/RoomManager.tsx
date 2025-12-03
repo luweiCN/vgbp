@@ -27,6 +27,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     username: ''
   });
   const [authFormLoading, setAuthFormLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // 邮箱状态检查相关状态
   const [emailChecking, setEmailChecking] = useState(false);
@@ -77,6 +78,12 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
   } = useRooms();
 
   const handleCreateRoom = () => {
+    // 检查用户是否登录
+    if (!user) {
+      setShowLoginForm(true);
+      return;
+    }
+
     setEditingRoom(null);
     setShowRoomForm(true);
   };
@@ -94,8 +101,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     }
 
     // 刷新房间列表
-    refetch(); // 刷新用户自己的房间列表
-    fetchAllRooms(currentPage); // 刷新公共房间列表
+    fetchAllRooms(currentPage); // 刷新房间列表
   };
 
   // 编辑房间相关函数
@@ -219,8 +225,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
           // 如果注册成功但没有会话（需要验证邮箱），显示验证弹窗
           if (!signUpResult.session && !signUpResult.needsVerificationCode) {
-            console.log('📧 需要验证邮箱');
-            setShowUnverifiedModal(true);
+                        setShowUnverifiedModal(true);
             setRegisteredEmail(authFormData.email);
           }
 
@@ -274,7 +279,6 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
   // 邮箱状态检查函数
   const checkEmailRegistrationStatus = useCallback(async (email: string) => {
-    console.log('🔍 开始邮箱状态检查:', email, '模式:', authMode);
 
     if (!email) {
       return;
@@ -282,10 +286,6 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
     try {
       const status = await checkEmailStatus(email);
-      console.log('📧 邮箱状态检查结果:', status);
-
-      // 保存验证结果用于显示
-      console.log('💾 保存邮箱验证结果:', status, '当前模式:', authMode);
       setEmailCheckResult(status);
 
       // 在注册和登录模式下都触发相应的弹窗
@@ -312,13 +312,10 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
   // 邮箱输入处理
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
-    console.log('📧 邮箱输入变化:', newEmail, '当前模式:', authMode === 'login' ? '登录' : '注册');
     setAuthFormData({...authFormData, email: newEmail});
 
     // 在注册和登录模式下都检查邮箱状态
     if ((authMode === 'register' || authMode === 'login') && newEmail) {
-      console.log('✅ 触发邮箱状态检查 - 当前模式:', authMode);
-
       // 清除之前的定时器
       if (emailCheckTimeoutRef.current) {
         clearTimeout(emailCheckTimeoutRef.current);
@@ -326,7 +323,6 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
       // 设置新的定时器（500ms 防抖，等用户输入完成）
       emailCheckTimeoutRef.current = setTimeout(async () => {
-        console.log('⏰ 防抖计时器触发，开始检查邮箱状态');
         setEmailChecking(true);
         setError('');
 
@@ -848,7 +844,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
           <div className="text-center py-8 text-gray-400">加载中...</div>
         ) : allRooms.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
-            暂时没有公开房间，登录后可以创建自己的房间！
+            {user ? '还没有房间，点击创建房间按钮开始创建房间！' : '还没有房间，登录后可以创建自己的房间！'}
           </div>
         ) : (
           <>

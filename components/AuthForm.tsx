@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useCountdown } from '../hooks/useCountdown';
 import { EmailVerificationModal } from './EmailVerificationModal';
 import { VerificationCodeForm } from './VerificationCodeForm';
 import { UnverifiedEmailModal, VerifiedEmailModal } from './EmailStatusModals';
@@ -25,7 +26,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [showUnverifiedModal, setShowUnverifiedModal] = useState(false);
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const [resendConfirmationLoading, setResendConfirmationLoading] = useState(false);
-  const [cooldownSeconds, setCooldownSeconds] = useState<number>(0);
+  const countdown = useCountdown({ initialTime: 60 });
 
   // 防抖引用
   const emailCheckTimeoutRef = useRef<NodeJS.Timeout>();
@@ -125,25 +126,17 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
   // 重发确认邮件处理
   const handleResendConfirmation = async () => {
-    if (!registeredEmail) return;
+    if (!registeredEmail || countdown.isActive) return;
 
     setResendConfirmationLoading(true);
-    setCooldownSeconds(60);
+    setError('');
 
     try {
       const result = await resendConfirmationEmailService(registeredEmail);
 
       if (result.success) {
-        // 开始倒计时
-        let countdown = 60;
-        const interval = setInterval(() => {
-          countdown -= 1;
-          setCooldownSeconds(countdown);
-
-          if (countdown <= 0) {
-            clearInterval(interval);
-          }
-        }, 1000);
+        // 启动倒计时
+        countdown.start();
       } else {
         setError(result.message || '重发验证邮件失败');
       }
@@ -336,7 +329,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         email={registeredEmail}
         onResendEmail={handleResendConfirmation}
         resendLoading={resendConfirmationLoading}
-        cooldownSeconds={cooldownSeconds}
+        cooldownSeconds={countdown.timeLeft}
       />
 
       <VerifiedEmailModal

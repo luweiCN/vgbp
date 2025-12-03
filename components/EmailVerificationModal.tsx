@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCountdown } from '../hooks/useCountdown';
 
 interface EmailVerificationModalProps {
   isOpen: boolean;
@@ -15,6 +16,19 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
   onResendEmail,
   resendLoading = false
 }) => {
+  const countdown = useCountdown({ initialTime: 60 });
+
+  const handleResendEmail = async () => {
+    if (countdown.isActive) return;
+
+    try {
+      await onResendEmail();
+      countdown.start();
+    } catch (error) {
+      // Error handling is done in parent
+    }
+  };
+
   console.log('🪟 EmailVerificationModal 渲染:', { isOpen, email });
 
   if (!isOpen) return null;
@@ -80,8 +94,8 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
         {/* 按钮组 */}
         <div className="space-y-3">
           <button
-            onClick={onResendEmail}
-            disabled={resendLoading}
+            onClick={handleResendEmail}
+            disabled={resendLoading || countdown.isActive}
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {resendLoading ? (
@@ -89,6 +103,8 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 发送中...
               </div>
+            ) : countdown.isActive ? (
+              `📧 重新发送 (${countdown.timeLeft}s)`
             ) : (
               '📧 重新发送验证邮件'
             )}
