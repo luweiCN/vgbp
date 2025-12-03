@@ -30,19 +30,19 @@ export default defineConfig(({ mode }) => {
         proxy: {
           // 代理 Supabase REST API
           '/rest/v1': {
-            target: env.VITE_SUPABASE_URL || 'https://hvbqzfdmmoupwvbwegug.supabase.co',
+            target: env.VITE_SUPABASE_URL || 'https://sxkozhhlhvxdnwirbubw.supabase.co',
             changeOrigin: true,
             secure: true,
           },
           // 代理 Realtime WebSocket（关键：启用 ws: true）
           '/realtime/v1': {
-            target: (env.VITE_SUPABASE_URL?.replace('https://', 'wss://') || 'wss://hvbqzfdmmoupwvbwegug.supabase.co'),
+            target: (env.VITE_SUPABASE_URL?.replace('https://', 'wss://') || 'wss://sxkozhhlhvxdnwirbubw.supabase.co'),
             changeOrigin: true,
             ws: true, // 启用 WebSocket 代理
           },
           // 直接代理 WebSocket 连接
           '/v1/websocket': {
-            target: (env.VITE_SUPABASE_URL?.replace('https://', 'wss://') || 'wss://hvbqzfdmmoupwvbwegug.supabase.co'),
+            target: (env.VITE_SUPABASE_URL?.replace('https://', 'wss://') || 'wss://sxkozhhlhvxdnwirbubw.supabase.co'),
             changeOrigin: true,
             ws: true, // 关键：WebSocket 升级支持
           },
