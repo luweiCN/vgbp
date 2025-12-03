@@ -20,11 +20,11 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
-  const paginationRef = useRef<HTMLDivElement>(null);
+  const paginationContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const updateContentArea = () => {
-      if (headerRef.current && filterRef.current && paginationRef.current) {
+      if (headerRef.current && filterRef.current && paginationContainerRef.current) {
         // 获取头部底部距离屏幕顶部的距离
         const headerBottom = headerRef.current.getBoundingClientRect().bottom;
 
@@ -34,15 +34,15 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
         // 获取筛选栏底部距离屏幕顶部的距离
         const filterBottom = filterRef.current.getBoundingClientRect().bottom;
 
-        // 获取分页栏顶部距离屏幕顶部的距离
-        const paginationTop = paginationRef.current.getBoundingClientRect().top;
+        // 获取分页容器顶部距离屏幕顶部的距离
+        const paginationContainerTop = paginationContainerRef.current.getBoundingClientRect().top;
 
         // 计算内容区域的可用高度
-        const availableHeight = paginationTop - filterBottom;
+        const availableHeight = paginationContainerTop - filterBottom;
 
         setContentStyle({
           marginTop: `${filterBottom}px`,
-          marginBottom: `${window.innerHeight - paginationTop}px`,
+          marginBottom: `${window.innerHeight - paginationContainerTop}px`,
           minHeight: `${availableHeight}px`
         });
       }
@@ -104,13 +104,12 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
 
       {/* Overlay pagination container */}
       <div
-        ref={paginationRef}
+        ref={paginationContainerRef}
         className="fixed bottom-0 left-0 right-0 z-[28] bg-slate-950/60 backdrop-blur-xl border-t border-slate-700/30"
+        data-pagination-content
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div data-pagination-content>
-            {paginationFooter}
-          </div>
+          {paginationFooter}
         </div>
       </div>
 
