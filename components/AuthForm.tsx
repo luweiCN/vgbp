@@ -2,245 +2,665 @@ import React, { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useCountdown } from '../hooks/useCountdown';
 import { UnverifiedEmailModal, VerifiedEmailModal } from './EmailStatusModals';
+import { checkEmailStatus, resendConfirmationEmail } from '../services/userCheckService';
 
 interface AuthFormProps {
   onSuccess?: () => void;
 }
 
 export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [registeredEmail, setRegisteredEmail] = useState('');
+  // 使用RoomManager的完整状态结构
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authFormData, setAuthFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    username: "",
+  });
+  const [authFormLoading, setAuthFormLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // 新增状态：邮箱状态检查相关
+  // 邮箱状态检查相关状态
   const [emailChecking, setEmailChecking] = useState(false);
   const [showUnverifiedModal, setShowUnverifiedModal] = useState(false);
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [emailCheckResult, setEmailCheckResult] = useState<any>(null);
   const [resendConfirmationLoading, setResendConfirmationLoading] = useState(false);
-  const [showRegistrationSuccess, setShowRegistrationSuccess] = useState(false);
-  const countdown = useCountdown({ initialTime: 60 });
-
-  // 防抖引用
+  const [cooldownSeconds, setCooldownSeconds] = useState<number>(0);
   const emailCheckTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // 保持useCountdown集成
+  const countdown = useCountdown({ initialTime: 60 });
 
   const {
     signIn,
     signUp,
-    checkEmailRegistrationStatus,
-    resendConfirmationEmailService
   } = useAuth();
 
-  // 邮箱状态检查函数（带防抖）
-  const checkEmailStatus = useCallback(async (emailToCheck: string) => {
-    console.log('🔍 开始邮箱状态检查:', emailToCheck, '登录模式:', isLogin);
+  // 重置表单数据
+  const resetForm = () => {
+    setAuthFormData({
+      email: "",
+      password: "",
+      confirmPassword: "",
+      username: "",
+    });
+    setError("");
+  };
 
-    if (!emailToCheck || !emailToCheck.includes('@') || isLogin) {
-      console.log('⏭️ 跳过检查 - 邮箱格式不正确或在登录模式');
-      return;
-    }
-
-    // 清除之前的定时器
-    if (emailCheckTimeoutRef.current) {
-      clearTimeout(emailCheckTimeoutRef.current);
-    }
-
-    // 设置新的定时器（500ms 防抖）
-    emailCheckTimeoutRef.current = setTimeout(async () => {
-      console.log('⏰ 防抖计时器触发，开始检查邮箱状态');
-      setEmailChecking(true);
-      setError('');
+  // RoomManager的邮箱状态检查函数
+  const checkEmailRegistrationStatus = useCallback(
+    async (email: string) => {
+      if (!email) {
+        return;
+      }
 
       try {
-        console.log('📡 调用 checkEmailRegistrationStatus...');
-        const status = await checkEmailRegistrationStatus(emailToCheck);
-        console.log('📧 邮箱状态检查结果:', status);
+        const status = await checkEmailStatus(email);
+        setEmailCheckResult(status);
 
+        // 在注册和登录模式下都触发相应的弹窗
         switch (status.status) {
-          case 'not_registered':
-            // 继续正常注册流程，不做任何处理
-            break;
-          case 'registered_unverified':
-            // 显示未验证模态框（邮箱状态检查场景，不显示成功横幅）
-            console.log('📧 邮箱状态检查：已注册但未验证，不显示成功横幅');
-            setShowRegistrationSuccess(false);
+          case "registered_unverified":
             setShowUnverifiedModal(true);
-            setRegisteredEmail(emailToCheck);
+            setRegisteredEmail(email);
             break;
-          case 'registered_verified':
-            // 显示已验证模态框
-            console.log('✅ 邮箱状态检查：已验证邮箱，显示登录提示');
-            setShowVerifiedModal(true);
-            setRegisteredEmail(emailToCheck);
+          case "registered_verified":
+            // 只有在注册模式下才弹"已验证"的弹窗
+            if (authMode === "register") {
+              setShowVerifiedModal(true);
+              setRegisteredEmail(email);
+            }
             break;
         }
       } catch (err: any) {
-        // 静默失败，不影响正常注册流程
-      } finally {
-        setEmailChecking(false);
+        console.error("邮箱状态检查失败:", err);
+        // 清除验证结果
+        setEmailCheckResult(null);
       }
-    }, 500);
-  }, [isLogin, checkEmailRegistrationStatus]);
+    },
+    [authMode]
+  );
 
-  // 邮箱输入处理
+  // RoomManager的邮箱输入处理
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
-    console.log('📧 邮箱输入变化:', newEmail, '当前模式:', isLogin ? '登录' : '注册');
-    setEmail(newEmail);
+    setAuthFormData({ ...authFormData, email: newEmail });
 
-    // 在注册模式下检查邮箱状态
-    if (!isLogin && newEmail) {
-      console.log('✅ 触发邮箱状态检查');
-      checkEmailStatus(newEmail);
+    // 在注册和登录模式下都检查邮箱状态
+    if ((authMode === "register" || authMode === "login") && newEmail) {
+      // 清除之前的定时器
+      if (emailCheckTimeoutRef.current) {
+        clearTimeout(emailCheckTimeoutRef.current);
+      }
+
+      // 设置新的定时器（500ms 防抖，等用户输入完成）
+      emailCheckTimeoutRef.current = setTimeout(async () => {
+        setEmailChecking(true);
+        setError("");
+
+        try {
+          await checkEmailRegistrationStatus(newEmail);
+        } catch (err: any) {
+          console.error("邮箱状态检查失败:", err);
+        } finally {
+          setEmailChecking(false);
+        }
+      }, 500);
     } else {
-      console.log('❌ 不触发检查 - 在登录模式或邮箱为空');
+      console.log("❌ 不触发检查 - 模式:", authMode, "或邮箱为空");
     }
   };
 
-  
-  // 重发确认邮件处理
+  // RoomManager的重发确认邮件处理
   const handleResendConfirmation = async () => {
-    if (!registeredEmail || countdown.isActive) return;
+    if (!registeredEmail) return;
 
     setResendConfirmationLoading(true);
-    setError('');
+    setCooldownSeconds(60);
 
     try {
-      const result = await resendConfirmationEmailService(registeredEmail);
+      const result = await resendConfirmationEmail(registeredEmail);
 
       if (result.success) {
-        // 启动倒计时
-        countdown.start();
+        // 开始倒计时
+        let countdown = 60;
+        const interval = setInterval(() => {
+          countdown -= 1;
+          setCooldownSeconds(countdown);
+
+          if (countdown <= 0) {
+            clearInterval(interval);
+          }
+        }, 1000);
       } else {
-        setError(result.message || '重发验证邮件失败');
+        setError(result.message || "重发验证邮件失败");
       }
     } catch (err: any) {
-      setError(err.message || '重发验证邮件时发生错误');
+      setError(err.message || "重发验证邮件时发生错误");
     } finally {
       setResendConfirmationLoading(false);
     }
   };
 
-  // 切换到登录模式
+  // RoomManager的切换到登录模式
   const handleSwitchToLogin = () => {
-    setIsLogin(true);
+    setAuthMode("login");
     setShowVerifiedModal(false);
     setShowUnverifiedModal(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccessMessage('');
+  // RoomManager的认证处理函数
+  const handleAuth = async () => {
+    if (authMode === "register") {
+      if (!authFormData.username.trim()) {
+        setError("请输入用户名！");
+        return;
+      }
+
+      if (authFormData.password !== authFormData.confirmPassword) {
+        setError("两次输入的密码不一致！");
+        return;
+      }
+    }
+
+    if (authFormData.password.length < 6) {
+      setError("密码长度至少为6位！");
+      return;
+    }
+
+    setAuthFormLoading(true);
+    setError("");
 
     try {
-      if (isLogin) {
-        await signIn(email, password);
+      if (authMode === "login") {
+        await signIn(authFormData.email, authFormData.password);
+        resetForm();
         onSuccess?.();
       } else {
-        console.log('🔄 开始注册流程，邮箱:', email);
-        await signUp(email, password);
-        console.log('✅ 注册完成');
+        const signUpResult = await signUp(
+          authFormData.email,
+          authFormData.password,
+          authFormData.username,
+        );
+        console.log("📝 注册结果:", signUpResult);
 
-        // 保存注册的邮箱
-        setRegisteredEmail(email);
+        // 注册成功处理
+        if (signUpResult.user) {
+          console.log("🎉 注册成功");
 
-        // 显示注册成功提示
-        const message = '🎉 注册成功！验证邮件已发送到您的邮箱。';
-        setSuccessMessage(message);
-        console.log('🎉 注册成功流程：设置显示成功横幅');
-        console.log('📊 状态设置：showRegistrationSuccess = true, email =', email);
-        setShowRegistrationSuccess(true);
-        setShowUnverifiedModal(true);
+          // 清空表单
+          resetForm();
 
-        // 清空表单
-        setEmail('');
-        setPassword('');
+          // 如果注册成功但没有会话（需要验证邮箱），显示验证弹窗
+          if (!signUpResult.session && !signUpResult.needsVerificationCode) {
+            setShowUnverifiedModal(true);
+            setRegisteredEmail(authFormData.email);
+          }
+
+          // 注册成功后调用回调
+          onSuccess?.();
+        } else {
+          // 注册失败，不清空表单，不关闭弹窗，让用户重新尝试
+          console.log("❌ 注册失败");
+        }
       }
     } catch (err: any) {
-      setError(err.message);
+      console.error("❌ 认证失败:", err);
+      const errorMessage = err.message || "注册或登录失败，请稍后重试";
+      setError(errorMessage);
+
+      // 如果是注册失败，清除任何邮箱验证相关的状态
+      if (authMode === "register") {
+        setEmailCheckResult(null);
+      }
     } finally {
-      setLoading(false);
+      setAuthFormLoading(false);
     }
   };
 
-  
-  return (
-    <div className="min-h-[400px] bg-gray-800 rounded-lg p-6 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-white mb-6 text-center">
-        {isLogin ? '登录' : '注册'}
-      </h2>
+  // 切换认证模式
+  const handleModeSwitch = () => {
+    setAuthMode(authMode === "login" ? "register" : "login");
+    setError("");
+  };
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            邮箱
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={handleEmailChange}
-            placeholder="请输入邮箱"
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          {!isLogin && emailChecking && (
-            <div className="text-blue-400 text-sm mt-1">
-              正在检查邮箱状态...
+  return (
+    <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-8 max-w-md w-full mx-auto shadow-2xl">
+      {/* 头部 */}
+      <div className="mb-6">
+        <h3 className="text-xl font-bold text-white">
+          {authMode === "login" ? "登录账户" : "注册账户"}
+        </h3>
+        <p className="text-sm text-zinc-400 mt-1">
+          {authMode === "login"
+            ? "登录后即可创建和管理房间"
+            : "创建账户开始使用在线功能"}
+        </p>
+      </div>
+
+      {/* 模式切换 */}
+      <div className="flex bg-zinc-700/50 rounded-lg p-1 mb-6 border border-zinc-600">
+        <button
+          onClick={() => setAuthMode("login")}
+          className={`px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200 flex-1 ${
+            authMode === "login"
+              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
+              : "text-zinc-400 hover:text-white hover:bg-zinc-600"
+          }`}
+        >
+          登录
+        </button>
+        <button
+          onClick={() => setAuthMode("register")}
+          className={`px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200 flex-1 ${
+            authMode === "register"
+              ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg"
+              : "text-zinc-400 hover:text-white hover:bg-zinc-600"
+          }`}
+        >
+          注册
+        </button>
+      </div>
+
+      {/* 表单 */}
+      <div className="space-y-5">
+        {/* 用户名字段（仅注册模式） */}
+        {authMode === "register" && (
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-2">
+              用户名 <span className="text-red-400">*</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg
+                  className="h-5 w-5 text-zinc-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={authFormData.username}
+                onChange={(e) =>
+                  setAuthFormData({
+                    ...authFormData,
+                    username: e.target.value,
+                  })
+                }
+                className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                placeholder="请输入用户名（中英文均可）"
+                required
+              />
             </div>
+            <div className="mt-1 text-xs text-zinc-500">
+              用户名将作为您在平台上的显示名称
+            </div>
+          </div>
+        )}
+
+        {/* 邮箱字段 */}
+        <div>
+          <label className="block text-sm font-medium text-zinc-300 mb-2">
+            邮箱地址 <span className="text-red-400">*</span>
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="h-5 w-5 text-zinc-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <input
+              type="email"
+              value={authFormData.email}
+              onChange={handleEmailChange}
+              className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              placeholder="请输入邮箱地址（用于登录）"
+              required
+            />
+          </div>
+          {(authMode === "register" || authMode === "login") && (
+            <>
+              {emailChecking && (
+                <div className="text-blue-400 text-sm mt-1">
+                  正在检查邮箱状态...
+                </div>
+              )}
+
+              {/* 注册模式下显示邮箱状态反馈 */}
+              {authMode === "register" &&
+                emailCheckResult &&
+                !emailChecking &&
+                authFormData.email && (
+                  <div
+                    className={`text-sm mt-2 flex items-center ${
+                      emailCheckResult.status === "registered_unverified"
+                        ? "text-yellow-400"
+                        : emailCheckResult.status ===
+                            "registered_verified"
+                          ? "text-green-400"
+                          : emailCheckResult.status === "not_registered"
+                            ? "text-green-400"
+                            : "text-gray-400"
+                    }`}
+                  >
+                    {emailCheckResult.status ===
+                      "registered_unverified" && (
+                      <>
+                        <svg
+                          className="w-4 h-4 mr-2 flex-shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"
+                          />
+                        </svg>
+                        <span>邮箱已注册但未验证</span>
+                      </>
+                    )}
+                    {emailCheckResult.status ===
+                      "registered_verified" && (
+                      <>
+                        <svg
+                          className="w-4 h-4 mr-2 flex-shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                          />
+                        </svg>
+                        <span>邮箱已注册并已验证</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthMode("login");
+                            setShowVerifiedModal(false);
+                            setShowUnverifiedModal(false);
+                          }}
+                          className="ml-2 text-xs bg-green-600/20 hover:bg-green-600/30 px-2 py-1 rounded border border-green-600/50"
+                        >
+                          去登录
+                        </button>
+                      </>
+                    )}
+                    {emailCheckResult.status === "not_registered" && (
+                      <>
+                        <svg
+                          className="w-4 h-4 mr-2 flex-shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span>邮箱可以注册</span>
+                      </>
+                    )}
+                  </div>
+                )}
+
+              {/* 登录模式下只显示未注册的提示，其他状态会弹窗 */}
+              {authMode === "login" &&
+                emailCheckResult &&
+                !emailChecking &&
+                authFormData.email &&
+                emailCheckResult.status === "not_registered" && (
+                  <div className="text-sm mt-2 flex items-center text-gray-400">
+                    <svg
+                      className="w-4 h-4 mr-2 flex-shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>该邮箱尚未注册</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("register");
+                        setShowVerifiedModal(false);
+                        setShowUnverifiedModal(false);
+                      }}
+                      className="ml-2 text-xs bg-blue-600/20 hover:bg-blue-600/30 px-2 py-1 rounded border border-blue-600/50"
+                    >
+                      去注册
+                    </button>
+                  </div>
+                )}
+
+              <div className="mt-1 text-xs text-zinc-500">
+                邮箱地址仅用于登录，不会公开显示
+              </div>
+            </>
           )}
         </div>
 
+        {/* 密码字段 */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            密码
+          <label className="block text-sm font-medium text-zinc-300 mb-2">
+            密码 <span className="text-red-400">*</span>
           </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            minLength={6}
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="h-5 w-5 text-zinc-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+            </div>
+            <input
+              type="password"
+              value={authFormData.password}
+              onChange={(e) =>
+                setAuthFormData({
+                  ...authFormData,
+                  password: e.target.value,
+                })
+              }
+              className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              placeholder="请输入密码（至少6位）"
+              required
+            />
+          </div>
         </div>
 
+        {/* 确认密码字段（仅注册模式） */}
+        {authMode === "register" && (
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-2">
+              确认密码 <span className="text-red-400">*</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg
+                  className="h-5 w-5 text-zinc-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+              </div>
+              <input
+                type="password"
+                value={authFormData.confirmPassword}
+                onChange={(e) =>
+                  setAuthFormData({
+                    ...authFormData,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                placeholder="请再次输入密码"
+                required
+              />
+            </div>
+          </div>
+        )}
+
+        {/* 错误信息 */}
         {error && (
-          <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded p-3">
-            {error}
+          <div className="bg-red-900/20 border border-red-800/50 rounded-lg p-4 text-red-400 text-sm">
+            <div className="flex items-center gap-3">
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{error}</span>
+            </div>
           </div>
         )}
 
-        {successMessage && (
-          <div className="text-green-400 text-sm bg-green-900/20 border border-green-800 rounded p-3 whitespace-pre-line">
-            {successMessage}
-          </div>
-        )}
-
+        {/* 提交按钮 */}
         <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={handleAuth}
+          disabled={
+            authFormLoading ||
+            !authFormData.email ||
+            !authFormData.password ||
+            (authMode === "register" && (!authFormData.username || !authFormData.confirmPassword))
+          }
+          className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+            authMode === "login"
+              ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+              : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+          }`}
         >
-          {loading ? '处理中...' : (isLogin ? '登录' : '注册')}
+          {authFormLoading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              {authMode === "login" ? "登录中..." : "注册中..."}
+            </>
+          ) : (
+            <>
+              {authMode === "login" ? (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  登录
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                    />
+                  </svg>
+                  注册
+                </>
+              )}
+            </>
+          )}
         </button>
-      </form>
+      </div>
 
-      <div className="mt-6 text-center">
-        <button
-          type="button"
-          onClick={() => {
-            setIsLogin(!isLogin);
-            setError('');
-          }}
-          className="text-blue-400 hover:text-blue-300 text-sm"
-        >
-          {isLogin ? '没有账户？点击注册' : '已有账户？点击登录'}
-        </button>
+      <div className="mt-6 pt-6 border-t border-zinc-700">
+        <div className="text-center">
+          <p className="text-xs text-zinc-500">
+            {authMode === "login" ? (
+              <>
+                还没有账户？{" "}
+                <button
+                  onClick={handleModeSwitch}
+                  className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                >
+                  立即注册
+                </button>
+              </>
+            ) : (
+              <>
+                已有账户？{" "}
+                <button
+                  onClick={handleModeSwitch}
+                  className="text-green-400 hover:text-green-300 font-medium transition-colors"
+                >
+                  返回登录
+                </button>
+              </>
+            )}
+          </p>
+        </div>
       </div>
 
       {/* 邮箱状态模态框 */}
@@ -250,8 +670,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         email={registeredEmail}
         onResendEmail={handleResendConfirmation}
         resendLoading={resendConfirmationLoading}
-        cooldownSeconds={countdown.timeLeft}
-        showSuccessBanner={showRegistrationSuccess}
+        cooldownSeconds={cooldownSeconds}
+        showSuccessBanner={true} // 注册成功时显示横幅
       />
 
       <VerifiedEmailModal
