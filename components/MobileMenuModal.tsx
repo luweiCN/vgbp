@@ -7,6 +7,7 @@ interface MobileMenuModalProps {
   onCreateRoom: () => void;
   onJoinRoom: () => void;
   onOpenUserSettings: () => void;
+  onOpenLogin: () => void;
 }
 
 export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
@@ -15,6 +16,7 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
   onCreateRoom,
   onJoinRoom,
   onOpenUserSettings,
+  onOpenLogin,
 }) => {
   const { user } = useAuth();
 
@@ -61,7 +63,7 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
               <div className="flex items-center gap-3">
                 {user ? (
                   <>
-                    <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
                       {user.username.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -75,7 +77,7 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
                   </>
                 ) : (
                   <>
-                    <div className="w-12 h-12 bg-linear-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                    <div className="w-12 h-12 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
                       <svg
                         className="w-6 h-6"
                         fill="none"
@@ -117,7 +119,7 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
                     }}
                     className="w-full px-4 py-3 text-left text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 border border-zinc-700/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                   >
-                    <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                       <svg
                         className="w-4 h-4 text-white"
                         fill="none"
@@ -147,7 +149,7 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
                     }}
                     className="w-full px-4 py-3 text-left text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 border border-zinc-700/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                   >
-                    <div className="w-8 h-8 bg-linear-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
                       <svg
                         className="w-4 h-4 text-white"
                         fill="none"
@@ -174,9 +176,9 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
                 <button
                   onClick={() => {
                     onClose();
-                    // 这里应该显示登录弹窗，但为了简化，暂时只关闭菜单
+                    onOpenLogin();
                   }}
-                  className="w-full px-4 py-3 text-left text-sm font-medium text-white bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-0 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/20 flex items-center gap-3"
+                  className="w-full px-4 py-3 text-left text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-0 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/20 flex items-center gap-3"
                 >
                   <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
                     <svg

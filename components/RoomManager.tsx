@@ -353,6 +353,10 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
             setShowUserSettings(true);
             setShowMobileMenu(false);
           }}
+          onOpenLogin={() => {
+            setShowLoginForm(true);
+            setShowMobileMenu(false);
+          }}
         />
 
         {/* 登录模态框 */}
