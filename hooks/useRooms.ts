@@ -109,43 +109,7 @@ export const useRooms = () => {
     }
   }, [isConfigured, user]);
 
-  // 创建新房间
-  const createRoom = async (roomData: {
-    name: string;
-    description?: string;
-  }) => {
-    if (!user || !isConfigured) {
-      throw new Error('User not authenticated or Supabase not configured');
-    }
-
-    try {
-      const { data, error: createError } = await supabase
-        .from('rooms')
-        .insert({
-          name: roomData.name,
-          description: roomData.description,
-          owner_id: user.id
-        })
-        .select()
-        .single();
-
-      if (createError) throw createError;
-
-      // 创建房间设置
-      await supabase
-        .from('room_settings')
-        .insert({
-          room_id: data.id
-        });
-
-      // 刷新房间列表
-      await fetchUserRooms();
-      return data;
-    } catch (err: any) {
-      throw new Error(err.message);
-    }
-  };
-
+  
   
   
   // 删除房间（仅房主）
@@ -184,6 +148,7 @@ export const useRooms = () => {
     }
   };
 
+  
   // 获取所有房间（分页）
   const fetchAllRooms = useCallback(async (page: number = 1) => {
     if (!isConfigured) {
@@ -339,7 +304,6 @@ export const useRooms = () => {
     pageSize,
     fetchUserRooms,
     fetchAllRooms,
-    createRoom,
     deleteRoom,
     refetch: fetchUserRooms
   };

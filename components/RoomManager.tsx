@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { ToastContainer } from '../components/Toast';
 import { UnverifiedEmailModal, VerifiedEmailModal } from '../components/EmailStatusModals';
+import { RoomFormModal } from './RoomFormModal';
 import { checkEmailStatus, resendConfirmationEmail } from '../services/userCheckService';
 import { supabase } from '../services/supabase';
 
@@ -13,8 +14,7 @@ interface RoomManagerProps {
 }
 
 export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack }) => {
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showJoinForm, setShowJoinForm] = useState(false);
+    const [showJoinForm, setShowJoinForm] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -42,16 +42,14 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     username: ''
   });
   const [usernameFormLoading, setUsernameFormLoading] = useState(false);
-  const [createFormData, setCreateFormData] = useState({
-    name: '',
-    description: ''
-  });
-  const [joinFormData, setJoinFormData] = useState({
+    const [joinFormData, setJoinFormData] = useState({
     roomId: ''
   });
-  const [loading, setLoading] = useState(false);
   const [joinLoading, setJoinLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  // 弹窗相关状态
+  const [showRoomForm, setShowRoomForm] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<Room | null>(null);
 
   const {
     user,
@@ -73,38 +71,37 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
     currentPage,
     totalRooms,
     pageSize,
-    createRoom,
     deleteRoom,
     fetchAllRooms,
     refetch
   } = useRooms();
 
-  const handleCreateRoom = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateRoom = () => {
+    setEditingRoom(null);
+    setShowRoomForm(true);
+  };
 
-    // 检查用户是否已登录
-    if (!user) {
-      setShowLoginForm(true);
-      return;
+  const handleRoomSuccess = (message: string, room?: Room) => {
+    setShowRoomForm(false);
+    setEditingRoom(null);
+
+    // 显示成功消息
+    showSuccess(message);
+
+    // 如果是创建房间且成功，自动进入房间
+    if (room && !editingRoom && room?.id && onEnterRoom) {
+      onEnterRoom(room.id);
     }
 
-    setLoading(true);
-    setError('');
+    // 刷新房间列表
+    refetch(); // 刷新用户自己的房间列表
+    fetchAllRooms(currentPage); // 刷新公共房间列表
+  };
 
-    try {
-      const newRoom = await createRoom(createFormData);
-      setCreateFormData({ name: '', description: '' });
-      setShowCreateForm(false);
-
-      // 创建成功后自动进入房间
-      if (newRoom?.id && onEnterRoom) {
-        onEnterRoom(newRoom.id);
-      }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  // 编辑房间相关函数
+  const handleEditRoomClick = (room: Room) => {
+    setEditingRoom(room);
+    setShowRoomForm(true);
   };
 
   const handleJoinRoom = async (e: React.FormEvent) => {
@@ -484,27 +481,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
             </button>
             
             <button
-              onClick={() => {
-                if (!user) {
-                  setShowLoginForm(true);
-                  return;
-                }
-                 const now = new Date();
-                 const dateStr = now.toLocaleDateString('zh-CN', {
-                   month: '2-digit',
-                   day: '2-digit'
-                 }).replace(/\//g, '-');
-                 const timeStr = now.toLocaleTimeString('zh-CN', {
-                   hour: '2-digit',
-                   minute: '2-digit',
-                   hour12: false
-                 });
-                 setCreateFormData({
-                   name: `${user?.username || ''}的房间 ${dateStr} ${timeStr}`,
-                  description: ''
-                });
-                setShowCreateForm(true);
-              }}
+              onClick={handleCreateRoom}
               className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-0 rounded-lg transition-all duration-200 shadow-lg hover:shadow-green-500/20 flex items-center gap-1 sm:gap-2"
             >
               <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -598,102 +575,17 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
 
 
-      {/* 创建房间弹窗 */}
-      {showCreateForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
-          <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6 max-w-md w-full mx-auto shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">创建新房间</h2>
-              <button
-                onClick={() => {
-                  setShowCreateForm(false);
-                  setCreateFormData({ name: '', description: '' });
-                  setError('');
-                }}
-                className="text-zinc-400 hover:text-white text-2xl transition-colors"
-              >
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateRoom} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  房间名称 <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={createFormData.name}
-                  onChange={(e) => setCreateFormData({...createFormData, name: e.target.value})}
-                  className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  required
-                  maxLength={50}
-                  placeholder={`${user?.username || ''}的房间 YYYY-MM-DD HH:mm`}
-                />
-                <div className="mt-1 text-xs text-zinc-500 text-right">
-                  {createFormData.name.length}/50
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  房间描述 <span className="text-zinc-500">（可选）</span>
-                </label>
-                <textarea
-                  value={createFormData.description}
-                  onChange={(e) => setCreateFormData({...createFormData, description: e.target.value})}
-                  className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors"
-                  rows={3}
-                  maxLength={200}
-                  placeholder="输入房间描述（最多200字符）"
-                />
-                <div className="mt-1 text-xs text-zinc-500 text-right">
-                  {createFormData.description.length}/200
-                </div>
-              </div>
-
-              {error && (
-                <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 text-red-400 text-sm">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {error}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={loading || !createFormData.name.trim()}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-zinc-600 disabled:to-zinc-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      创建中...
-                    </div>
-                  ) : (
-                    '创建房间'
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCreateForm(false);
-                    setCreateFormData({ name: '', description: '' });
-                    setError('');
-                  }}
-                  className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                >
-                  取消
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* 房间表单弹窗（创建/编辑） */}
+      <RoomFormModal
+        isOpen={showRoomForm}
+        onClose={() => {
+          setShowRoomForm(false);
+          setEditingRoom(null);
+        }}
+        mode={editingRoom ? 'edit' : 'create'}
+        room={editingRoom || undefined}
+        onSuccess={handleRoomSuccess}
+      />
 
       {/* 加入房间弹窗 */}
       {showJoinForm && (
@@ -919,27 +811,8 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
                   
                   <button
                     onClick={() => {
-                      if (!user) {
-                        setShowLoginForm(true);
-                        setShowMobileMenu(false);
-                        return;
-                      }
-                       const now = new Date();
-                       const dateStr = now.toLocaleDateString('zh-CN', {
-                         month: '2-digit',
-                         day: '2-digit'
-                       }).replace(/\//g, '-');
-                       const timeStr = now.toLocaleTimeString('zh-CN', {
-                         hour: '2-digit',
-                         minute: '2-digit',
-                         hour12: false
-                       });
-                       setCreateFormData({
-                         name: `${user?.username || ''}的房间 ${dateStr} ${timeStr}`,
-                        description: ''
-                      });
-                      setShowCreateForm(true);
                       setShowMobileMenu(false);
+                      handleCreateRoom();
                     }}
                     className="w-full px-4 py-3 text-left text-sm font-medium text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-0 rounded-lg transition-all duration-200 shadow-lg hover:shadow-green-500/20 flex items-center gap-3"
                   >
@@ -1079,7 +952,20 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
 
                          {/* 右侧：操作按钮 */}
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          {/* 删除按钮 - 第一个 */}
+                          {/* 编辑按钮 */}
+                          {user && room.owner_id === user.id && (
+                            <button
+                              onClick={() => handleEditRoomClick(room)}
+                              className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-600/20 rounded-md transition-colors"
+                              title="编辑房间"
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                          )}
+
+                          {/* 删除按钮 */}
                           {user && room.owner_id === user.id && (
                             <button
                               onClick={() => handleDeleteRoom(room.id)}
@@ -1126,18 +1012,34 @@ export const RoomManager: React.FC<RoomManagerProps> = ({ onEnterRoom, onBack })
             <div className="sm:hidden space-y-3">
               {allRooms.map((room) => (
                 <div key={room.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700 relative">
-                  {/* 右上角删除按钮 */}
-                  {user && room.owner_id === user.id && (
-                    <button
-                      onClick={() => handleDeleteRoom(room.id)}
-                      className="absolute top-3 right-3 p-2 text-gray-400 hover:text-red-400 hover:bg-red-600/20 rounded-md transition-colors"
-                      title="删除房间"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  )}
+                  {/* 右上角按钮组 */}
+                  <div className="absolute top-3 right-3 flex gap-2">
+                    {/* 编辑按钮 */}
+                    {user && room.owner_id === user.id && (
+                      <button
+                        onClick={() => handleEditRoomClick(room)}
+                        className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-600/20 rounded-md transition-colors"
+                        title="编辑房间"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                    )}
+
+                    {/* 删除按钮 */}
+                    {user && room.owner_id === user.id && (
+                      <button
+                        onClick={() => handleDeleteRoom(room.id)}
+                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-600/20 rounded-md transition-colors"
+                        title="删除房间"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
 
                   <div className="mb-3">
                     <h3 className="text-base font-semibold text-white mb-1 pr-10">{room.name}</h3>
