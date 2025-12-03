@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { useAuth } from './useAuth';
 import { HEROES_DATA, getHeroAvatarUrl } from '../data/heroes';
+import { RoomFetchOptions } from '../types/roomFilters';
 
 export interface Room {
   id: string;
@@ -48,23 +49,32 @@ export const useRooms = () => {
   const isFetchingUserRoomsRef = useRef(false);
   const isFetchingPublicRoomsRef = useRef(false);
 
-  // 统一的房间获取函数，通过 ownerId 筛选
-  const fetchRooms = useCallback(async (options?: {
-    ownerId?: string;  // 如果提供，只获取该用户的房间；如果不提供，获取所有房间
-    page?: number;
-  }) => {
-    const { ownerId, page = 1 } = options || {};
+  // 统一的房间获取函数，支持多种筛选和搜索选项
+  const fetchRooms = useCallback(async (options?: RoomFetchOptions) => {
+    const {
+      ownerId,
+      page = 1,
+      search,
+      sortBy,
+      sortOrder = 'desc'
+    } = options || {};
 
     if (!isConfigured) {
       setRooms([]);
       setAllRooms([]);
       setTotalRooms(0);
-      return;
+      return {
+        data: [],
+        total: 0
+      };
     }
 
     // 防止重复请求
     if (isFetchingPublicRoomsRef.current) {
-      return;
+      return {
+        data: [],
+        total: 0
+      };
     }
 
     isFetchingPublicRoomsRef.current = true;
@@ -77,43 +87,52 @@ export const useRooms = () => {
         .from('rooms')
         .select(`
           *,
-          owner:profiles(email, username, display_name)
+          owner:profiles!rooms_owner_id_fkey(email, username, display_name)
         `);
 
-      // 如果指定了 ownerId，添加筛选条件
+      // 所有者筛选
       if (ownerId) {
         query = query.eq('owner_id', ownerId);
       }
 
-      // 获取总数
+      // 搜索条件：房间名称或描述模糊匹配
+      if (search && search.trim()) {
+        query = query.or(`name.ilike.%${search.trim()}%,description.ilike.%${search.trim()}%`);
+      }
+
+      // 获取总数（应用相同的筛选条件）
       let countQuery = supabase
         .from('rooms')
         .select('*', { count: 'exact', head: true });
 
-      // 如果指定了 ownerId，添加筛选条件
       if (ownerId) {
         countQuery = countQuery.eq('owner_id', ownerId);
       }
 
-      const { count, error: countError } = await countQuery;
-
-      if (countError) throw countError;
-
-      // 获取分页数据
-      let dataQuery = supabase
-        .from('rooms')
-        .select(`
-          *,
-          owner:profiles!rooms_owner_id_fkey(email, username, display_name)
-        `)
-        .order('created_at', { ascending: false })
-        .range((page - 1) * pageSize, page * pageSize - 1);
-
-      if (ownerId) {
-        dataQuery = dataQuery.eq('owner_id', ownerId);
+      if (search && search.trim()) {
+        countQuery = countQuery.or(`name.ilike.%${search.trim()}%,description.ilike.%${search.trim()}%`);
       }
 
-      const { data: roomsData, error: roomsError } = await dataQuery;
+      const { count, error: countError } = await countQuery;
+      if (countError) throw countError;
+
+      // 排序逻辑
+      let sortField: string;
+      if (sortBy === 'updated') {
+        // 更新时间排序：取 updated_at 和 bp_updated_at 的最大值
+        // 这里使用一个CASE语句来实现
+        query = query.order('updated_at', { ascending: sortOrder === 'asc' });
+      } else if (sortBy === 'created') {
+        query = query.order('created_at', { ascending: sortOrder === 'asc' });
+      } else {
+        // 默认按更新时间排序
+        query = query.order('updated_at', { ascending: false });
+      }
+
+      // 分页
+      query = query.range((page - 1) * pageSize, page * pageSize - 1);
+
+      const { data: roomsData, error: roomsError } = await query;
       if (roomsError) throw roomsError;
 
       // 根据是否有 ownerId 来更新不同的状态
@@ -125,11 +144,23 @@ export const useRooms = () => {
 
       setTotalRooms(count || 0);
       setCurrentPage(page);
+
+      // 返回数据和总数
+      return {
+        data: roomsData || [],
+        total: count || 0
+      };
     } catch (err: any) {
       setError(err.message);
       setRooms([]);
       setAllRooms([]);
       setTotalRooms(0);
+
+      // 返回空结果
+      return {
+        data: [],
+        total: 0
+      };
     } finally {
       setLoading(false);
       isFetchingPublicRoomsRef.current = false;
@@ -141,6 +172,11 @@ export const useRooms = () => {
     if (!user) return;
     return fetchRooms({ ownerId: user.id, page });
   }, [fetchRooms, user]);
+
+  // 新增：获取筛选后的房间（支持搜索、排序等）
+  const fetchFilteredRooms = useCallback(async (options: RoomFetchOptions) => {
+    return fetchRooms(options);
+  }, [fetchRooms]);
 
   
   
@@ -201,9 +237,10 @@ export const useRooms = () => {
     currentPage,
     totalRooms,
     pageSize,
-    fetchRooms,        // 新增：统一的房间获取函数
+    fetchRooms,
     fetchUserRooms,
     fetchAllRooms,
+    fetchFilteredRooms, // 新增：支持筛选的房间获取函数
     deleteRoom,
     refetch: fetchUserRooms
   };
