@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { RoomFilterParams } from '../types/roomFilters';
 import { FILTER_VALUE_LABELS } from '../types/roomFilters';
 
@@ -20,6 +21,7 @@ const FilterChips: React.FC<FilterChipsProps> = ({
   onClearAll,
   className = ""
 }) => {
+  const { user } = useAuth();
   // 获取需要显示的筛选条件
   const getActiveFilters = () => {
     const activeFilters: Array<{
@@ -39,8 +41,8 @@ const FilterChips: React.FC<FilterChipsProps> = ({
       });
     }
 
-    // 所有者筛选（始终显示）
-    if (filters.owner) {
+    // 所有者筛选（仅用户登录时显示）
+    if (filters.owner && user?.id) {
       activeFilters.push({
         key: 'owner',
         label: '所有者',

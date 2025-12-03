@@ -7,6 +7,10 @@ interface PaginationProps {
   mobileDefaultPageSize?: number;
   pageSizeOptions?: number[];
   className?: string;
+  // 新增：支持容器宽度控制
+  containerWidth?: 'full' | 'limited';
+  // 新增：支持吸底模式样式
+  isSticky?: boolean;
 }
 
 interface PaginationState {
@@ -21,6 +25,8 @@ export const Pagination: React.FC<PaginationProps> = ({
   mobileDefaultPageSize = 5,
   pageSizeOptions = [5, 10, 15, 20],
   className = '',
+  containerWidth = 'limited',
+  isSticky = false,
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
@@ -139,8 +145,20 @@ export const Pagination: React.FC<PaginationProps> = ({
     return null;
   }
 
+  // 动态样式类
+  const containerClasses = [
+    'flex',
+    'justify-end',
+    'items-center',
+    'gap-1',
+    'w-full',
+    isSticky ? 'py-0' : 'mt-8',
+    '',
+    className
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`flex justify-end items-center gap-1 mt-8 w-full ${className}`}>
+    <div className={containerClasses}>
       <span className="text-sm text-zinc-400 hidden sm:inline">每页</span>
       <span className="text-sm text-zinc-400 sm:hidden">每页</span>
 
