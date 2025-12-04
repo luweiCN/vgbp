@@ -8,13 +8,10 @@ export type Permission =
   | 'edit_bp_state'
   | 'manage_room'
   | 'delete_room'
-  | 'transfer_ownership'
-  | 'invite_users'
-  | 'remove_participants';
+  | 'transfer_ownership';
 
 export interface RolePermissions {
   owner: Permission[];
-  participant: Permission[];
   anonymous: Permission[];
 }
 
@@ -24,28 +21,18 @@ export const rolePermissions: RolePermissions = {
     'edit_bp_state',
     'manage_room',
     'delete_room',
-    'transfer_ownership',
-    'invite_users',
-    'remove_participants'
+    'transfer_ownership'
   ],
-  participant: [
-    'view_room',
-    'invite_users'
-  ],
-  anonymous: [
-    'view_room'
-  ]
+  anonymous: ['view_room'] // 未登录用户也能查看所有房间
 };
 
 export interface PermissionResult {
   hasPermission: boolean;
-  role: 'owner' | 'participant' | 'anonymous' | null;
+  role: 'owner' | 'anonymous' | null;
   permissions: Permission[];
   canEdit: boolean;
   canManageRoom: boolean;
   canDeleteRoom: boolean;
-  canInviteUsers: boolean;
-  canRemoveParticipants: boolean;
 }
 
 export const usePermissions = (roomId?: string): PermissionResult => {
@@ -61,9 +48,7 @@ export const usePermissions = (roomId?: string): PermissionResult => {
         permissions: rolePermissions.anonymous,
         canEdit: true, // 本地模式总是可编辑
         canManageRoom: false,
-        canDeleteRoom: false,
-        canInviteUsers: false,
-        canRemoveParticipants: false
+        canDeleteRoom: false
       };
     }
 
@@ -75,30 +60,30 @@ export const usePermissions = (roomId?: string): PermissionResult => {
         permissions: rolePermissions.anonymous,
         canEdit: false,
         canManageRoom: false,
-        canDeleteRoom: false,
-        canInviteUsers: false,
-        canRemoveParticipants: false
+        canDeleteRoom: false
       };
     }
 
-    // 根据用户角色确定权限
-    let userRole: 'owner' | 'participant' = 'participant';
-    let userPermissions = rolePermissions.participant;
-
+    // 根据用户角色确定权限（只有owner和anonymous两种角色）
     if (isOwner) {
-      userRole = 'owner';
-      userPermissions = rolePermissions.owner;
+      return {
+        hasPermission: true,
+        role: 'owner' as const,
+        permissions: rolePermissions.owner,
+        canEdit: canEdit, // 来自useBPState的权限检查
+        canManageRoom: true,
+        canDeleteRoom: true
+      };
     }
 
+    // 非owner用户都是匿名权限（只能查看）
     return {
       hasPermission: true,
-      role: userRole,
-      permissions: userPermissions,
-      canEdit: canEdit, // 来自useBPState的权限检查
-      canManageRoom: userRole === 'owner',
-      canDeleteRoom: userRole === 'owner',
-      canInviteUsers: userRole === 'owner' || userRole === 'participant',
-      canRemoveParticipants: userRole === 'owner'
+      role: 'anonymous' as const,
+      permissions: rolePermissions.anonymous,
+      canEdit: false,
+      canManageRoom: false,
+      canDeleteRoom: false
     };
   }, [user, isConfigured, roomId, isOnlineMode, isOwner, canEdit]);
 

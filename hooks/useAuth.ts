@@ -125,7 +125,6 @@ export const useAuth = () => {
       }
     };
 
-    console.log('About to call getInitialSession...');
     getInitialSession();
 
     // 添加超时保护，防止永远加载
@@ -148,7 +147,9 @@ export const useAuth = () => {
         // 对于INITIAL_SESSION事件，只有当loading为true时才处理（页面刷新的情况）
         if (event === 'INITIAL_SESSION') {
           if (authState.loading) {
-            console.log('🔄 处理INITIAL_SESSION事件 - 页面刷新场景');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🔄 处理INITIAL_SESSION事件 - 页面刷新场景');
+            }
             if (session?.user) {
               const basicUserInfo = {
                 id: session.user.id,
@@ -358,24 +359,7 @@ export const useAuth = () => {
     }
 
     try {
-      // 检查用户名是否已存在（使用更安全的方式）
-      const { data: existingUser, error: checkError } = await supabase
-        .from('profiles')
-        .select('id, username')
-        .neq('id', authState.user!.id);
-
-      if (checkError) {
-        console.error('Error checking existing username:', checkError);
-        // 如果检查失败，继续尝试更新（可能是网络问题）
-      } else {
-        // 在客户端检查用户名是否已存在
-        const usernameExists = existingUser?.some(profile => profile.username === newUsername);
-        if (usernameExists) {
-          throw new Error('用户名已存在');
-        }
-      }
-
-      // 更新用户名
+      // 直接更新用户名，不检查唯一性，允许用户名重复
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ username: newUsername })
@@ -426,21 +410,6 @@ export const useAuth = () => {
   // 重发确认邮件服务（与UI组件配合使用）
   const resendConfirmationEmailService = resendVerificationEmail;
 
-  // 发送验证码（暂时返回默认值，后续可以实现）
-  const sendVerificationCode = async (email: string) => {
-    // 临时实现，返回成功状态
-    return {
-      success: true,
-      message: '验证码发送功能开发中...'
-    };
-  };
-
-  // 使用验证码注册（暂时返回默认值，后续可以实现）
-  const signUpWithVerificationCode = async (email: string, code: string, password: string) => {
-    // 临时实现，直接调用普通注册
-    return await signUp(email, password);
-  };
-
   return {
     ...authState,
     signIn,
@@ -450,8 +419,6 @@ export const useAuth = () => {
     checkEmailRegistrationStatus,
     resendVerificationEmail,
     resendConfirmationEmailService,
-    sendVerificationCode,
-    signUpWithVerificationCode,
     isConfigured: isSupabaseConfigured()
   };
 };

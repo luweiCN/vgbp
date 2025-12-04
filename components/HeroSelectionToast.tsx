@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { HEROES } from '../constants';
-import { getHeroAvatarUrl } from '../data/heroes';
+import { getHeroAvatarUrl, getHeroById } from '../data/heroes';
 
 interface HeroAvatarProps {
   heroId: string;
@@ -11,7 +10,7 @@ interface HeroAvatarProps {
 
 const HeroAvatar: React.FC<HeroAvatarProps> = ({ heroId, borderColor, opacity = 1, style }) => {
   const [imageError, setImageError] = useState(false);
-  const hero = HEROES.find(h => h.id === heroId);
+  const hero = getHeroById(heroId);
 
   return (
     <div
