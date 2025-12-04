@@ -80,7 +80,7 @@ export const FilterHeader: React.FC<FilterHeaderProps> = ({
         </div>
 
         {/* 右侧控制区 - 筛选和排序，与左侧拉开距离 */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-1 min-w-0 sm:flex-initial">
           {/* "我创建的"开关 */}
           {user?.id && (
             <OwnerToggle
@@ -88,7 +88,7 @@ export const FilterHeader: React.FC<FilterHeaderProps> = ({
               onChange={(checked: boolean) =>
                 setFilter("owner", checked ? "me" : "all")
               }
-              className="mx-2"
+              className="mr-2 sm:mx-2"
             />
           )}
 

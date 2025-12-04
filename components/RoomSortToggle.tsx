@@ -32,48 +32,52 @@ const RoomSortToggle: React.FC<RoomSortToggleProps> = ({
 
   // 统一样式 - 排序方式选择和方向切换
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <span className="text-xs text-zinc-400 hidden sm:inline">{t('ui.components.roomSortToggle.sortLabel')}</span>
+    <div className={`flex items-center gap-2 flex-1 sm:w-full overflow-hidden ${className}`}>
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="text-xs text-zinc-400 hidden sm:inline">{t('ui.components.roomSortToggle.sortLabel')}</span>
 
-      {/* 排序方式选择器 */}
-      <div className="flex items-center gap-1 bg-zinc-800 rounded-full p-1">
-        {SORT_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => {
-              // 保持当前的排序方向，除非切换到新的排序方式
-              const defaultOrder = option.value === 'created' || option.value === 'updated' ? 'desc' : 'asc';
-              onChange(option.value, sortBy === option.value ? sortOrder : defaultOrder);
-            }}
-            className={`px-2 py-1 text-xs font-medium rounded-full transition-colors flex items-center gap-1 whitespace-nowrap overflow-hidden max-w-20 ${
-              sortBy === option.value
-                ? "bg-blue-600 text-white"
-                : "text-zinc-400 hover:text-white hover:bg-zinc-700"
-            }`}
-            title={option.label}
-          >
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d={option.icon}
-              />
-            </svg>
-            <span>
-              {option.value === 'created'
-                ? t('ui.components.roomSortToggle.createdTime')
-                : t('ui.components.roomSortToggle.updatedTime')
-              }
-            </span>
-          </button>
-        ))}
+        {/* 排序方式选择器 */}
+        <div className="flex items-center gap-1 bg-zinc-800 rounded-full p-1 flex-1 min-w-0 shrink-0 lg:max-w-56">
+          {SORT_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => {
+                // 保持当前的排序方向，除非切换到新的排序方式
+                const defaultOrder = option.value === 'created' || option.value === 'updated' ? 'desc' : 'asc';
+                onChange(option.value, sortBy === option.value ? sortOrder : defaultOrder);
+              }}
+              className={`px-2 py-1 text-xs font-medium rounded-full transition-colors flex items-center gap-1 whitespace-nowrap overflow-hidden flex-1 min-w-0 ${
+                sortBy === option.value
+                  ? "bg-blue-600 text-white"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-700"
+              }`}
+              title={option.label}
+            >
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={option.icon}
+                />
+              </svg>
+              <span
+                className="overflow-hidden text-ellipsis whitespace-nowrap min-w-0"
+              >
+                {option.value === 'created'
+                  ? t('ui.components.roomSortToggle.createdTime')
+                  : t('ui.components.roomSortToggle.updatedTime')
+                }
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* 排序方向切换按钮 */}
       <button
         onClick={handleOrderToggle}
-        className="p-1 text-zinc-400 hover:text-zinc-200 transition-colors rounded"
+        className="p-2 w-8 h-8 text-zinc-400 hover:text-zinc-200 transition-colors rounded flex-shrink-0"
         title={t('ui.components.roomSortToggle.sortDirectionTitle') + (sortOrder === 'desc' ? t('ui.components.roomSortToggle.descOrder') : t('ui.components.roomSortToggle.ascOrder'))}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
