@@ -15,7 +15,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLocalMode, onEnterRoom }) => {
     navigate('/rooms');
   };
 
-  return <EntryPage onLocalMode={onLocalMode} onOnlineMode={handleOnlineMode} onEnterRoom={onEnterRoom} />;
+  return <EntryPage onLocalMode={onLocalMode} onOnlineMode={handleOnlineMode} />;
 };
 
 export default HomePage;

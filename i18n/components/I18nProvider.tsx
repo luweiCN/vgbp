@@ -15,6 +15,7 @@ export const I18nProvider = memo<I18nProviderProps>(({
   const [language, setLanguageState] = useState<Language>(defaultLanguage);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isReady, setIsReady] = useState<boolean>(false);
+  const [, forceUpdate] = useState({});
 
   /**
    * 设置语言并更新状态
@@ -35,9 +36,13 @@ export const I18nProvider = memo<I18nProviderProps>(({
   };
 
   /**
-   * 翻译函数
+   * 翻译函数 - 确保语言包已加载
    */
   const translate = (key: string, params?: Record<string, any>): string => {
+    // 如果还没准备好，返回key避免报错
+    if (!isReady) {
+      return key;
+    }
     return i18nService.translate(key, params);
   };
 
@@ -58,12 +63,14 @@ export const I18nProvider = memo<I18nProviderProps>(({
 
         // 预加载fallback语言包（异步，不阻塞）
         i18nService.preloadLanguagePack(fallbackLanguage).catch(error => {
-          console.warn('⚠️ Failed to preload fallback language:', error);
+          console.warn('Failed to preload fallback language:', error);
         });
 
         setIsReady(true);
+        // 强制更新组件以确保翻译正确显示
+        forceUpdate({});
       } catch (error) {
-        console.error('❌ Failed to initialize i18n:', error);
+        console.error('Failed to initialize i18n:', error);
         // 初始化失败，使用默认语言
         setLanguageState(defaultLanguage);
         setIsReady(true);
