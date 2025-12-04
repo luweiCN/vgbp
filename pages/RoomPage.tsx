@@ -9,10 +9,12 @@ import ResetConfirmModal from '../components/ResetConfirmModal';
 import ClassificationInfoModal from '../components/ClassificationInfoModal';
 import ClassificationToggle from '../components/ClassificationToggle';
 import LayoutToggle from '../components/LayoutToggle';
+import { RoomFormModal } from '../components/RoomFormModal';
 import { Hero, HeroRole } from '../types';
 import { useBPState } from '../hooks/useBPState';
 import { useHeroChangeToast } from '../hooks/useHeroChangeToast';
 import { useToast } from '../hooks/useToast';
+import { useAuth } from '../hooks/useAuth';
 import { ToastContainer } from '../components/Toast';
 import HeroSelectionToastContainer from '../components/HeroSelectionToastContainer';
 import { supabase } from '../services/supabase';
@@ -37,7 +39,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
   const pageTitle = isLocalMode ? '本地模式' : `房间 ${roomId}`;
   const pageSubtitle = isLocalMode ? '本地BP功能' : '在线BP功能';
 
-  const { showError, showInfo, toasts, removeToast } = useToast();
+  const { showError, showSuccess, showInfo, toasts, removeToast } = useToast();
+  const { user } = useAuth();
 
 
 
@@ -94,6 +97,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
   const [layoutMode, setLayoutMode] = useState<"auto" | "3" | "4" | "5">("auto");
   const [currentVisibleSection, setCurrentVisibleSection] = useState<"captain" | "jungle" | "carry" | null>(null);
   const [roomName, setRoomName] = useState<string | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<any>(null);
 
   // 保存分类模式到本地存储
   const saveClassificationMode = useCallback((mode: ClassificationMode) => {
@@ -149,28 +154,52 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
     }
   };
 
-  // 获取房间名称
+  // 获取房间信息
   useEffect(() => {
-    const fetchRoomName = async () => {
+    const fetchRoomInfo = async () => {
       if (isOnlineMode && roomId) {
         try {
           const { data: room, error } = await supabase
             .from('rooms')
-            .select('name')
+            .select('id, name, description, owner_id')
             .eq('id', roomId)
             .single();
-          
+
           if (!error && room) {
             setRoomName(room.name);
+            setEditingRoom(room);
           }
         } catch (error) {
-          console.error('Failed to fetch room name:', error);
+          console.error('Failed to fetch room info:', error);
         }
       }
     };
 
-    fetchRoomName();
+    fetchRoomInfo();
   }, [isOnlineMode, roomId]);
+
+  // 编辑房间相关函数
+  const handleEditRoomClick = () => {
+    // editingRoom 已经包含了房间信息，直接打开弹窗
+    setShowEditForm(true);
+  };
+
+  const handleRoomUpdated = (message: string, updatedRoom?: any) => {
+    setShowEditForm(false);
+
+    // 显示成功提示
+    showSuccess(message);
+
+    if (updatedRoom) {
+      setRoomName(updatedRoom.name);
+      setEditingRoom(updatedRoom);
+
+      // 更新浏览器标题
+      if (typeof window !== 'undefined') {
+        document.title = `${updatedRoom.name} - Vainglory BP`;
+      }
+    }
+  };
 
   // Handle scroll detection for current visible section
   useEffect(() => {
@@ -308,35 +337,54 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
           </h2>
           <span className="text-lg font-bold opacity-60">{cnTitle}</span>
           <span className="ml-auto text-xs font-mono bg-zinc-900 px-2 py-1 rounded-full text-zinc-500">
-            已选 {selectedHeroes.size > 0 ? (() => {
-              const categoryHeroes = HEROES.filter(h => {
-                switch (classificationMode) {
-                  case ClassificationMode.COMMON:
-                    return !h.commonRoles || h.commonRoles.includes(role);
-                  case ClassificationMode.FLEX:
-                    return !h.flexRoles || h.flexRoles.includes(role);
-                  case ClassificationMode.OFFICIAL:
-                  default:
-                    return h.role === role;
-                }
-              });
-              const selectedInCategory = categoryHeroes.filter(h => selectedHeroes.has(h.id));
-              return `${selectedInCategory.length} 个`;
-            })() : '0 个'}，剩余 {(() => {
-              const categoryHeroes = HEROES.filter(h => {
-                switch (classificationMode) {
-                  case ClassificationMode.COMMON:
-                    return !h.commonRoles || h.commonRoles.includes(role);
-                  case ClassificationMode.FLEX:
-                    return !h.flexRoles || h.flexRoles.includes(role);
-                  case ClassificationMode.OFFICIAL:
-                  default:
-                    return h.role === role;
-                }
-              });
-              const selectedInCategory = categoryHeroes.filter(h => selectedHeroes.has(h.id));
-              return `${categoryHeroes.length - selectedInCategory.length} 个`;
-            })()}
+            <span className="hidden sm:inline">
+              已选 {selectedHeroes.size > 0 ? (() => {
+                const categoryHeroes = HEROES.filter(h => {
+                  switch (classificationMode) {
+                    case ClassificationMode.COMMON:
+                      return !h.commonRoles || h.commonRoles.includes(role);
+                    case ClassificationMode.FLEX:
+                      return !h.flexRoles || h.flexRoles.includes(role);
+                    case ClassificationMode.OFFICIAL:
+                    default:
+                      return h.role === role;
+                  }
+                });
+                const selectedInCategory = categoryHeroes.filter(h => selectedHeroes.has(h.id));
+                return `${selectedInCategory.length} 个`;
+              })() : '0 个'}，剩余 {(() => {
+                const categoryHeroes = HEROES.filter(h => {
+                  switch (classificationMode) {
+                    case ClassificationMode.COMMON:
+                      return !h.commonRoles || h.commonRoles.includes(role);
+                    case ClassificationMode.FLEX:
+                      return !h.flexRoles || h.flexRoles.includes(role);
+                    case ClassificationMode.OFFICIAL:
+                    default:
+                      return h.role === role;
+                  }
+                });
+                const selectedInCategory = categoryHeroes.filter(h => selectedHeroes.has(h.id));
+                return `${categoryHeroes.length - selectedInCategory.length} 个`;
+              })()}
+            </span>
+            <span className="sm:hidden">
+              {(() => {
+                const categoryHeroes = HEROES.filter(h => {
+                  switch (classificationMode) {
+                    case ClassificationMode.COMMON:
+                      return !h.commonRoles || h.commonRoles.includes(role);
+                    case ClassificationMode.FLEX:
+                      return !h.flexRoles || h.flexRoles.includes(role);
+                    case ClassificationMode.OFFICIAL:
+                    default:
+                      return h.role === role;
+                  }
+                });
+                const selectedInCategory = categoryHeroes.filter(h => selectedHeroes.has(h.id));
+                return `${selectedInCategory.length}/${categoryHeroes.length}`;
+              })()}
+            </span>
           </span>
         </div>
         <div className={getGridClasses()}>
@@ -410,16 +458,40 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                           <span className="text-xs text-zinc-300 font-medium truncate" title={roomName}>
                             {roomName}
                           </span>
+                          {user && editingRoom && user.id === editingRoom.owner_id && (
+                            <button
+                              onClick={handleEditRoomClick}
+                              className="p-0.5 text-zinc-400 hover:text-blue-400 hover:bg-blue-600/20 rounded transition-colors flex-shrink-0"
+                              title="编辑房间"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                          )}
                         </>
                       )}
                     </div>
                     
                     {/* 移动端：只显示房间名称 */}
-                    <div className="sm:hidden">
+                    <div className="sm:hidden flex items-center gap-2 min-w-0 flex-1">
                       {isOnlineMode && roomName ? (
-                         <span className="text-sm text-zinc-300 font-medium truncate block" title={roomName}>
-                          {roomName}
-                        </span>
+                        <>
+                          <span className="text-sm text-zinc-300 font-medium truncate block" title={roomName}>
+                            {roomName}
+                          </span>
+                          {user && editingRoom && user.id === editingRoom.owner_id && (
+                            <button
+                              onClick={handleEditRoomClick}
+                              className="p-0.5 text-zinc-400 hover:text-blue-400 hover:bg-blue-600/20 rounded transition-colors flex-shrink-0"
+                              title="编辑房间"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                          )}
+                        </>
                       ) : (
                         <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
                           Vainglory BP
@@ -656,7 +728,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
             {/* Current Section Indicator */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-500">当前位置:</span>
+                <span className="text-xs text-zinc-500 hidden sm:inline">当前位置:</span>
                 <div className="flex gap-1">
                   <button
                     onClick={() => {
@@ -779,7 +851,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
             {renderSection(
               HeroRole.CAPTAIN,
               "Captain",
-              "指挥官 / 辅助",
+              "辅助",
               "text-yellow-500",
             )}
             {renderSection(
@@ -791,7 +863,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
             {renderSection(
               HeroRole.CARRY,
               "Carry",
-              "对线 / 核心",
+              "对线",
               "text-red-500",
             )}
           </>
@@ -841,6 +913,17 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
           // 不再需要 ossBaseUrl，默认使用 Vercel Blob
           onReset={handleResetClick}
           canEdit={canEdit}
+        />
+      )}
+
+      {/* 房间编辑弹窗 */}
+      {showEditForm && editingRoom && (
+        <RoomFormModal
+          isOpen={showEditForm}
+          onClose={() => setShowEditForm(false)}
+          mode="edit"
+          room={editingRoom}
+          onSuccess={handleRoomUpdated}
         />
       )}
 

@@ -655,20 +655,36 @@ export const getHeroesByRole = (
 // 直接使用 Vercel Blob URL（暂时方案）
 const VERCEL_BLOB_BASE_URL = 'https://nksf7fmzcvduehht.public.blob.vercel-storage.com/heroes';
 
-// 获取英雄头像URL的函数
+// 图片URL缓存
+const avatarUrlCache = new Map<string, string>();
+
+// 获取英雄头像URL的函数 - 带缓存优化
 export const getHeroAvatarUrl = (hero: Hero, ossBaseUrl?: string): string => {
+  const cacheKey = `${hero.id}-${ossBaseUrl || 'default'}`;
+
+  // 检查缓存
+  if (avatarUrlCache.has(cacheKey)) {
+    return avatarUrlCache.get(cacheKey)!;
+  }
+
+  // 生成URL
+  let url: string;
   // 优先使用英雄自定义头像
   if (hero.avatar) {
-    return hero.avatar;
+    url = hero.avatar;
   }
-
   // 如果提供了自定义 OSS URL（向后兼容）
-  if (ossBaseUrl) {
-    return `${ossBaseUrl}/${hero.id}.jpg`;
+  else if (ossBaseUrl) {
+    url = `${ossBaseUrl}/${hero.id}.jpg`;
+  }
+  // 默认使用 Vercel Blob
+  else {
+    url = `${VERCEL_BLOB_BASE_URL}/${hero.id}.jpg`;
   }
 
-  // 默认使用 Vercel Blob
-  return `${VERCEL_BLOB_BASE_URL}/${hero.id}.jpg`;
+  // 缓存结果
+  avatarUrlCache.set(cacheKey, url);
+  return url;
 };
 
 // 模糊搜索函数 - 支持不连续字符匹配
@@ -742,4 +758,14 @@ export const searchHeroes = (heroes: Hero[], searchTerm: string): Hero[] => {
       nicknamePinyinMatch
     );
   });
+};
+
+// 英雄查找映射表 - O(1)性能
+export const HEROES_MAP = new Map(
+  HEROES_DATA.map(hero => [hero.id, hero])
+);
+
+// 快速英雄查找函数
+export const getHeroById = (heroId: string): Hero | undefined => {
+  return HEROES_MAP.get(heroId);
 };

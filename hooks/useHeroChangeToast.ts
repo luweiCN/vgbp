@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { HEROES } from '../constants';
+import { getHeroById } from '../data/heroes';
 
 
 
@@ -36,15 +36,15 @@ export const useHeroChangeToast = (
       
       if (addedCount > 0 && removedCount === 0) {
         message = addedCount <= 3 
-          ? `房间新增了英雄：${addedHeroes.slice(0, 3).map(heroId => HEROES.find(h => h.id === heroId)?.cnName).join('、')}${addedCount > 3 ? '等' : ''}`
+          ? `房间新增了英雄：${addedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、')}${addedCount > 3 ? '等' : ''}`
           : `房间新增了${addedCount}个英雄`;
       } else if (removedCount > 0 && addedCount === 0) {
         message = removedCount <= 3 
-          ? `房间取消了英雄：${removedHeroes.slice(0, 3).map(heroId => HEROES.find(h => h.id === heroId)?.cnName).join('、')}${removedCount > 3 ? '等' : ''}`
+          ? `房间取消了英雄：${removedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、')}${removedCount > 3 ? '等' : ''}`
           : `房间取消了${removedCount}个英雄`;
       } else if (addedCount > 0 && removedCount > 0) {
-        const addedNames = addedHeroes.slice(0, 3).map(heroId => HEROES.find(h => h.id === heroId)?.cnName).join('、');
-        const removedNames = removedHeroes.slice(0, 3).map(heroId => HEROES.find(h => h.id === heroId)?.cnName).join('、');
+        const addedNames = addedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、');
+        const removedNames = removedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、');
         message = `房间英雄变化：新增${addedNames}${addedCount > 3 ? '等' : ''}，取消${removedNames}${removedCount > 3 ? '等' : ''}`;
       }
       

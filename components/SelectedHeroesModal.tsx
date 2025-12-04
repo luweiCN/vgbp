@@ -58,7 +58,7 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                     <h3 className="text-xl font-black uppercase tracking-tighter text-yellow-500">
                       Captain
                     </h3>
-                    <span className="text-sm font-bold text-zinc-400">指挥官 / 辅助</span>
+                    <span className="text-sm font-bold text-zinc-400">辅助</span>
                     <span className="ml-auto text-xs font-mono bg-zinc-800 px-2 py-1 rounded-full text-zinc-500">
                       {selectedHeroesGrouped[HeroRole.CAPTAIN].length} 个英雄
                     </span>
@@ -150,7 +150,7 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                     <h3 className="text-xl font-black uppercase tracking-tighter text-red-500">
                       Carry
                     </h3>
-                    <span className="text-sm font-bold text-zinc-400">对线 / 核心</span>
+                    <span className="text-sm font-bold text-zinc-400">对线</span>
                     <span className="ml-auto text-xs font-mono bg-zinc-800 px-2 py-1 rounded-full text-zinc-500">
                       {selectedHeroesGrouped[HeroRole.CARRY].length} 个英雄
                     </span>
@@ -192,32 +192,30 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
           )}
         </div>
 
-        {/* Modal Footer - Simple buttons at bottom */}
-        {selectedHeroes.size > 0 && (
-          <div className="flex-shrink-0 p-6 border-t border-zinc-800">
-            <div className="flex justify-end gap-3">
-              {canEdit && (
-                <button
-                  onClick={onReset}
-                  disabled={selectedHeroes.size === 0}
-                  className={`px-4 py-2 text-sm font-bold uppercase tracking-wider rounded-lg border transition-colors flex items-center gap-2 whitespace-nowrap ${
-                    selectedHeroes.size === 0
-                      ? "bg-zinc-800 text-zinc-600 border-zinc-700 cursor-not-allowed"
-                      : "bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 shadow-lg shadow-red-500/20"
-                  }`}
-                >
-                  重置BP
-                </button>
-              )}
+        {/* Modal Footer - Always show close button */}
+        <div className="flex-shrink-0 p-6 border-t border-zinc-800">
+          <div className="flex justify-end gap-3">
+            {canEdit && (
               <button
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
+                onClick={onReset}
+                disabled={selectedHeroes.size === 0}
+                className={`px-4 py-2 text-sm font-bold uppercase tracking-wider rounded-lg border transition-colors flex items-center gap-2 whitespace-nowrap ${
+                  selectedHeroes.size === 0
+                    ? "bg-zinc-800 text-zinc-600 border-zinc-700 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 shadow-lg shadow-red-500/20"
+                }`}
               >
-                关闭
+                重置BP
               </button>
-            </div>
+            )}
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
+            >
+              关闭
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

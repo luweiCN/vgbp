@@ -166,32 +166,58 @@ export const useBPState = (roomId?: string): BPStateHook => {
     setError(null);
 
     try {
-      // 获取当前数据库中的状态
+      // 获取当前数据库中的状态（包括已选择和未选择的）
       const { data: currentStates, error: fetchError } = await supabase
         .from('bp_states')
-        .select('hero_id')
+        .select('hero_id, is_selected')
         .eq('room_id', roomId);
 
       if (fetchError) throw fetchError;
 
+      // 获取所有已存在的英雄记录
       const currentHeroIds = new Set((currentStates || []).map(state => state.hero_id));
+      // 获取当前已选择的英雄
+      const currentlySelectedIds = new Set(
+        (currentStates || [])
+          .filter(state => state.is_selected)
+          .map(state => state.hero_id)
+      );
 
-      // 计算需要添加和删除的英雄
-      const toAdd = [...heroesToSync].filter(heroId => !currentHeroIds.has(heroId));
-      const toRemove = [...currentHeroIds].filter(heroId => !heroesToSync.has(heroId));
+      // 计算需要不同操作的英雄
+      const toAdd = [...heroesToSync].filter(heroId => !currentHeroIds.has(heroId)); // 全新记录
+      // 重新选择的英雄：之前存在但未选择，现在需要选择的英雄
+      const toReselect = [...heroesToSync].filter(heroId =>
+        currentHeroIds.has(heroId) && !currentlySelectedIds.has(heroId)
+      );
+      // 取消选择的英雄：当前已选择但不在新选择集中的英雄
+      const toUnselect = [...currentlySelectedIds].filter(heroId => !heroesToSync.has(heroId));
 
-      // 批量删除
-      if (toRemove.length > 0) {
-        const { error: deleteError } = await supabase
+      // 如果有任何bp_state变化，同时更新房间的updated_at
+      const hasAnyChanges = toUnselect.length > 0 || toReselect.length > 0 || toAdd.length > 0;
+
+      // 批量更新为未选择状态（而不是删除记录）
+      if (toUnselect.length > 0) {
+        const { error: updateError } = await supabase
           .from('bp_states')
-          .delete()
+          .update({ is_selected: false })
           .eq('room_id', roomId)
-          .in('hero_id', toRemove);
+          .in('hero_id', toUnselect);
 
-        if (deleteError) throw deleteError;
+        if (updateError) throw updateError;
       }
 
-      // 批量添加
+      // 批量更新为已选择状态（重新选择的英雄）
+      if (toReselect.length > 0) {
+        const { error: reselectError } = await supabase
+          .from('bp_states')
+          .update({ is_selected: true })
+          .eq('room_id', roomId)
+          .in('hero_id', toReselect);
+
+        if (reselectError) throw reselectError;
+      }
+
+      // 批量添加新记录
       if (toAdd.length > 0) {
         const { error: insertError } = await supabase
           .from('bp_states')
@@ -207,6 +233,16 @@ export const useBPState = (roomId?: string): BPStateHook => {
         if (insertError) throw insertError;
       }
 
+      // 更新房间的updated_at以反映bp_state变化
+      if (hasAnyChanges) {
+        const { error: roomUpdateError } = await supabase
+          .from('rooms')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', roomId);
+
+        if (roomUpdateError) throw roomUpdateError;
+      }
+
       // 数据库更新成功，广播变更到其他客户端
       try {
         setLastSendTime(Date.now()); // 记录发送时间
@@ -214,8 +250,8 @@ export const useBPState = (roomId?: string): BPStateHook => {
         await broadcastBPChanges(roomId, {
           type: 'HERO_SELECTION_CHANGED',
           selectedHeroes: [...heroesToSync],
-          added: toAdd,
-          removed: toRemove,
+          added: [...toAdd, ...toReselect], // 新增和重新选择的英雄
+          removed: toUnselect,
           timestamp: Date.now()
         });
       } catch (broadcastError) {
