@@ -116,7 +116,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
           {/* Search Button */}
           <button
             onClick={handleSearch}
-            disabled={disabled || !searchInput.trim()}
+            disabled={disabled}
             className="h-6 px-2 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             title="搜索房间"
           >
@@ -196,7 +196,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
           {/* Search Button */}
           <button
             onClick={handleSearch}
-            disabled={disabled || !searchInput.trim()}
+            disabled={disabled}
             className="h-6 px-2 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             title="搜索房间"
           >

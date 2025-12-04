@@ -63,6 +63,15 @@ export const parseURLParams = (searchParams: URLSearchParams): RoomFilterParams 
     }
   }
 
+  // 解析时间戳参数（用于强制刷新）
+  const t = searchParams.get('t');
+  if (t) {
+    const tNum = parseInt(t, 10);
+    if (!isNaN(tNum) && tNum > 0) {
+      params.t = tNum;
+    }
+  }
+
   return { ...DEFAULT_FILTER_PARAMS, ...params };
 };
 
@@ -95,6 +104,11 @@ export const buildURLParams = (filters: RoomFilterParams): URLSearchParams => {
 
   if (filters.pageSize) {
     params.set('pageSize', filters.pageSize.toString());
+  }
+
+  // 添加时间戳参数（用于强制刷新）
+  if (filters.t) {
+    params.set('t', filters.t.toString());
   }
 
   return params;

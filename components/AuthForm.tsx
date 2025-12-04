@@ -1,8 +1,10 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { useCountdown } from '../hooks/useCountdown';
-import { UnverifiedEmailModal, VerifiedEmailModal } from './EmailStatusModals';
-import { checkEmailStatus, resendConfirmationEmail } from '../services/userCheckService';
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { UnverifiedEmailModal, VerifiedEmailModal } from "./EmailStatusModals";
+import {
+  checkEmailStatus,
+  resendConfirmationEmail,
+} from "../services/userCheckService";
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -26,17 +28,33 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [emailCheckResult, setEmailCheckResult] = useState<any>(null);
-  const [resendConfirmationLoading, setResendConfirmationLoading] = useState(false);
-  const [cooldownSeconds, setCooldownSeconds] = useState<number>(0);
+  const [resendConfirmationLoading, setResendConfirmationLoading] =
+    useState(false);
+  const [showRegistrationSuccessBanner, setShowRegistrationSuccessBanner] =
+    useState(false);
+
+  // 邮箱验证 Promise 状态
+  const [emailVerificationPromise, setEmailVerificationPromise] = useState<{
+    resolve: () => void;
+    reject: (error: Error) => void;
+  } | null>(null);
+
+  // 密码显示状态
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const emailCheckTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // 保持useCountdown集成
-  const countdown = useCountdown({ initialTime: 60 });
+  const { signIn, signUp } = useAuth();
 
-  const {
-    signIn,
-    signUp,
-  } = useAuth();
+  // 组件卸载时清理 Promise
+  useEffect(() => {
+    return () => {
+      // 如果组件卸载时还有未完成的 Promise，reject 它
+      if (emailVerificationPromise) {
+        emailVerificationPromise.reject(new Error('Component unmounted'));
+      }
+    };
+  }, [emailVerificationPromise]);
 
   // 重置表单数据
   const resetForm = () => {
@@ -47,12 +65,19 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
       username: "",
     });
     setError("");
+    setShowRegistrationSuccessBanner(false);
   };
 
   // RoomManager的邮箱状态检查函数
   const checkEmailRegistrationStatus = useCallback(
     async (email: string) => {
       if (!email) {
+        return;
+      }
+
+      // 邮箱格式验证
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
         return;
       }
 
@@ -65,6 +90,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           case "registered_unverified":
             setShowUnverifiedModal(true);
             setRegisteredEmail(email);
+            setShowRegistrationSuccessBanner(false); // 邮箱状态检查时不显示成功横幅
             break;
           case "registered_verified":
             // 只有在注册模式下才弹"已验证"的弹窗
@@ -80,13 +106,30 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         setEmailCheckResult(null);
       }
     },
-    [authMode]
+    [authMode],
   );
 
   // RoomManager的邮箱输入处理
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
     setAuthFormData({ ...authFormData, email: newEmail });
+
+    // 邮箱格式验证
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValidEmail = emailRegex.test(newEmail);
+
+    // 如果邮箱格式无效，清空验证结果和相关状态
+    if (!isValidEmail) {
+      setEmailCheckResult(null);
+      setShowUnverifiedModal(false);
+      setShowVerifiedModal(false);
+      setEmailChecking(false);
+      // 清除之前的定时器
+      if (emailCheckTimeoutRef.current) {
+        clearTimeout(emailCheckTimeoutRef.current);
+      }
+      return;
+    }
 
     // 在注册和登录模式下都检查邮箱状态
     if ((authMode === "register" || authMode === "login") && newEmail) {
@@ -108,8 +151,6 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           setEmailChecking(false);
         }
       }, 500);
-    } else {
-      console.log("❌ 不触发检查 - 模式:", authMode, "或邮箱为空");
     }
   };
 
@@ -118,23 +159,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     if (!registeredEmail) return;
 
     setResendConfirmationLoading(true);
-    setCooldownSeconds(60);
+    setError("");
 
     try {
       const result = await resendConfirmationEmail(registeredEmail);
 
-      if (result.success) {
-        // 开始倒计时
-        let countdown = 60;
-        const interval = setInterval(() => {
-          countdown -= 1;
-          setCooldownSeconds(countdown);
-
-          if (countdown <= 0) {
-            clearInterval(interval);
-          }
-        }, 1000);
-      } else {
+      if (!result.success) {
         setError(result.message || "重发验证邮件失败");
       }
     } catch (err: any) {
@@ -153,6 +183,13 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
   // RoomManager的认证处理函数
   const handleAuth = async () => {
+    // 邮箱格式验证
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(authFormData.email)) {
+      setError("请输入有效的邮箱地址！");
+      return;
+    }
+
     if (authMode === "register") {
       if (!authFormData.username.trim()) {
         setError("请输入用户名！");
@@ -193,13 +230,20 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           // 清空表单
           resetForm();
 
-          // 如果注册成功但没有会话（需要验证邮箱），显示验证弹窗
-          if (!signUpResult.session && !signUpResult.needsVerificationCode) {
+          // 如果注册成功但没有会话（需要验证邮箱），显示验证弹窗并等待验证完成
+          if (!signUpResult.session) {
+            // 显示验证弹窗
             setShowUnverifiedModal(true);
             setRegisteredEmail(authFormData.email);
+            setShowRegistrationSuccessBanner(true); // 注册成功时显示成功横幅
+
+            // 创建 Promise 并等待用户完成邮箱验证
+            await new Promise<void>((resolve, reject) => {
+              setEmailVerificationPromise({ resolve, reject });
+            });
           }
 
-          // 注册成功后调用回调
+          // 邮箱验证完成后调用回调
           onSuccess?.();
         } else {
           // 注册失败，不清空表单，不关闭弹窗，让用户重新尝试
@@ -288,19 +332,47 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                   />
                 </svg>
               </div>
-              <input
-                type="text"
-                value={authFormData.username}
-                onChange={(e) =>
-                  setAuthFormData({
-                    ...authFormData,
-                    username: e.target.value,
-                  })
-                }
-                className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                placeholder="请输入用户名（中英文均可）"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={authFormData.username}
+                  onChange={(e) =>
+                    setAuthFormData({
+                      ...authFormData,
+                      username: e.target.value,
+                    })
+                  }
+                  className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                  placeholder="请输入用户名（中英文均可）"
+                  required
+                />
+                {authFormData.username && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setAuthFormData({
+                        ...authFormData,
+                        username: "",
+                      })
+                    }
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-white hover:bg-zinc-600 rounded-full p-1 transition-all duration-200"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
             <div className="mt-1 text-xs text-zinc-500">
               用户名将作为您在平台上的显示名称
@@ -329,14 +401,42 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                 />
               </svg>
             </div>
-            <input
-              type="email"
-              value={authFormData.email}
-              onChange={handleEmailChange}
-              className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              placeholder="请输入邮箱地址（用于登录）"
-              required
-            />
+            <div className="relative">
+              <input
+                type="email"
+                value={authFormData.email}
+                onChange={handleEmailChange}
+                className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="请输入邮箱地址（用于登录）"
+                required
+              />
+              {authFormData.email && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAuthFormData({
+                      ...authFormData,
+                      email: "",
+                    })
+                  }
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-white hover:bg-zinc-600 rounded-full p-1 transition-all duration-200"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
           {(authMode === "register" || authMode === "login") && (
             <>
@@ -355,16 +455,14 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                     className={`text-sm mt-2 flex items-center ${
                       emailCheckResult.status === "registered_unverified"
                         ? "text-yellow-400"
-                        : emailCheckResult.status ===
-                            "registered_verified"
+                        : emailCheckResult.status === "registered_verified"
                           ? "text-green-400"
                           : emailCheckResult.status === "not_registered"
                             ? "text-green-400"
                             : "text-gray-400"
                     }`}
                   >
-                    {emailCheckResult.status ===
-                      "registered_unverified" && (
+                    {emailCheckResult.status === "registered_unverified" && (
                       <>
                         <svg
                           className="w-4 h-4 mr-2 flex-shrink-0"
@@ -382,8 +480,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                         <span>邮箱已注册但未验证</span>
                       </>
                     )}
-                    {emailCheckResult.status ===
-                      "registered_verified" && (
+                    {emailCheckResult.status === "registered_verified" && (
                       <>
                         <svg
                           className="w-4 h-4 mr-2 flex-shrink-0"
@@ -496,19 +593,62 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                 />
               </svg>
             </div>
-            <input
-              type="password"
-              value={authFormData.password}
-              onChange={(e) =>
-                setAuthFormData({
-                  ...authFormData,
-                  password: e.target.value,
-                })
-              }
-              className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              placeholder="请输入密码（至少6位）"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={authFormData.password}
+                onChange={(e) =>
+                  setAuthFormData({
+                    ...authFormData,
+                    password: e.target.value,
+                  })
+                }
+                className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="请输入密码（至少6位）"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-white hover:bg-zinc-600 rounded-full p-1 transition-all duration-200"
+              >
+                {showPassword ? (
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29-3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0H3m0 0l7.532-7.532M21 12a9.97 9.97 0 01-1.563 3.029M3 3l7.532 7.532"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -534,19 +674,62 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                   />
                 </svg>
               </div>
-              <input
-                type="password"
-                value={authFormData.confirmPassword}
-                onChange={(e) =>
-                  setAuthFormData({
-                    ...authFormData,
-                    confirmPassword: e.target.value,
-                  })
-                }
-                className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                placeholder="请再次输入密码"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={authFormData.confirmPassword}
+                  onChange={(e) =>
+                    setAuthFormData({
+                      ...authFormData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                  placeholder="请再次输入密码"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-white hover:bg-zinc-600 rounded-full p-1 transition-all duration-200"
+                >
+                  {showConfirmPassword ? (
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29-3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0H3m0 0l7.532-7.532M21 12a9.97 9.97 0 01-1.563 3.029M3 3l7.532 7.532"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -580,7 +763,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             authFormLoading ||
             !authFormData.email ||
             !authFormData.password ||
-            (authMode === "register" && (!authFormData.username || !authFormData.confirmPassword))
+            (authMode === "register" &&
+              (!authFormData.username || !authFormData.confirmPassword))
           }
           className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
             authMode === "login"
@@ -666,12 +850,16 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
       {/* 邮箱状态模态框 */}
       <UnverifiedEmailModal
         isOpen={showUnverifiedModal}
-        onClose={() => setShowUnverifiedModal(false)}
+        onClose={() => {
+          setShowUnverifiedModal(false);
+          setShowRegistrationSuccessBanner(false);
+          // 用户关闭弹窗时 resolve Promise，继续执行 onSuccess
+          emailVerificationPromise?.resolve();
+        }}
         email={registeredEmail}
         onResendEmail={handleResendConfirmation}
         resendLoading={resendConfirmationLoading}
-        cooldownSeconds={cooldownSeconds}
-        showSuccessBanner={true} // 注册成功时显示横幅
+        showSuccessBanner={showRegistrationSuccessBanner}
       />
 
       <VerifiedEmailModal
@@ -683,3 +871,4 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     </div>
   );
 };
+
