@@ -41,7 +41,7 @@ export const OwnerToggle: React.FC<OwnerToggleProps> = ({
       </button>
 
       {/* 标签 */}
-      <span className="text-sm text-zinc-300 whitespace-nowrap ml-2">
+      <span className="text-sm text-zinc-300 whitespace-nowrap">
         {t('ui.components.ownerToggle.label')}
       </span>
     </div>
