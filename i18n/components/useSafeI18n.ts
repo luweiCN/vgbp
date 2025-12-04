@@ -19,7 +19,7 @@ export const useSafeI18n = (): I18nContextValue => {
   const context = useContext(I18nContext);
 
   if (context === undefined) {
-    console.warn('⚠️ I18nContext is undefined, using fallback values');
+    console.warn('I18nContext is undefined, using fallback values');
     // 返回带有基本翻译功能的fallback值
     return {
       language: 'zh-CN',

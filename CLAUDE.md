@@ -21,7 +21,18 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 项目概述
+## 🌐 语言偏好设置
+
+**重要**：项目主要面向中文用户，请使用中文与用户交流，除非用户明确要求使用英文。
+
+### 交流语言规范
+- **默认语言**：中文（普通话）
+- **代码注释**：优先使用中文，必要时可使用英文
+- **变量命名**：遵循 TypeScript/JavaScript 约定（英文）
+- **文档说明**：使用中文撰写，技术术语保留英文原文
+- **错误信息**：提供给用户的错误信息使用中文
+
+### 项目概述
 
 这是一个为 Vainglory（虚荣）MOBA 游戏开发的战术选角助手，使用 React + TypeScript + Vite 构建。应用帮助玩家追踪选择/禁用的英雄，并通过 AI 获得选角建议。
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getHeroAvatarUrl, getHeroById } from '../data/heroes';
+import { useSafeI18n } from '../i18n/components/useSafeI18n';
 
 interface ToastProps {
   message: string;
@@ -18,6 +19,7 @@ const Toast: React.FC<ToastProps> = ({
   addedHeroIds,
   removedHeroIds
 }) => {
+  const { translate: t } = useSafeI18n();
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
@@ -105,7 +107,7 @@ const Toast: React.FC<ToastProps> = ({
                 <img 
                   key={heroId}
                   src={getHeroAvatarUrl(getHeroById(heroId) || { id: heroId })}
-                  alt="英雄头像"
+                  alt={t('ui.components.toast.heroAvatar')}
                   className="w-4 h-4 rounded border border-green-500 relative z-10"
                   style={{ marginLeft: index === 0 ? '0' : '-2px' }}
                   onError={(e) => {
@@ -134,7 +136,7 @@ const Toast: React.FC<ToastProps> = ({
                 <img 
                   key={heroId}
                   src={getHeroAvatarUrl(getHeroById(heroId) || { id: heroId })}
-                  alt="英雄头像"
+                  alt={t('ui.components.toast.heroAvatar')}
                   className="w-4 h-4 rounded border border-red-500 relative z-10 opacity-60"
                   style={{ marginLeft: index === 0 ? '0' : '-2px' }}
                   onError={(e) => {
@@ -161,7 +163,7 @@ const Toast: React.FC<ToastProps> = ({
         <button
           onClick={handleClose}
           className="flex-shrink-0 ml-2 text-zinc-400 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10"
-          aria-label="关闭"
+          aria-label={t('ui.components.toast.close')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

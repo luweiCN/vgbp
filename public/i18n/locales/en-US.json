@@ -37,24 +37,15 @@
           "startButton": "Get Started",
           "createRoomButton": "Create Room",
           "joinRoomButton": "Join Room",
-          "features": {
-            "title": "Features",
-            "heroSelection": {
-              "title": "Hero Selection Management",
-              "description": "Easily manage selected and banned heroes"
-            },
-            "aiAnalysis": {
-              "title": "AI Strategy Analysis",
-              "description": "Get professional draft advice and tactical analysis"
-            },
-            "realTimeSync": {
-              "title": "Real-time Sync",
-              "description": "Sync draft information with teammates in real-time"
-            },
-            "heroDatabase": {
-              "title": "Hero Database",
-              "description": "Complete hero information and skill descriptions"
-            }
+          "language": "Language:",
+          "modes": {
+            "local": "Local Mode",
+            "online": "Online Mode",
+            "localDesc": "Use local hero selection immediately, no registration required, all data stored in browser",
+            "onlineDesc": "Browse room list, create your own room or join others, support cloud storage and sharing",
+            "localFeatures": "• Instant Use • No Login • Offline Available • Local Storage",
+            "onlineFeatures": "• Room Management • Cloud Storage • Real-time Sync • Multiplayer",
+            "bottomInfo": "Choose local mode to start quickly, or enter online mode for cloud room features"
           }
         },
         "languageSelector": {
@@ -77,7 +68,9 @@
           "success": "Operation successful",
           "error": "Operation failed",
           "warning": "Warning",
-          "info": "Info"
+          "info": "Info",
+          "heroAvatar": "Hero Avatar",
+          "close": "Close"
         }
       }
     },
