@@ -1,8 +1,10 @@
 import React, { useCallback, memo, useMemo } from "react";
 import { Room } from "../hooks/useRooms";
 import { useAuth } from "../hooks/useAuth";
-import { useToast } from "../hooks/useToast";
+import { useToastContext } from "../contexts/ToastContext";
 import { getHeroAvatarUrl, getHeroById } from "../data/heroes";
+import { useSafeI18n } from "../i18n/components/useSafeI18n";
+import { i18nService } from "../i18n/services/i18n.service";
 
 interface RoomItemProps {
   room: Room;
@@ -86,7 +88,8 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
   onEnterRoom,
 }) => {
   const { user } = useAuth();
-  const { showSuccess } = useToast();
+  const { showSuccess } = useToastContext();
+  const { translate: t } = useSafeI18n();
 
   // 优化的处理函数 - 使用 useCallback 并稳定化
   const handleEditClick = useCallback(() => {
@@ -102,18 +105,39 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
   }, [onEnterRoom, room.id]);
 
   // 优化的复制链接函数
-  const handleCopyRoomUrl = useCallback(() => {
-    navigator.clipboard.writeText(getRoomUrl(room.id));
-    showSuccess("房间链接已复制到剪贴板！");
-  }, [room.id, showSuccess]);
+  const handleCopyRoomUrl = useCallback(async () => {
+    try {
+      const roomUrl = getRoomUrl(room.id);
+      await navigator.clipboard.writeText(roomUrl);
+      const message = t("ui.components.roomItem.linkCopied");
+      showSuccess(message);
+    } catch (error) {
+      console.error('Failed to copy room URL:', error);
+      // 可以添加错误提示，但为了保持简单，暂时只在控制台记录错误
+    }
+  }, [room.id, showSuccess, t]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("zh-CN", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    // 根据当前语言决定格式
+    const currentLang = i18nService.getCurrentLanguage();
+    if (currentLang === 'zh-CN') {
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    } else {
+      return date.toLocaleDateString('en-US', {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
   };
 
   const getRoomUrl = (roomId: string) => {
@@ -159,10 +183,10 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                   {room.owner?.username ||
                     room.owner?.display_name ||
                     room.owner?.email ||
-                    "未知用户"}
+                    t("ui.components.roomItem.unknownUser")}
                 </span>
                 <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1" title="创建时间">
+                  <span className="flex items-center gap-1" title={t("ui.components.roomItem.createdAt")}>
                     <svg
                       className="w-3 h-3 text-blue-400"
                       fill="none"
@@ -176,12 +200,12 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                    <span className="text-blue-400">创建</span>
+                    <span className="text-blue-400">{t("ui.components.roomItem.created")}</span>
                     {formatDate(room.created_at)}
                   </span>
                   <span
                     className="flex items-center gap-1"
-                    title="最后活动时间"
+                    title={t("ui.components.roomItem.updatedAt")}
                   >
                     <svg
                       className="w-3 h-3 text-green-400"
@@ -196,7 +220,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                       />
                     </svg>
-                    <span className="text-green-400">更新</span>
+                    <span className="text-green-400">{t("ui.components.roomItem.updated")}</span>
                     {formatDate(room.updated_at)}
                   </span>
                 </div>
@@ -219,7 +243,12 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                         d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                       />
                     </svg>
-                    <span>{!!room.total_selected && room.total_selected > 0 ? `已选择 ${room.total_selected} 个英雄` : '暂未选择英雄'}</span>
+                    <span>
+                      {!!room.total_selected && room.total_selected > 0
+                        ? t("ui.components.roomItem.heroesSelected", { count: room.total_selected })
+                        : t("ui.components.roomItem.noHeroesSelected")
+                      }
+                    </span>
                   </div>
 
                   {room.selected_heroes && room.selected_heroes.length > 0 && (
@@ -249,7 +278,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                 <button
                   onClick={handleEditClick}
                   className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-600/20 rounded-md transition-colors"
-                  title="编辑房间"
+                  title={t("ui.components.roomItem.editRoom")}
                 >
                   <svg
                     className="w-4 h-4"
@@ -272,7 +301,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                 <button
                   onClick={handleDeleteClick}
                   className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-600/20 rounded-md transition-colors"
-                  title="删除房间"
+                  title={t("ui.components.roomItem.deleteRoom")}
                 >
                   <svg
                     className="w-4 h-4"
@@ -294,7 +323,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
               <button
                 onClick={handleCopyRoomUrl}
                 className="px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-white hover:bg-gray-600 border border-gray-600 hover:border-gray-500 rounded-md transition-colors flex items-center gap-1"
-                title="复制链接"
+                title={t("ui.components.roomItem.copyLink")}
               >
                 <svg
                   className="w-4 h-4"
@@ -309,7 +338,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                     d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
                   />
                 </svg>
-                复制链接
+                {t("ui.components.roomItem.copyLink")}
               </button>
 
               {/* 进入房间按钮 */}
@@ -317,7 +346,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                 onClick={handleEnterClick}
                 className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
               >
-                进入房间
+                {t("ui.components.roomItem.enterRoom")}
               </button>
             </div>
           </div>
@@ -337,7 +366,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
             <button
               onClick={handleEditClick}
               className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-600/20 rounded-md transition-colors"
-              title="编辑房间"
+              title={t("ui.components.roomItem.editRoom")}
             >
               <svg
                 className="w-4 h-4"
@@ -360,7 +389,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
             <button
               onClick={handleDeleteClick}
               className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-600/20 rounded-md transition-colors"
-              title="删除房间"
+              title={t("ui.components.roomItem.deleteRoom")}
             >
               <svg
                 className="w-4 h-4"
@@ -407,10 +436,10 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
               {room.owner?.username ||
                 room.owner?.display_name ||
                 room.owner?.email ||
-                "未知用户"}
+                t("ui.components.roomItem.unknownUser")}
             </span>
           </div>
-          <div className="flex items-center gap-1" title="创建时间">
+          <div className="flex items-center gap-1" title={t("ui.components.roomItem.createdAt")}>
             <svg
               className="w-3 h-3 text-blue-400 shrink-0"
               fill="none"
@@ -424,10 +453,10 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <span className="text-blue-400">创建</span>
+            <span className="text-blue-400">{t("ui.components.roomItem.created")}</span>
             <span>{formatDate(room.created_at)}</span>
           </div>
-          <div className="flex items-center gap-1" title="最后活动时间">
+          <div className="flex items-center gap-1" title={t("ui.components.roomItem.updatedAt")}>
             <svg
               className="w-3 h-3 text-green-400 shrink-0"
               fill="none"
@@ -441,7 +470,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            <span className="text-green-400">更新</span>
+            <span className="text-green-400">{t("ui.components.roomItem.updated")}</span>
             <span>{formatDate(room.updated_at)}</span>
           </div>
         </div>
@@ -463,7 +492,12 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                   d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                 />
               </svg>
-              <span>{!!room.total_selected && room.total_selected > 0 ? `已选择 ${room.total_selected} 个英雄` : '暂未选择英雄'}</span>
+              <span>
+                  {!!room.total_selected && room.total_selected > 0
+                    ? t("ui.components.roomItem.heroesSelected", { count: room.total_selected })
+                    : t("ui.components.roomItem.noHeroesSelected")
+                  }
+                </span>
             </div>
 
             {room.selected_heroes && room.selected_heroes.length > 0 && (
@@ -505,7 +539,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                 d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
               />
             </svg>
-            进入房间
+            {t("ui.components.roomItem.enterRoom")}
           </button>
 
           <button
@@ -525,7 +559,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
                 d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
               />
             </svg>
-            复制链接
+            {t("ui.components.roomItem.copyLink")}
           </button>
         </div>
       </div>

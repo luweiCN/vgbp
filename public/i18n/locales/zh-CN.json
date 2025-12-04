@@ -7,186 +7,115 @@
   "translations": {
     "ui": {
       "common": {
-        "loading": "加载中...",
-        "error": "错误",
-        "success": "成功",
-        "cancel": "取消",
-        "confirm": "确认",
-        "save": "保存",
-        "delete": "删除",
-        "edit": "编辑",
-        "back": "返回",
-        "next": "下一步",
-        "previous": "上一步",
-        "close": "关闭",
-        "search": "搜索",
-        "filter": "筛选",
-        "sort": "排序",
-        "reset": "重置",
-        "clear": "清空",
-        "refresh": "刷新",
-        "share": "分享",
-        "copy": "复制",
-        "help": "帮助",
-        "settings": "设置"
+        "switchLanguage": "切换语言"
       },
       "components": {
         "entryPage": {
-          "title": "Vainglory 战术助手",
-          "subtitle": "智能英雄选择与战术分析",
-          "startButton": "开始使用",
-          "createRoomButton": "创建房间",
-          "joinRoomButton": "加入房间",
           "language": "Language:",
           "modes": {
+            "bottomInfo": "选择本地模式快速开始，或进入在线模式体验云端房间功能",
             "local": "本地模式",
-            "online": "在线模式",
             "localDesc": "立即使用本地存储的英雄选择功能，无需注册登录，所有数据保存在浏览器本地",
-            "onlineDesc": "浏览房间列表，创建自己的房间或加入他人房间，支持数据云端存储和共享",
             "localFeatures": "• 即开即用 • 无需登录 • 离线可用 • 数据本地存储",
-            "onlineFeatures": "• 房间管理 • 数据存储 • 云端同步 • 多人使用",
-            "bottomInfo": "选择本地模式快速开始，或进入在线模式体验云端房间功能"
+            "online": "在线模式",
+            "onlineDesc": "浏览房间列表，创建自己的房间或加入他人房间，支持数据云端存储和共享",
+            "onlineFeatures": "• 房间管理 • 数据存储 • 云端同步 • 多人使用"
           }
         },
-        "languageSelector": {
-          "label": "选择语言",
-          "ariaLabel": "选择语言 / Select Language"
+        "filterChips": {
+          "all": "全部房间",
+          "ascOrder": "升序",
+          "createdTime": "创建时间",
+          "descOrder": "降序",
+          "direction": "方向",
+          "filter": "筛选:",
+          "mine": "我创建的",
+          "owner": "所有者",
+          "reset": "重置",
+          "resetAllFilters": "重置所有筛选条件",
+          "search": "搜索",
+          "sort": "排序",
+          "updatedTime": "更新时间"
         },
-        "heroCard": {
-          "selected": "已选择",
-          "banned": "已禁用",
-          "hoverToSelect": "悬停选择",
-          "clickToSelect": "点击选择",
-          "clickToDeselect": "点击取消选择"
+        "ownerToggle": {
+          "label": "只看我的"
         },
-        "modal": {
-          "closeButton": "关闭 (ESC)",
-          "confirmButton": "确认",
-          "cancelButton": "取消"
+        "pagination": {
+          "currentPageInfo": "第 {{current}} 页，共 {{total}} 页",
+          "currentPageInfoMobile": "{{current}}/{{total}} 页",
+          "itemsPerPage": "条 / 页",
+          "nextPage": "下一页",
+          "previousPage": "上一页"
+        },
+        "roomItem": {
+          "copyLink": "复制链接",
+          "created": "创建",
+          "createdAt": "创建时间",
+          "deleteRoom": "删除房间",
+          "editRoom": "编辑房间",
+          "enterRoom": "进入房间",
+          "heroesSelected": "已选择 {{count}} 个英雄",
+          "linkCopied": "房间链接已复制到剪贴板！",
+          "noHeroesSelected": "暂未选择英雄",
+          "unknownUser": "未知用户",
+          "updated": "更新",
+          "updatedAt": "更新时间"
+        },
+        "roomManager": {
+          "auth": {
+            "loadingUserInfo": "加载用户信息中...",
+            "updateUsername": {
+              "error": "请输入新的用户名！",
+              "sameUsername": "新用户名与当前用户名相同！"
+            }
+          },
+          "delete": {
+            "failed": "删除房间失败，请稍后重试",
+            "success": "房间删除成功！"
+          },
+          "filter": {
+            "filteredRooms": "当前筛选条件下共 {{filtered}} 个房间，总共 {{total}} 个房间",
+            "filteredRoomsShort": "共{{filtered}}/{{total}}个房间",
+            "totalRooms": "总共 {{count}} 个房间"
+          },
+          "header": {
+            "backToHome": "返回首页",
+            "createRoom": "创建房间",
+            "createRoomShort": "创建",
+            "guest": "游客",
+            "joinRoom": "加入房间",
+            "joinRoomShort": "加入",
+            "title": "房间列表"
+          },
+          "join": {
+            "error": "请输入房间ID或房间链接！",
+            "invalidLink": "无效的房间链接格式",
+            "joinFailed": "加入房间失败，请检查房间ID",
+            "roomNotFound": "房间不存在"
+          },
+          "list": {
+            "loading": "加载中...",
+            "noRooms": "暂无符合条件的房间"
+          }
+        },
+        "roomSearchBox": {
+          "clearButtonTitle": "清空搜索",
+          "placeholder": "搜索房间名称和描述...",
+          "searchButton": "搜索",
+          "searchButtonTitle": "搜索房间"
+        },
+        "roomSortToggle": {
+          "ascOrder": "升序",
+          "createdTime": "创建时间",
+          "descOrder": "降序",
+          "sortDirectionTitle": "排序方式：",
+          "sortLabel": "排序",
+          "updatedTime": "更新时间"
         },
         "toast": {
-          "success": "操作成功",
-          "error": "操作失败",
-          "warning": "警告",
-          "info": "提示",
-          "heroAvatar": "英雄头像",
-          "close": "关闭"
+          "close": "关闭",
+          "heroAvatar": "英雄头像"
         }
-      }
-    },
-    "actions": {
-      "createRoom": "创建房间",
-      "joinRoom": "加入房间",
-      "leaveRoom": "离开房间",
-      "resetBP": "重置选人",
-      "randomHero": "随机英雄",
-      "clearSelection": "清空选择",
-      "showSelected": "查看已选",
-      "hideSelected": "隐藏已选",
-      "toggleRole": "切换定位",
-      "switchLanguage": "切换语言"
-    },
-    "status": {
-      "loading": "加载中...",
-      "saving": "保存中...",
-      "syncing": "同步中...",
-      "connected": "已连接",
-      "disconnected": "连接断开",
-      "reconnecting": "重新连接中...",
-      "offline": "离线",
-      "online": "在线",
-      "ready": "就绪",
-      "notReady": "未就绪"
-    },
-    "roles": {
-      "Captain": "辅助",
-      "Jungle": "打野",
-      "Carry": "对线"
-    },
-    "forms": {
-      "room": {
-        "name": {
-          "label": "房间名称",
-          "placeholder": "输入房间名称...",
-          "help": "房间名称将显示给其他玩家"
-        },
-        "password": {
-          "label": "房间密码",
-          "placeholder": "可选密码...",
-          "help": "留空则创建公开房间"
-        },
-        "maxPlayers": {
-          "label": "最大玩家数",
-          "help": "房间最多可容纳的玩家数量"
-        }
-      },
-      "auth": {
-        "email": {
-          "label": "邮箱地址",
-          "placeholder": "输入您的邮箱...",
-          "validation": {
-            "required": "请输入邮箱地址",
-            "invalid": "请输入有效的邮箱地址"
-          }
-        },
-        "password": {
-          "label": "密码",
-          "placeholder": "输入密码...",
-          "validation": {
-            "required": "请输入密码",
-            "tooShort": "密码至少需要6个字符"
-          }
-        },
-        "confirmPassword": {
-          "label": "确认密码",
-          "placeholder": "再次输入密码...",
-          "validation": {
-            "required": "请确认密码",
-            "mismatch": "两次输入的密码不一致"
-          }
-        },
-        "displayName": {
-          "label": "显示名称",
-          "placeholder": "输入您的昵称...",
-          "validation": {
-            "required": "请输入显示名称",
-            "tooLong": "显示名称不能超过20个字符"
-          }
-        }
-      }
-    },
-    "messages": {
-      "room": {
-        "created": "房间创建成功",
-        "joined": "成功加入房间",
-        "left": "已离开房间",
-        "full": "房间已满",
-        "notFound": "房间不存在",
-        "passwordIncorrect": "密码错误",
-        "connectionLost": "与房间的连接已断开"
-      },
-      "auth": {
-        "loginSuccess": "登录成功",
-        "registerSuccess": "注册成功",
-        "loginFailed": "登录失败",
-        "registerFailed": "注册失败",
-        "logoutSuccess": "已退出登录",
-        "emailSent": "验证邮件已发送",
-        "emailVerified": "邮箱验证成功"
-      },
-      "validation": {
-        "required": "此字段为必填项",
-        "invalid": "格式不正确",
-        "tooShort": "长度太短",
-        "tooLong": "长度太长",
-        "invalidEmail": "邮箱格式不正确",
-        "passwordMismatch": "密码不一致"
-      },
-      "network": {
-        "offline": "网络连接已断开",
-        "online": "网络连接已恢复",
-        "requestFailed": "请求失败，请重试",
-        "timeout": "请求超时，请重试"
       }
     }
   }

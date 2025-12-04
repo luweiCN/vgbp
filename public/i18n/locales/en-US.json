@@ -7,186 +7,115 @@
   "translations": {
     "ui": {
       "common": {
-        "loading": "Loading...",
-        "error": "Error",
-        "success": "Success",
-        "cancel": "Cancel",
-        "confirm": "Confirm",
-        "save": "Save",
-        "delete": "Delete",
-        "edit": "Edit",
-        "back": "Back",
-        "next": "Next",
-        "previous": "Previous",
-        "close": "Close",
-        "search": "Search",
-        "filter": "Filter",
-        "sort": "Sort",
-        "reset": "Reset",
-        "clear": "Clear",
-        "refresh": "Refresh",
-        "share": "Share",
-        "copy": "Copy",
-        "help": "Help",
-        "settings": "Settings"
+        "switchLanguage": "Switch Language"
       },
       "components": {
         "entryPage": {
-          "title": "Vainglory Tactical Assistant",
-          "subtitle": "Smart Hero Selection & Strategy Analysis",
-          "startButton": "Get Started",
-          "createRoomButton": "Create Room",
-          "joinRoomButton": "Join Room",
           "language": "Language:",
           "modes": {
+            "bottomInfo": "Choose local mode to start quickly, or enter online mode for cloud room features",
             "local": "Local Mode",
-            "online": "Online Mode",
             "localDesc": "Use local hero selection immediately, no registration required, all data stored in browser",
-            "onlineDesc": "Browse room list, create your own room or join others, support cloud storage and sharing",
             "localFeatures": "• Instant Use • No Login • Offline Available • Local Storage",
-            "onlineFeatures": "• Room Management • Cloud Storage • Real-time Sync • Multiplayer",
-            "bottomInfo": "Choose local mode to start quickly, or enter online mode for cloud room features"
+            "online": "Online Mode",
+            "onlineDesc": "Browse room list, create your own room or join others, support cloud storage and sharing",
+            "onlineFeatures": "• Room Management • Cloud Storage • Real-time Sync • Multiplayer"
           }
         },
-        "languageSelector": {
-          "label": "Select Language",
-          "ariaLabel": "Select Language / 选择语言"
+        "filterChips": {
+          "all": "All Rooms",
+          "ascOrder": "Ascending",
+          "createdTime": "CreatedAt",
+          "descOrder": "Descending",
+          "direction": "Direction",
+          "filter": "Filters:",
+          "mine": "My Rooms",
+          "owner": "Owner",
+          "reset": "Reset",
+          "resetAllFilters": "Reset all filters",
+          "search": "Search",
+          "sort": "Sort",
+          "updatedTime": "UpdatedAt"
         },
-        "heroCard": {
-          "selected": "Selected",
-          "banned": "Banned",
-          "hoverToSelect": "Hover to select",
-          "clickToSelect": "Click to select",
-          "clickToDeselect": "Click to deselect"
+        "ownerToggle": {
+          "label": "Only mine"
         },
-        "modal": {
-          "closeButton": "Close (ESC)",
-          "confirmButton": "Confirm",
-          "cancelButton": "Cancel"
+        "pagination": {
+          "currentPageInfo": "Page {{current}} of {{total}}",
+          "currentPageInfoMobile": "{{current}}/{{total}}",
+          "itemsPerPage": "items / page",
+          "nextPage": "Next",
+          "previousPage": "Previous"
+        },
+        "roomItem": {
+          "copyLink": "Copy Link",
+          "created": "Created",
+          "createdAt": "CreatedAt",
+          "deleteRoom": "Delete Room",
+          "editRoom": "Edit Room",
+          "enterRoom": "Enter Room",
+          "heroesSelected": "Selected {{count}} heroes",
+          "linkCopied": "Room link copied to clipboard!",
+          "noHeroesSelected": "No heroes selected",
+          "unknownUser": "Unknown User",
+          "updated": "Updated",
+          "updatedAt": "UpdatedAt"
+        },
+        "roomManager": {
+          "auth": {
+            "loadingUserInfo": "Loading user info...",
+            "updateUsername": {
+              "error": "Please enter new username!",
+              "sameUsername": "New username is the same as current!"
+            }
+          },
+          "delete": {
+            "failed": "Failed to delete room, please try again later",
+            "success": "Room deleted successfully!"
+          },
+          "filter": {
+            "filteredRooms": "{{filtered}} rooms found (total {{total}})",
+            "filteredRoomsShort": "{{filtered}}/{{total}} rooms",
+            "totalRooms": "Total {{count}} rooms"
+          },
+          "header": {
+            "backToHome": "Back to Home",
+            "createRoom": "Create Room",
+            "createRoomShort": "Create",
+            "guest": "Guest",
+            "joinRoom": "Join Room",
+            "joinRoomShort": "Join",
+            "title": "Room List"
+          },
+          "join": {
+            "error": "Please enter room ID or room link!",
+            "invalidLink": "Invalid room link format",
+            "joinFailed": "Failed to join room, please check the room ID",
+            "roomNotFound": "Room not found"
+          },
+          "list": {
+            "loading": "Loading...",
+            "noRooms": "No rooms found"
+          }
+        },
+        "roomSearchBox": {
+          "clearButtonTitle": "Clear search",
+          "placeholder": "Search room names and descriptions...",
+          "searchButton": "Search",
+          "searchButtonTitle": "Search rooms"
+        },
+        "roomSortToggle": {
+          "ascOrder": "Ascending",
+          "createdTime": "CreatedAt",
+          "descOrder": "Descending",
+          "sortDirectionTitle": "Sort order: ",
+          "sortLabel": "Sort",
+          "updatedTime": "UpdatedAt"
         },
         "toast": {
-          "success": "Operation successful",
-          "error": "Operation failed",
-          "warning": "Warning",
-          "info": "Info",
-          "heroAvatar": "Hero Avatar",
-          "close": "Close"
+          "close": "Close",
+          "heroAvatar": "Hero Avatar"
         }
-      }
-    },
-    "actions": {
-      "createRoom": "Create Room",
-      "joinRoom": "Join Room",
-      "leaveRoom": "Leave Room",
-      "resetBP": "Reset Draft",
-      "randomHero": "Random Hero",
-      "clearSelection": "Clear Selection",
-      "showSelected": "Show Selected",
-      "hideSelected": "Hide Selected",
-      "toggleRole": "Toggle Role",
-      "switchLanguage": "Switch Language"
-    },
-    "status": {
-      "loading": "Loading...",
-      "saving": "Saving...",
-      "syncing": "Syncing...",
-      "connected": "Connected",
-      "disconnected": "Disconnected",
-      "reconnecting": "Reconnecting...",
-      "offline": "Offline",
-      "online": "Online",
-      "ready": "Ready",
-      "notReady": "Not Ready"
-    },
-    "roles": {
-      "Captain": "Support",
-      "Jungle": "Jungle",
-      "Carry": "Lane"
-    },
-    "forms": {
-      "room": {
-        "name": {
-          "label": "Room Name",
-          "placeholder": "Enter room name...",
-          "help": "Room name will be shown to other players"
-        },
-        "password": {
-          "label": "Room Password",
-          "placeholder": "Optional password...",
-          "help": "Leave empty to create a public room"
-        },
-        "maxPlayers": {
-          "label": "Max Players",
-          "help": "Maximum number of players the room can accommodate"
-        }
-      },
-      "auth": {
-        "email": {
-          "label": "Email Address",
-          "placeholder": "Enter your email...",
-          "validation": {
-            "required": "Please enter an email address",
-            "invalid": "Please enter a valid email address"
-          }
-        },
-        "password": {
-          "label": "Password",
-          "placeholder": "Enter password...",
-          "validation": {
-            "required": "Please enter a password",
-            "tooShort": "Password must be at least 6 characters"
-          }
-        },
-        "confirmPassword": {
-          "label": "Confirm Password",
-          "placeholder": "Enter password again...",
-          "validation": {
-            "required": "Please confirm your password",
-            "mismatch": "Passwords do not match"
-          }
-        },
-        "displayName": {
-          "label": "Display Name",
-          "placeholder": "Enter your nickname...",
-          "validation": {
-            "required": "Please enter a display name",
-            "tooLong": "Display name cannot exceed 20 characters"
-          }
-        }
-      }
-    },
-    "messages": {
-      "room": {
-        "created": "Room created successfully",
-        "joined": "Successfully joined the room",
-        "left": "Left the room",
-        "full": "Room is full",
-        "notFound": "Room not found",
-        "passwordIncorrect": "Incorrect password",
-        "connectionLost": "Connection to room lost"
-      },
-      "auth": {
-        "loginSuccess": "Login successful",
-        "registerSuccess": "Registration successful",
-        "loginFailed": "Login failed",
-        "registerFailed": "Registration failed",
-        "logoutSuccess": "Logged out successfully",
-        "emailSent": "Verification email sent",
-        "emailVerified": "Email verified successfully"
-      },
-      "validation": {
-        "required": "This field is required",
-        "invalid": "Invalid format",
-        "tooShort": "Too short",
-        "tooLong": "Too long",
-        "invalidEmail": "Invalid email format",
-        "passwordMismatch": "Passwords do not match"
-      },
-      "network": {
-        "offline": "Network connection lost",
-        "online": "Network connection restored",
-        "requestFailed": "Request failed, please try again",
-        "timeout": "Request timed out, please try again"
       }
     }
   }

@@ -248,24 +248,25 @@ class I18nService implements I18nServiceInterface {
     this.isLoading[language] = true;
 
     try {
-      // 3. 尝试从localStorage加载
-      const cached = this.loadFromCache(language);
-      if (cached) {
-        this.memoryCache[language] = cached;
-        this.isLoading[language] = false;
-        return cached;
-      }
-
-      // 4. 从网络加载
-      const response = await fetch(`/i18n/locales/${language}.json`);
+      // 3. 始终从网络加载最新版本
+      const response = await fetch(`/i18n/locales/${language}.json?${Date.now()}`);
       if (!response.ok) {
         console.error(`Failed to load language pack for ${language}: ${response.status}`);
+
+        // 网络加载失败时，尝试使用 localStorage 缓存作为备份
+        const cached = this.loadFromCache(language);
+        if (cached) {
+          this.memoryCache[language] = cached;
+          this.isLoading[language] = false;
+          return cached;
+        }
+
         throw new Error(`Failed to load language pack: ${response.status}`);
       }
 
       const pack: LanguagePack = await response.json();
 
-      // 5. 缓存结果
+      // 4. 缓存结果到内存和 localStorage
       this.memoryCache[language] = pack;
       this.saveToCache(language, pack);
 
