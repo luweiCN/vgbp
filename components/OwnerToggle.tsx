@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { useI18n } from '@/i18n/hooks/useI18n';
 
 export interface OwnerToggleProps {
   isChecked: boolean;
@@ -17,6 +18,7 @@ export const OwnerToggle: React.FC<OwnerToggleProps> = ({
   disabled = false,
   className = ""
 }) => {
+  const { t } = useI18n();
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       {/* 开关 */}
@@ -40,7 +42,7 @@ export const OwnerToggle: React.FC<OwnerToggleProps> = ({
 
       {/* 标签 */}
       <span className="text-sm text-zinc-300 whitespace-nowrap ml-2">
-        只看我的
+        {t('ui.components.ownerToggle.label')}
       </span>
     </div>
   );

@@ -2,10 +2,7 @@ import React from "react";
 import { ToastContainer } from "./Toast";
 import { useToast } from "../hooks/useToast";
 import { useSafeI18n } from "../i18n/components/useSafeI18n";
-import {
-  LanguageSelector,
-  ButtonStyleLanguageSelector,
-} from "../i18n/components/LanguageSelector";
+import { LanguageSelector } from "../i18n/components/LanguageSelector";
 
 interface EntryPageProps {
   onLocalMode: () => void;
@@ -17,16 +14,15 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
   const { translate: t } = useSafeI18n();
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white p-4 pt-16">
+    <div className="min-h-screen bg-zinc-950 text-white p-4 pt-4">
       <div className="max-w-4xl w-full mx-auto">
         {/* Language Selector */}
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end mb-16">
           <div className="flex items-center gap-2">
             <span className="text-sm text-zinc-400">
               {t("ui.components.entryPage.language")}
             </span>
             <LanguageSelector showFlag showNativeName position="header" />
-            <ButtonStyleLanguageSelector size="small" showFlag />
           </div>
         </div>
 
@@ -127,4 +123,3 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
 };
 
 export default EntryPage;
-

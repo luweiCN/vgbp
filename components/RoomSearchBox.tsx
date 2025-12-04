@@ -4,10 +4,11 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useI18n } from '@/i18n/hooks/useI18n';
 
 export interface RoomSearchBoxProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   onClear: () => void;
   onSearch: (value: string) => void;
   placeholder?: string;
@@ -21,14 +22,18 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
   onChange,
   onClear,
   onSearch,
-  placeholder = "Search / 搜索...",
+  placeholder,
   loading = false,
   disabled = false,
   className = ""
 }) => {
+  const { t } = useI18n();
   const [isFocused, setIsFocused] = useState(false);
   const [searchInput, setSearchInput] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // 使用翻译的占位符，如果没有传入自定义占位符
+  const searchPlaceholder = placeholder || t('ui.components.roomSearchBox.placeholder');
 
   // 同步外部value到本地状态
   useEffect(() => {
@@ -40,7 +45,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
     if (disabled) return;
     const newValue = e.target.value;
     setSearchInput(newValue);
-    onChange(newValue);
+    onChange?.(newValue);
   };
 
   // 处理搜索
@@ -102,7 +107,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
           <input
             ref={inputRef}
             type="text"
-            placeholder={placeholder}
+            placeholder={searchPlaceholder}
             value={searchInput}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
@@ -118,9 +123,9 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
             onClick={handleSearch}
             disabled={disabled}
             className="h-6 px-2 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-            title="搜索房间"
+            title={t('ui.components.roomSearchBox.searchButtonTitle')}
           >
-            搜索
+            {t('ui.components.roomSearchBox.searchButton')}
           </button>
 
   
@@ -129,7 +134,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
             <button
               onClick={handleClear}
               className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
-              title="Clear search"
+              title={t('ui.components.roomSearchBox.clearButtonTitle')}
             >
               <svg
                 className="h-4 w-4"
@@ -182,7 +187,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
           <input
             ref={inputRef}
             type="text"
-            placeholder={placeholder}
+            placeholder={searchPlaceholder}
             value={searchInput}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
@@ -198,9 +203,9 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
             onClick={handleSearch}
             disabled={disabled}
             className="h-6 px-2 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-            title="搜索房间"
+            title={t('ui.components.roomSearchBox.searchButtonTitle')}
           >
-            搜索
+            {t('ui.components.roomSearchBox.searchButton')}
           </button>
 
   
@@ -209,7 +214,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
             <button
               onClick={handleClear}
               className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
-              title="Clear search"
+              title={t('ui.components.roomSearchBox.clearButtonTitle')}
             >
               <svg
                 className="h-4 w-4"

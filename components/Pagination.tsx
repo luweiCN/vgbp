@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
+import { useSafeI18n } from '../i18n/components/useSafeI18n';
 
 interface PaginationProps {
   totalItems: number;
@@ -30,6 +31,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const { translate: t } = useSafeI18n();
 
   // 从URL获取当前页码和pageSize
   const getPaginationFromURL = useCallback((): PaginationState => {
@@ -159,8 +161,6 @@ export const Pagination: React.FC<PaginationProps> = ({
 
   return (
     <div className={containerClasses}>
-      <span className="text-sm text-zinc-400 hidden sm:inline">每页</span>
-      <span className="text-sm text-zinc-400 sm:hidden">每页</span>
 
       {/* PC端：显示所有按钮 */}
       <div className="hidden sm:flex items-center justify-center border border-zinc-700 rounded-lg px-1" style={{ height: '40px' }}>
@@ -185,7 +185,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       {/* 移动端：单个循环切换按钮 */}
       <button
         onClick={handleMobilePageSizeToggle}
-        className="flex items-center gap-2 h-8 px-3 text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-200 whitespace-nowrap sm:hidden"
+        className="flex items-center gap-2 h-10 px-3 text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-200 whitespace-nowrap sm:hidden"
       >
         {/* 切换图标 */}
         <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -194,7 +194,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <span>{state.pageSize}</span>
       </button>
 
-      <span className="text-sm text-zinc-400 mr-4">条</span>
+      <span className="text-sm text-zinc-400 mr-4 ml-2">{t("ui.components.pagination.itemsPerPage")}</span>
 
       <button
         onClick={() => handlePageChange(state.currentPage - 1)}
@@ -205,13 +205,17 @@ export const Pagination: React.FC<PaginationProps> = ({
         <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        <span className="hidden sm:inline">上一页</span>
+        <span className="hidden sm:inline">{t("ui.components.pagination.previousPage")}</span>
       </button>
 
       <div className="flex items-center mx-2">
         <span className="text-sm text-zinc-400 whitespace-nowrap">
-          <span className="hidden sm:inline">第 {state.currentPage} 页，共 {state.totalPages} 页</span>
-          <span className="sm:hidden mx-2">{state.currentPage} / {state.totalPages} 页</span>
+          <span className="hidden sm:inline">
+            {t("ui.components.pagination.currentPageInfo", { current: state.currentPage, total: state.totalPages })}
+          </span>
+          <span className="sm:hidden mx-2">
+            {t("ui.components.pagination.currentPageInfoMobile", { current: state.currentPage, total: state.totalPages })}
+          </span>
         </span>
       </div>
 
@@ -220,7 +224,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         disabled={state.currentPage >= state.totalPages}
         className="flex items-center gap-2 h-10 px-4 text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
       >
-        <span className="hidden sm:inline">下一页</span>
+        <span className="hidden sm:inline">{t("ui.components.pagination.nextPage")}</span>
         {/* 下一页图标 */}
         <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

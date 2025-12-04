@@ -652,8 +652,11 @@ export const getHeroesByRole = (
   }
 };
 
-// 直接使用 Vercel Blob URL（暂时方案）
+// Vercel Blob URL（生产环境使用）
 const VERCEL_BLOB_BASE_URL = 'https://nksf7fmzcvduehht.public.blob.vercel-storage.com/heroes';
+
+// OSS URL（开发环境使用）
+const OSS_BASE_URL = 'https://www.luwei.space:4014/default/vainglory/heroes';
 
 // 图片URL缓存
 const avatarUrlCache = new Map<string, string>();
@@ -677,9 +680,15 @@ export const getHeroAvatarUrl = (hero: Hero, ossBaseUrl?: string): string => {
   else if (ossBaseUrl) {
     url = `${ossBaseUrl}/${hero.id}.jpg`;
   }
-  // 默认使用 Vercel Blob
+  // 根据环境选择使用 OSS 或 Vercel Blob
   else {
-    url = `${VERCEL_BLOB_BASE_URL}/${hero.id}.jpg`;
+    // 开发环境使用 OSS，生产环境使用 Vercel Blob
+    const isDev = import.meta.env.DEV;
+    if (isDev) {
+      url = `${OSS_BASE_URL}/${hero.id}.jpg`;
+    } else {
+      url = `${VERCEL_BLOB_BASE_URL}/${hero.id}.jpg`;
+    }
   }
 
   // 缓存结果

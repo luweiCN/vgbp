@@ -23,6 +23,7 @@ const Toast: React.FC<ToastProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
+  
   useEffect(() => {
     // 进入动画
     setIsVisible(true);
@@ -54,7 +55,7 @@ const Toast: React.FC<ToastProps> = ({
         icon = "❌";
         break;
       case 'success':
-        typeStyles = "bg-green-900/90 border-green-700 text-green-100";
+        typeStyles = "bg-emerald-600/95 border-emerald-500 text-white shadow-2xl";
         icon = "✅";
         break;
       case 'warning':
@@ -187,6 +188,10 @@ interface ToastContainerProps {
 }
 
 const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove }) => {
+  if (toasts.length === 0) {
+    return null;
+  }
+
   return (
     <div className="fixed top-4 right-4 space-y-2 pointer-events-none" style={{ zIndex: 999999 }}>
       {toasts.map((toast) => (

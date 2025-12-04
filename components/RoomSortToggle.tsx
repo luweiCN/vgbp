@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { SortOption, SORT_OPTIONS } from '../types/roomFilters';
+import { useI18n } from '@/i18n/hooks/useI18n';
 
 export interface RoomSortToggleProps {
   sortBy: string;
@@ -19,6 +20,7 @@ const RoomSortToggle: React.FC<RoomSortToggleProps> = ({
   onChange,
   className = ""
 }) => {
+  const { t } = useI18n();
   // 获取当前排序选项
   const currentSortOption = SORT_OPTIONS.find(option => option.value === sortBy) || SORT_OPTIONS[0];
 
@@ -31,7 +33,7 @@ const RoomSortToggle: React.FC<RoomSortToggleProps> = ({
   // 统一样式 - 排序方式选择和方向切换
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <span className="text-xs text-zinc-400 hidden sm:inline">排序:</span>
+      <span className="text-xs text-zinc-400 hidden sm:inline">{t('ui.components.roomSortToggle.sortLabel')}</span>
 
       {/* 排序方式选择器 */}
       <div className="flex items-center gap-1 bg-zinc-800 rounded-full p-1">
@@ -43,7 +45,7 @@ const RoomSortToggle: React.FC<RoomSortToggleProps> = ({
               const defaultOrder = option.value === 'created' || option.value === 'updated' ? 'desc' : 'asc';
               onChange(option.value, sortBy === option.value ? sortOrder : defaultOrder);
             }}
-            className={`px-2 py-1 text-xs font-medium rounded-full transition-colors flex items-center gap-1 ${
+            className={`px-2 py-1 text-xs font-medium rounded-full transition-colors flex items-center gap-1 whitespace-nowrap ${
               sortBy === option.value
                 ? "bg-blue-600 text-white"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-700"
@@ -58,7 +60,12 @@ const RoomSortToggle: React.FC<RoomSortToggleProps> = ({
                 d={option.icon}
               />
             </svg>
-            <span>{option.label}</span>
+            <span>
+              {option.value === 'created'
+                ? t('ui.components.roomSortToggle.createdTime')
+                : t('ui.components.roomSortToggle.updatedTime')
+              }
+            </span>
           </button>
         ))}
       </div>
@@ -67,7 +74,7 @@ const RoomSortToggle: React.FC<RoomSortToggleProps> = ({
       <button
         onClick={handleOrderToggle}
         className="p-1 text-zinc-400 hover:text-zinc-200 transition-colors rounded"
-        title={`排序方向: ${sortOrder === 'desc' ? '倒序（新→旧）' : '正序（旧→新）'}`}
+        title={t('ui.components.roomSortToggle.sortDirectionTitle') + (sortOrder === 'desc' ? t('ui.components.roomSortToggle.descOrder') : t('ui.components.roomSortToggle.ascOrder'))}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           {sortOrder === 'desc' ? (

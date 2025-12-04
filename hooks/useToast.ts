@@ -30,7 +30,9 @@ export const useToast = () => {
   }, []);
 
   const showError = useCallback((message: string) => addToast(message, 'error'), [addToast]);
-  const showSuccess = useCallback((message: string) => addToast(message, 'success'), [addToast]);
+  const showSuccess = useCallback((message: string) => {
+    return addToast(message, 'success');
+  }, [addToast]);
   const showWarning = useCallback((message: string) => addToast(message, 'warning'), [addToast]);
   const showInfo = useCallback((message: string, addedHeroIds?: string[], removedHeroIds?: string[]) => {
     if (process.env.NODE_ENV === 'development') {
