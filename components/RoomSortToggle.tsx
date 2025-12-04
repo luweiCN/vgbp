@@ -45,7 +45,7 @@ const RoomSortToggle: React.FC<RoomSortToggleProps> = ({
               const defaultOrder = option.value === 'created' || option.value === 'updated' ? 'desc' : 'asc';
               onChange(option.value, sortBy === option.value ? sortOrder : defaultOrder);
             }}
-            className={`px-2 py-1 text-xs font-medium rounded-full transition-colors flex items-center gap-1 whitespace-nowrap ${
+            className={`px-2 py-1 text-xs font-medium rounded-full transition-colors flex items-center gap-1 whitespace-nowrap overflow-hidden max-w-20 ${
               sortBy === option.value
                 ? "bg-blue-600 text-white"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-700"
