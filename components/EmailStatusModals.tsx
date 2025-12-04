@@ -8,7 +8,6 @@ interface BaseUnverifiedModalProps {
   onResendEmail: () => void;
   resendLoading?: boolean;
   initialCooldownSeconds?: number;
-  confirmationLink?: string;
 }
 
 interface UnverifiedEmailModalProps extends BaseUnverifiedModalProps {
@@ -33,16 +32,9 @@ export const UnverifiedEmailModal: React.FC<UnverifiedEmailModalProps> = ({
   onResendEmail,
   resendLoading = false,
   initialCooldownSeconds = 0,
-  confirmationLink,
   showSuccessBanner = false
 }) => {
-  console.log('🎯 UnverifiedEmailModal render:', {
-    isOpen,
-    email,
-    showSuccessBanner,
-    timestamp: new Date().toISOString()
-  });
-  const countdown = useCountdown({ initialTime: initialCooldownSeconds });
+    const countdown = useCountdown({ initialTime: initialCooldownSeconds });
 
   const handleResendEmail = async () => {
     if (countdown.isActive || resendLoading) return;
@@ -58,7 +50,7 @@ export const UnverifiedEmailModal: React.FC<UnverifiedEmailModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+    <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-[150] p-4">
       <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-white">邮箱需要验证</h3>
@@ -74,34 +66,27 @@ export const UnverifiedEmailModal: React.FC<UnverifiedEmailModalProps> = ({
 
         <div className="space-y-4">
           {/* 注册成功横幅 */}
-          {showSuccessBanner ? (
-            <>
-              {console.log('🟢 渲染注册成功横幅 - showSuccessBanner = true')}
-              <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white">注册成功！</h3>
-                  <p className="text-green-100 text-sm">恭喜您，账户创建成功</p>
+          {showSuccessBanner && (
+            <div className="bg-linear-to-r from-green-600 to-emerald-600 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <div className="shrink-0">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
                 </div>
               </div>
-                      </div>
-            </>
-          ) : (
-            <>
-              {console.log('⚪ 不显示注册成功横幅 - showSuccessBanner = false')}
-            </>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-white">注册成功！</h3>
+                <p className="text-green-100 text-sm">恭喜您，账户创建成功</p>
+              </div>
+            </div>
+                  </div>
           )}
 
           <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-4">
             <div className="flex items-start">
-              <svg className="w-5 h-5 text-yellow-400 mt-0.5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-yellow-400 mt-0.5 mr-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <div>
@@ -162,7 +147,7 @@ export const VerifiedEmailModal: React.FC<VerifiedEmailModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+    <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-[150] p-4">
       <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-white">邮箱已验证</h3>
@@ -179,7 +164,7 @@ export const VerifiedEmailModal: React.FC<VerifiedEmailModalProps> = ({
         <div className="space-y-4">
           <div className="bg-green-900/20 border border-green-700 rounded-lg p-4">
             <div className="flex items-start">
-              <svg className="w-5 h-5 text-green-400 mt-0.5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-green-400 mt-0.5 mr-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>

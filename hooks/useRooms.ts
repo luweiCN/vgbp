@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { supabase } from '../services/supabase';
 import { useAuth } from './useAuth';
 import { RoomFetchOptions } from '../types/roomFilters';
@@ -12,12 +12,7 @@ export interface Room {
   settings: Record<string, any>;
   created_at: string;
   updated_at: string;
-  bp_updated_at?: string; // BP状态的最新更新时间
-  selected_heroes?: Array<{
-    id: string;
-    name: string;
-    avatarUrl?: string | null;
-  }>;
+    selected_heroes?: string[]; // 简化为直接的hero_id数组
   total_selected?: number; // 已选择的英雄数量
   owner?: {
     email: string;
@@ -84,7 +79,7 @@ export const useRooms = () => {
   setError(null);
 
   try {
-      // 构建查询
+      // 构建查询 - 简单查询bp_states
       let query = supabase
         .from('rooms')
         .select(`
@@ -146,32 +141,18 @@ export const useRooms = () => {
       const { data: roomsData, error: roomsError } = await query;
       if (roomsError) throw roomsError;
 
-      // 处理英雄信息
+      // 处理bp_states数据
       const processedRoomsData = roomsData.map(room => {
-        if (!room.bp_states || room.bp_states.length === 0) {
-          return {
-            ...room,
-            selected_heroes: [],
-            total_selected: 0
-          };
-        }
-
-        // 获取已选择的英雄ID列表
-        const selectedHeroIds = room.bp_states
-          .filter((bpState: any) => bpState.is_selected)
-          .map((bpState: any) => bpState.hero_id);
-
-        // 构建英雄信息数组
-        const selectedHeroes = selectedHeroIds.map(heroId => ({
-          id: heroId,
-          name: heroId,
-          avatarUrl: null // 让UI组件使用getHeroAvatarUrl方法获取
-        }));
+        const selectedHeroIds = room.bp_states && room.bp_states.length > 0
+          ? room.bp_states
+              .filter((bpState: any) => bpState.is_selected)
+              .map((bpState: any) => bpState.hero_id)
+          : [];
 
         return {
           ...room,
-          selected_heroes: selectedHeroes,
-          total_selected: selectedHeroes.length
+          selected_heroes: selectedHeroIds,
+          total_selected: selectedHeroIds.length
         };
       });
 
@@ -227,6 +208,7 @@ export const useRooms = () => {
     order?: string;
     page?: number;
     pageSize?: number;
+    t?: number; // 时间戳参数，用于强制刷新
   }) => {
     // 生成新的请求序号
     const currentRequestId = ++requestIdRef.current;
@@ -241,8 +223,21 @@ export const useRooms = () => {
       sortBy: filters?.sort,
       sortOrder: filters?.order,
       requestId: currentRequestId,
+      pageSize: filters?.pageSize
     });
   }, [user?.id, fetchRooms]);
+
+  // 分页验证函数 - 确保页码有效
+  const validatePageNumber = useCallback((currentPage: number, pageSize: number, totalItems: number): number => {
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    // 如果当前页码无效（大于总页数或小于1），重置为1
+    if (currentPage < 1 || (totalPages > 0 && currentPage > totalPages)) {
+      return 1;
+    }
+
+    return currentPage;
+  }, []);
 
   // 删除房间（仅房主）
   const deleteRoom = async (roomId: string) => {
@@ -293,5 +288,6 @@ export const useRooms = () => {
     loadRoomData,
     deleteRoom,
     getCurrentPagination,
+    validatePageNumber,
   };
 };

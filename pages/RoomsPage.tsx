@@ -1,6 +1,6 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { RoomManager } from '../components/RoomManager';
+import React, { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { RoomManager } from "../components/RoomManager";
 
 interface RoomsPageProps {
   onEnterRoom: (roomId: string) => void;
@@ -9,11 +9,12 @@ interface RoomsPageProps {
 const RoomsPage: React.FC<RoomsPageProps> = ({ onEnterRoom }) => {
   const navigate = useNavigate();
 
-  const handleBack = () => {
-    navigate('/');
-  };
+  const handleBack = useCallback(() => {
+    navigate("/");
+  }, [navigate]);
 
   return <RoomManager onEnterRoom={onEnterRoom} onBack={handleBack} />;
 };
 
 export default RoomsPage;
+

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 
-interface MobileMenuModalProps {
+interface RoomManagerMenuModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateRoom: () => void;
@@ -10,7 +10,7 @@ interface MobileMenuModalProps {
   onOpenLogin: () => void;
 }
 
-export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
+export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
   isOpen,
   onClose,
   onCreateRoom,
@@ -18,7 +18,7 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
   onOpenUserSettings,
   onOpenLogin,
 }) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   if (!isOpen) return null;
 
@@ -143,9 +143,13 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
                   </button>
 
                   <button
-                    onClick={() => {
-                      // 这里应该调用 signOut，但为了简化，暂时只关闭菜单
-                      onClose();
+                    onClick={async () => {
+                      try {
+                        await signOut();
+                        onClose();
+                      } catch (error) {
+                        console.error('退出登录失败:', error);
+                      }
                     }}
                     className="w-full px-4 py-3 text-left text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 border border-zinc-700/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                   >

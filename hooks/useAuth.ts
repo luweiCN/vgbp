@@ -125,7 +125,6 @@ export const useAuth = () => {
       }
     };
 
-    console.log('About to call getInitialSession...');
     getInitialSession();
 
     // 添加超时保护，防止永远加载
@@ -148,7 +147,9 @@ export const useAuth = () => {
         // 对于INITIAL_SESSION事件，只有当loading为true时才处理（页面刷新的情况）
         if (event === 'INITIAL_SESSION') {
           if (authState.loading) {
-            console.log('🔄 处理INITIAL_SESSION事件 - 页面刷新场景');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🔄 处理INITIAL_SESSION事件 - 页面刷新场景');
+            }
             if (session?.user) {
               const basicUserInfo = {
                 id: session.user.id,

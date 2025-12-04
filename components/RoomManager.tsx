@@ -4,7 +4,6 @@ import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 import { Pagination } from "./Pagination";
 import { useRoomFilters } from "../hooks/useRoomFilters";
-import { AuthForm } from "./AuthForm";
 import { RoomFormModal } from "./RoomFormModal";
 import { RoomItem } from "./RoomItem";
 import { supabase } from "../services/supabase";
@@ -19,7 +18,7 @@ import { JoinRoomModal } from "./JoinRoomModal";
 import { AuthModal } from "./AuthModal";
 import { UserSettingsModal } from "./UserSettingsModal";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
-import { MobileMenuModal } from "./MobileMenuModal";
+import { RoomManagerMenuModal } from "./RoomManagerMenuModal";
 
 interface RoomManagerProps {
   onEnterRoom?: (roomId: string) => void;
@@ -53,23 +52,42 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
   const [showRoomForm, setShowRoomForm] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
 
-  const { user, loading: authLoading, signOut, updateUsername } = useAuth();
+  const { user, loading: authLoading, updateUsername } = useAuth();
   const { showSuccess, showError } = useToast();
 
-  const { rooms, loading, totalRooms, filteredTotal, fetchRooms, loadRoomData, deleteRoom } =
-    useRooms();
+  const {
+    rooms,
+    loading,
+    totalRooms,
+    filteredTotal,
+    loadRoomData,
+    deleteRoom,
+    validatePageNumber,
+  } = useRooms();
 
   // 筛选和搜索状态管理
   const { filters, setFilter, setFilters, clearFilters } = useRoomFilters();
 
   // 统一监听URL参数和用户状态变化
   useEffect(() => {
+    const currentPage = filters.page || 1;
+    const pageSize = filters.pageSize || 10;
+
+    // 验证页码是否有效，如果无效则重置为1
+    const validPage = validatePageNumber(currentPage, pageSize, filteredTotal);
+
+    // 如果页码被修正，更新筛选条件
+    if (validPage !== currentPage) {
+      setFilter('page', validPage);
+      return;
+    }
+
     loadRoomData({
       search: filters.search,
       owner: filters.owner,
       sort: filters.sort,
       order: filters.order,
-      page: filters.page,
+      page: validPage,
       pageSize: filters.pageSize,
     });
   }, [
@@ -79,7 +97,11 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
     filters.order, // 排序方向
     filters.page, // 分页
     filters.pageSize, // 每页数量
+    filters.t, // 时间戳参数，用于强制刷新
     user?.id, // 只监听用户ID变化，避免用户信息细节变化重复触发
+    filteredTotal, // 添加filteredTotal依赖以重新验证页码
+    validatePageNumber,
+    setFilter,
     loadRoomData,
   ]);
 
@@ -110,11 +132,11 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
     loadRoomData(); // 刷新房间列表
   };
 
-  // 编辑房间相关函数
-  const handleEditRoomClick = (room: Room) => {
+  // 编辑房间相关函数 - 优化依赖
+  const handleEditRoomClick = useCallback((room: Room) => {
     setEditingRoom(room);
     setShowRoomForm(true);
-  };
+  }, []);
 
   const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,11 +191,13 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
     }
   };
 
-  const handleDeleteRoom = async (roomId: string) => {
+  // 删除房间相关函数 - 优化依赖
+  const handleDeleteRoom = useCallback(async (roomId: string) => {
     setShowDeleteConfirm(roomId);
-  };
+  }, []);
 
-  const confirmDeleteRoom = async (roomId: string) => {
+  // 确认删除房间 - 优化依赖
+  const confirmDeleteRoom = useCallback(async (roomId: string) => {
     setShowDeleteConfirm(null);
 
     try {
@@ -186,7 +210,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
       setError(errorMessage);
       showError(errorMessage);
     }
-  };
+  }, [deleteRoom, showSuccess, showError, loadRoomData]);
 
   // 更新用户名处理函数
   const handleUpdateUsername = async () => {
@@ -214,42 +238,27 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("zh-CN", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   // 搜索处理函数
-  const handleSearchChange = (value: string) => {
+  const handleSearchChange = (_value: string) => {
     // 这里可以添加实时搜索逻辑，但当前保持简洁
   };
 
   const handleSearch = (value: string) => {
-    setFilter("search", value);
+    const trimmedValue = value.trim();
+
+    // 始终更新搜索内容和时间戳，确保数据重新加载
+    setFilter("search", trimmedValue);
+    setFilter("t", Date.now()); // 每次搜索都更新时间戳，强制刷新
   };
 
   const handleClearSearch = () => {
     setFilter("search", "");
   };
 
-  // 认证检查 - 改进加载状态处理
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-white">加载用户信息中...</div>
-        </div>
-      </div>
-    );
-  }
+  // 认证检查 - 改进加载状态处理（移动到组件最后作为条件渲染）
 
   // 渲染房间列表内容
-  const renderRoomList = () => {
+  const renderRoomList = useCallback(() => {
     if (loading) {
       return <div className="text-center py-8 text-gray-400">加载中...</div>;
     }
@@ -267,18 +276,13 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
         {/* 桌面端：列表式布局 */}
         <div className="hidden sm:block">
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700">
-            {rooms.map((room: Room, index: number) => (
+            {rooms.map((room: Room) => (
               <RoomItem
                 key={room.id}
                 room={room}
-                index={index}
-                totalRooms={rooms.length}
-                user={user}
                 onEditRoom={handleEditRoomClick}
                 onDeleteRoom={handleDeleteRoom}
                 onEnterRoom={onEnterRoom}
-                showSuccess={showSuccess}
-                formatDate={formatDate}
               />
             ))}
           </div>
@@ -290,20 +294,15 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
             <RoomItem
               key={room.id}
               room={room}
-              index={0}
-              totalRooms={rooms.length}
-              user={user}
               onEditRoom={handleEditRoomClick}
               onDeleteRoom={handleDeleteRoom}
               onEnterRoom={onEnterRoom}
-              showSuccess={showSuccess}
-              formatDate={formatDate}
             />
           ))}
         </div>
       </>
     );
-  };
+  }, [loading, rooms, handleEditRoomClick, handleDeleteRoom, onEnterRoom]);
 
   // 渲染所有弹窗
   const renderModals = () => {
@@ -331,13 +330,15 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
           }}
           onSubmit={handleJoinRoom}
           roomId={joinFormData.roomId}
-          onRoomIdChange={(roomId) => setJoinFormData({ ...joinFormData, roomId })}
+          onRoomIdChange={(roomId: string) =>
+            setJoinFormData({ ...joinFormData, roomId })
+          }
           loading={joinLoading}
           error={error}
         />
 
-        {/* 移动端侧边菜单 */}
-        <MobileMenuModal
+        {/* 房间管理器菜单 */}
+        <RoomManagerMenuModal
           isOpen={showMobileMenu}
           onClose={() => setShowMobileMenu(false)}
           onCreateRoom={() => {
@@ -375,7 +376,9 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
             setError("");
           }}
           username={usernameFormData.username}
-          onUsernameChange={(username) => setUsernameFormData({ ...usernameFormData, username })}
+          onUsernameChange={(username: string) =>
+            setUsernameFormData({ ...usernameFormData, username })
+          }
           onUpdateUsername={handleUpdateUsername}
           loading={usernameFormLoading}
           error={error}
@@ -388,12 +391,26 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
             setShowDeleteConfirm(null);
             setError("");
           }}
-          onConfirm={() => showDeleteConfirm && confirmDeleteRoom(showDeleteConfirm)}
+          onConfirm={() =>
+            showDeleteConfirm && confirmDeleteRoom(showDeleteConfirm)
+          }
           roomName={showDeleteConfirm?.name}
         />
       </>
     );
   };
+
+  // 认证检查 - 在所有Hooks调用后进行条件渲染
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-white">加载用户信息中...</div>
+        </div>
+      </div>
+    );
+  }
 
   // 使用新的布局结构
   return (
@@ -439,4 +456,3 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
     />
   );
 };
-

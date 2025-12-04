@@ -1,5 +1,5 @@
-import React from 'react';
-import { AuthForm } from './AuthForm';
+import React from "react";
+import { AuthForm } from "./AuthForm";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -36,11 +36,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </svg>
         </button>
 
-        <AuthForm onSuccess={() => {
-          onSuccess?.();
-          onClose();
-        }} />
+        <AuthForm
+          onSuccess={() => {
+            onSuccess?.();
+            onClose();
+          }}
+        />
       </div>
     </div>
   );
 };
+
