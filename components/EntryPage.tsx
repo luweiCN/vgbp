@@ -3,6 +3,8 @@ import { RoomManager } from './RoomManager';
 import RoomJoin from './RoomJoin';
 import { ToastContainer } from './Toast';
 import { useToast } from '../hooks/useToast';
+import { useSafeI18n } from '../i18n/components/useSafeI18n';
+import { LanguageSelector, ButtonStyleLanguageSelector } from '../i18n/components/LanguageSelector';
 
 interface EntryPageProps {
   onLocalMode: () => void;
@@ -12,6 +14,7 @@ interface EntryPageProps {
 
 const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnterRoom }) => {
   const { showError, toasts, removeToast } = useToast();
+  const { language, translate: t, isReady: isLanguageReady } = useSafeI18n();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showJoinRoomModal, setShowJoinRoomModal] = useState(false);
   const [showRoomManager, setShowRoomManager] = useState(false);
@@ -41,6 +44,15 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-4 pt-16">
       <div className="max-w-4xl w-full mx-auto">
+        {/* Language Selector */}
+        <div className="flex justify-end mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-zinc-400">Language:</span>
+            <LanguageSelector showFlag showNativeName position="header" />
+            <ButtonStyleLanguageSelector size="small" showFlag />
+          </div>
+        </div>
+
         {/* Logo and Title */}
         <div className="text-center mb-8">
           <div className="w-10 h-10 rounded bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-green-500/20 mx-auto mb-4">
@@ -106,6 +118,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode, onEnte
           </p>
         </div>
 
+        
         {/* Room Manager Overlay */}
         {showRoomManager && (
           <div className="fixed inset-0 bg-zinc-950 z-[80] overflow-y-auto">

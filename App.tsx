@@ -5,6 +5,7 @@ import RoomsPage from './pages/RoomsPage';
 import RoomPage from './pages/RoomPage';
 import { useToast } from './hooks/useToast';
 import { ToastContainer } from './components/Toast';
+import { I18nProvider } from './i18n/components/I18nProvider';
 
 // 房间页面包装组件
 const RoomPageWrapper: React.FC = () => {
@@ -32,9 +33,11 @@ const AppWithRouter: React.FC = () => {
   const basename = isGitHubPages ? '/vgbp/' : '/';
 
   return (
-    <Router basename={basename}>
-      <AppContent />
-    </Router>
+    <I18nProvider>
+      <Router basename={basename}>
+        <AppContent />
+      </Router>
+    </I18nProvider>
   );
 };
 

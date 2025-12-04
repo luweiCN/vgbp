@@ -1,0 +1,200 @@
+{
+  "meta": {
+    "language": "en-US",
+    "version": "1.0.0",
+    "lastUpdated": "2025-12-04"
+  },
+  "translations": {
+    "ui": {
+      "common": {
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit",
+        "back": "Back",
+        "next": "Next",
+        "previous": "Previous",
+        "close": "Close",
+        "search": "Search",
+        "filter": "Filter",
+        "sort": "Sort",
+        "reset": "Reset",
+        "clear": "Clear",
+        "refresh": "Refresh",
+        "share": "Share",
+        "copy": "Copy",
+        "help": "Help",
+        "settings": "Settings"
+      },
+      "components": {
+        "entryPage": {
+          "title": "Vainglory Tactical Assistant",
+          "subtitle": "Smart Hero Selection & Strategy Analysis",
+          "startButton": "Get Started",
+          "createRoomButton": "Create Room",
+          "joinRoomButton": "Join Room",
+          "features": {
+            "title": "Features",
+            "heroSelection": {
+              "title": "Hero Selection Management",
+              "description": "Easily manage selected and banned heroes"
+            },
+            "aiAnalysis": {
+              "title": "AI Strategy Analysis",
+              "description": "Get professional draft advice and tactical analysis"
+            },
+            "realTimeSync": {
+              "title": "Real-time Sync",
+              "description": "Sync draft information with teammates in real-time"
+            },
+            "heroDatabase": {
+              "title": "Hero Database",
+              "description": "Complete hero information and skill descriptions"
+            }
+          }
+        },
+        "languageSelector": {
+          "label": "Select Language",
+          "ariaLabel": "Select Language / 选择语言"
+        },
+        "heroCard": {
+          "selected": "Selected",
+          "banned": "Banned",
+          "hoverToSelect": "Hover to select",
+          "clickToSelect": "Click to select",
+          "clickToDeselect": "Click to deselect"
+        },
+        "modal": {
+          "closeButton": "Close (ESC)",
+          "confirmButton": "Confirm",
+          "cancelButton": "Cancel"
+        },
+        "toast": {
+          "success": "Operation successful",
+          "error": "Operation failed",
+          "warning": "Warning",
+          "info": "Info"
+        }
+      }
+    },
+    "actions": {
+      "createRoom": "Create Room",
+      "joinRoom": "Join Room",
+      "leaveRoom": "Leave Room",
+      "resetBP": "Reset Draft",
+      "randomHero": "Random Hero",
+      "clearSelection": "Clear Selection",
+      "showSelected": "Show Selected",
+      "hideSelected": "Hide Selected",
+      "toggleRole": "Toggle Role",
+      "switchLanguage": "Switch Language"
+    },
+    "status": {
+      "loading": "Loading...",
+      "saving": "Saving...",
+      "syncing": "Syncing...",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "reconnecting": "Reconnecting...",
+      "offline": "Offline",
+      "online": "Online",
+      "ready": "Ready",
+      "notReady": "Not Ready"
+    },
+    "roles": {
+      "Captain": "Support",
+      "Jungle": "Jungle",
+      "Carry": "Lane"
+    },
+    "forms": {
+      "room": {
+        "name": {
+          "label": "Room Name",
+          "placeholder": "Enter room name...",
+          "help": "Room name will be shown to other players"
+        },
+        "password": {
+          "label": "Room Password",
+          "placeholder": "Optional password...",
+          "help": "Leave empty to create a public room"
+        },
+        "maxPlayers": {
+          "label": "Max Players",
+          "help": "Maximum number of players the room can accommodate"
+        }
+      },
+      "auth": {
+        "email": {
+          "label": "Email Address",
+          "placeholder": "Enter your email...",
+          "validation": {
+            "required": "Please enter an email address",
+            "invalid": "Please enter a valid email address"
+          }
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "Enter password...",
+          "validation": {
+            "required": "Please enter a password",
+            "tooShort": "Password must be at least 6 characters"
+          }
+        },
+        "confirmPassword": {
+          "label": "Confirm Password",
+          "placeholder": "Enter password again...",
+          "validation": {
+            "required": "Please confirm your password",
+            "mismatch": "Passwords do not match"
+          }
+        },
+        "displayName": {
+          "label": "Display Name",
+          "placeholder": "Enter your nickname...",
+          "validation": {
+            "required": "Please enter a display name",
+            "tooLong": "Display name cannot exceed 20 characters"
+          }
+        }
+      }
+    },
+    "messages": {
+      "room": {
+        "created": "Room created successfully",
+        "joined": "Successfully joined the room",
+        "left": "Left the room",
+        "full": "Room is full",
+        "notFound": "Room not found",
+        "passwordIncorrect": "Incorrect password",
+        "connectionLost": "Connection to room lost"
+      },
+      "auth": {
+        "loginSuccess": "Login successful",
+        "registerSuccess": "Registration successful",
+        "loginFailed": "Login failed",
+        "registerFailed": "Registration failed",
+        "logoutSuccess": "Logged out successfully",
+        "emailSent": "Verification email sent",
+        "emailVerified": "Email verified successfully"
+      },
+      "validation": {
+        "required": "This field is required",
+        "invalid": "Invalid format",
+        "tooShort": "Too short",
+        "tooLong": "Too long",
+        "invalidEmail": "Invalid email format",
+        "passwordMismatch": "Passwords do not match"
+      },
+      "network": {
+        "offline": "Network connection lost",
+        "online": "Network connection restored",
+        "requestFailed": "Request failed, please try again",
+        "timeout": "Request timed out, please try again"
+      }
+    }
+  }
+}
