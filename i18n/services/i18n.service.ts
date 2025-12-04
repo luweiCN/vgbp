@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Language,
   LanguagePack,
@@ -188,7 +189,7 @@ class I18nService implements I18nServiceInterface {
   /**
    * 翻译文本
    */
-  translate(key: string, params?: Record<string, any>): string {
+  translate(key: string, params?: Record<string, any>): string | React.ReactNode {
     const pack = this.memoryCache[this.currentLanguage];
     if (!pack) {
       console.warn(`Language pack not loaded for ${this.currentLanguage}`);
@@ -211,12 +212,59 @@ class I18nService implements I18nServiceInterface {
 
     // 参数化翻译
     if (params) {
-      return translation.replace(/\{\{(\w+)\}\}/g, (match, paramKey) => {
-        return params[paramKey] !== undefined ? String(params[paramKey]) : match;
-      });
+      // 检查是否有React组件参数
+      const hasReactParams = Object.values(params).some(param =>
+        param && typeof param === 'object' && param.$$typeof
+      );
+
+      if (hasReactParams) {
+        // 如果有React组件，需要特殊处理
+        return this.translateWithReactComponents(translation, params);
+      } else {
+        // 纯字符串参数，使用原有逻辑
+        return translation.replace(/\{\{(\w+)\}\}/g, (match, paramKey) => {
+          return params[paramKey] !== undefined ? String(params[paramKey]) : match;
+        });
+      }
     }
 
     return translation;
+  }
+
+  /**
+   * 支持React组件的翻译方法
+   */
+  private translateWithReactComponents(translation: string, params: Record<string, any>): React.ReactNode {
+    // 将字符串按模板标记拆分为数组
+    const parts: (string | React.ReactNode)[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    const regex = /\{\{(\w+)\}\}/g;
+
+    while ((match = regex.exec(translation)) !== null) {
+      // 添加前面的文本
+      if (match.index > lastIndex) {
+        parts.push(translation.slice(lastIndex, match.index));
+      }
+
+      // 添加参数值
+      const paramKey = match[1];
+      if (params[paramKey] !== undefined) {
+        parts.push(params[paramKey]);
+      } else {
+        parts.push(match[0]);
+      }
+
+      lastIndex = regex.lastIndex;
+    }
+
+    // 添加最后的文本
+    if (lastIndex < translation.length) {
+      parts.push(translation.slice(lastIndex));
+    }
+
+    return parts;
   }
 
   /**

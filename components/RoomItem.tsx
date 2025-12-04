@@ -131,12 +131,8 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
     if (currentLang === 'zh-CN') {
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     } else {
-      return date.toLocaleDateString('en-US', {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      // 日韩习惯的格式：YYYY/MM/DD HH:mm (更简洁，符合国际通用)
+      return `${year}/${month}/${day} ${hours}:${minutes}`;
     }
   };
 
