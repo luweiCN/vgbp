@@ -1,4 +1,6 @@
 // 多语言支持的类型定义
+import React from 'react';
+
 export type Language = 'zh-CN' | 'en-US';
 
 export interface LanguageConfig {
@@ -106,7 +108,7 @@ export interface I18nServiceInterface {
   getLanguageConfig(language: Language): LanguageConfig;
 
   // 翻译功能
-  translate(key: string, params?: Record<string, any>): string;
+  translate(key: string, params?: Record<string, any>): string | React.ReactNode;
   translatePlural(key: string, count: number, params?: Record<string, any>): string;
 
   // 语言包管理

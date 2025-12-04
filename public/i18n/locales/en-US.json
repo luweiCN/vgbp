@@ -115,6 +115,209 @@
         "toast": {
           "close": "Close",
           "heroAvatar": "Hero Avatar"
+        },
+        "authForm": {
+          "title": {
+            "login": "Sign In",
+            "register": "Create Account"
+          },
+          "subtitle": {
+            "login": "Sign in to create and manage rooms",
+            "register": "Create an account to start using online features"
+          },
+          "fields": {
+            "username": {
+              "label": "Username",
+              "placeholder": "Enter username (Chinese or English)",
+              "description": "Username will be your display name on the platform"
+            },
+            "email": {
+              "label": "Email Address",
+              "placeholder": "Enter email address (for login)",
+              "privateNote": "Email address is only used for login and will not be displayed publicly"
+            },
+            "password": {
+              "label": "Password",
+              "placeholder": "Enter password (at least 6 characters)"
+            },
+            "confirmPassword": {
+              "label": "Confirm Password",
+              "placeholder": "Enter password again"
+            }
+          },
+          "validation": {
+            "checking": "Checking email status...",
+            "emailRegisteredUnverified": "Email registered but not verified",
+            "emailRegisteredVerified": "Email registered and verified",
+            "emailAvailable": "Email available for registration",
+            "emailNotRegistered": "Email not registered yet"
+          },
+          "errors": {
+            "emailInvalid": "Please enter a valid email address!",
+            "usernameRequired": "Please enter username!",
+            "passwordMismatch": "Passwords do not match!",
+            "passwordTooShort": "Password must be at least 6 characters!",
+            "resendFailed": "Failed to resend verification email",
+            "submitFailed": "Registration or login failed, please try again later"
+          },
+          "actions": {
+            "login": "Sign In",
+            "register": "Sign Up",
+            "loggingIn": "Signing in...",
+            "registering": "Signing up...",
+            "goToLogin": "Go to login",
+            "goToRegister": "Go to register",
+            "noAccount": "Don't have an account?",
+            "registerNow": "Sign up now",
+            "hasAccount": "Already have an account?",
+            "backToLogin": "Back to login"
+          }
+        },
+        "emailModals": {
+          "unverified": {
+            "title": "Email Verification Required",
+            "successBanner": "Registration Successful!",
+            "successMessage": "Congratulations, your account has been created",
+            "description": "This email has been registered but not yet verified",
+            "emailSent": "We have sent a verification email to {{email}}, please check your inbox and click the verification link.",
+            "instructions": {
+              "checkEmail": "📧 Please check your email (including spam folder)",
+              "clickLink": "🔗 Click the verification link in the email to complete verification",
+              "waitVerification": "⏱️ You can start using after verification is successful"
+            },
+            "actions": {
+              "gotIt": "Got it",
+              "sending": "Sending...",
+              "resend": "Resend Email",
+              "resendWithCountdown": "Resend ({{countdown}}s)"
+            }
+          },
+          "verified": {
+            "title": "Email Verified",
+            "status": "Email verification completed",
+            "description": "{{email}} has been verified, you can sign in directly.",
+            "instructions": {
+              "verified": "✅ Your email has been verified",
+              "canLogin": "👤 You can sign in directly with this email",
+              "startUsing": "🚀 Start using Vainglory BP!"
+            },
+            "actions": {
+              "continueRegister": "Continue Registration",
+              "loginNow": "Sign In Now"
+            }
+          }
+        },
+        "roomForm": {
+          "title": {
+            "create": "Create New Room",
+            "edit": "Edit Room"
+          },
+          "fields": {
+            "name": {
+              "label": "Room Name",
+              "placeholder": {
+                "create": "{{username}}'s Room MM-DD HH:mm",
+                "edit": "Enter new room name"
+              }
+            },
+            "description": {
+              "label": "Room Description",
+              "optional": "(optional)",
+              "placeholder": "Enter room description (max 200 characters)"
+            }
+          },
+          "buttons": {
+            "cancel": "Cancel",
+            "create": "Create Room",
+            "save": "Save Changes"
+          },
+          "loading": {
+            "create": "Creating...",
+            "save": "Saving..."
+          },
+          "errors": {
+            "loginRequired": "Please log in to perform this action",
+            "nameRequired": "Please enter a room name",
+            "permissionDenied": "Only the room owner can edit room information",
+            "submitFailed": "Operation failed, please try again later"
+          },
+          "success": {
+            "create": "Room created successfully",
+            "update": "Room information updated"
+          }
+        },
+        "joinRoom": {
+          "title": "Join Room",
+          "fields": {
+            "idOrLink": {
+              "label": "Room ID or Link",
+              "placeholder": "Enter room ID or link",
+              "support": "Supports entering room ID or full room link (e.g., {{url}})"
+            }
+          },
+          "buttons": {
+            "join": "Join Room",
+            "cancel": "Cancel"
+          },
+          "loading": "Joining..."
+        },
+        "userSettings": {
+          "title": "User Settings",
+          "subtitle": "Update your username",
+          "fields": {
+            "username": {
+              "label": "Username",
+              "placeholder": "Enter new username (Chinese or English)",
+              "description": "Username will be your display name on the platform"
+            }
+          },
+          "buttons": {
+            "update": "Update Username",
+            "cancel": "Cancel"
+          },
+          "loading": "Updating..."
+        },
+        "deleteConfirm": {
+          "title": "Delete Room",
+          "subtitle": "This action cannot be undone, proceed with caution",
+          "mainQuestion": "Are you sure you want to delete this room?",
+          "warning": "After deletion, it cannot be recovered and all related data will be cleared",
+          "roomName": "Room Name: {{roomName}}",
+          "buttons": {
+            "confirm": "Delete",
+            "cancel": "Cancel"
+          }
+        },
+        "roomManagerMenu": {
+          "title": "User Menu",
+          "guest": {
+            "mode": "Guest Mode",
+            "description": "Log in to access full features"
+          },
+          "sections": {
+            "user": "User Actions",
+            "rooms": "Room Actions"
+          },
+          "userSettings": {
+            "settings": "User Settings",
+            "settingsDescription": "Update username",
+            "signOut": "Sign Out",
+            "signOutDescription": "Sign out safely"
+          },
+          "auth": {
+            "loginOrRegister": "Sign In or Register",
+            "accessFullFeatures": "Access Full Features"
+          },
+          "roomActions": {
+            "join": "Join Room",
+            "joinDescription": "Join via ID or link",
+            "create": "Create Room",
+            "createDescription": "Create a new room",
+            "createDescriptionForGuest": "Login to create"
+          },
+          "errors": {
+            "signOutFailed": "Failed to sign out"
+          }
         }
       }
     }

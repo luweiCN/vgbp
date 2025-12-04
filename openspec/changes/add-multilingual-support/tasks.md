@@ -163,12 +163,12 @@ grep -rn "setShowModal(true)" src/
 
 #### 3.2 认证组件多语言化（原里程碑3内容）
 
-- [ ] 分析AuthForm.tsx所有表单文本
-- [ ] 分析EmailStatusModals.tsx相关文本
-- [ ] 提取所有表单标签和提示文本
-- [ ] 翻译表单验证消息
-- [ ] 处理邮箱验证相关文本
-- [ ] 创建动态错误消息模板
+- [x] 分析AuthForm.tsx所有表单文本
+- [x] 分析EmailStatusModals.tsx相关文本
+- [x] 提取所有表单标签和提示文本
+- [x] 翻译表单验证消息
+- [x] 处理邮箱验证相关文本
+- [x] 创建动态错误消息模板
 
 #### 3.3 房间管理核心组件文本提取
 
@@ -199,20 +199,20 @@ grep -rn "setShowModal(true)" src/
 - [x] 修改OwnerToggle筛选组件
 - [x] 修改FilterChips筛选标签组件
 - [x] 修改Pagination分页组件
-- [ ] 修改AuthForm组件支持多语言
-- [ ] 修改EmailStatusModals组件
-- [ ] 实现表单字段的多语言标签
-- [ ] 处理按钮和链接文本
+- [x] 修改AuthForm组件支持多语言
+- [x] 修改EmailStatusModals组件
+- [x] 实现表单字段的多语言标签
+- [x] 处理按钮和链接文本
 
 #### 3.6 功能测试
 
 - [x] 测试房间列表页面语言切换
 - [x] 测试筛选和排序功能多语言
 - [x] 测试搜索功能多语言
-- [ ] 测试表单多语言切换
-- [ ] 验证表单验证消息多语言显示
-- [ ] 测试邮箱验证流程的多语言支持
-- [ ] 测试房间列表响应式布局多语言
+- [x] 测试表单多语言切换
+- [x] 验证表单验证消息多语言显示
+- [x] 测试邮箱验证流程的多语言支持
+- [x] 测试房间列表响应式布局多语言
 - [x] 用户体验测试
 
 #### 3.7 添加房间列表页面的语言切换功能
@@ -234,38 +234,38 @@ grep -rn "setShowModal(true)" src/
 
 #### 4.1 模态框组件分析
 
-- [ ] 分析RoomFormModal.tsx创建/编辑房间表单
-- [ ] 分析JoinRoomModal.tsx加入房间表单
-- [ ] 分析UserSettingsModal.tsx用户设置表单
-- [ ] 分析DeleteConfirmModal.tsx删除确认
-- [ ] 分析RoomManagerMenuModal.tsx移动端菜单
-- [ ] 分析AuthModal.tsx认证模态框
+- [x] 分析RoomFormModal.tsx创建/编辑房间表单
+- [x] 分析JoinRoomModal.tsx加入房间表单
+- [x] 分析UserSettingsModal.tsx用户设置表单
+- [x] 分析DeleteConfirmModal.tsx删除确认
+- [x] 分析RoomManagerMenuModal.tsx移动端菜单
+- [x] 分析AuthModal.tsx认证模态框
 
 #### 4.2 模态框功能多语言化
 
-- [ ] 翻译房间创建/编辑表单文本
-- [ ] 翻译加入房间相关文本
-- [ ] 翻译用户设置选项
-- [ ] 翻译确认对话框文本
-- [ ] 翻译移动端菜单项
-- [ ] 翻译认证相关文本
+- [x] 翻译房间创建/编辑表单文本
+- [x] 翻译加入房间相关文本
+- [x] 翻译用户设置选项
+- [x] 翻译确认对话框文本
+- [x] 翻译移动端菜单项
+- [x] 翻译认证相关文本
 
 #### 4.3 组件实现
 
-- [ ] 修改RoomFormModal组件
-- [ ] 修改JoinRoomModal组件
-- [ ] 修改UserSettingsModal组件
-- [ ] 修改DeleteConfirmModal组件
-- [ ] 修改RoomManagerMenuModal组件
-- [ ] 修改AuthModal组件
+- [x] 修改RoomFormModal组件
+- [x] 修改JoinRoomModal组件
+- [x] 修改UserSettingsModal组件
+- [x] 修改DeleteConfirmModal组件
+- [x] 修改RoomManagerMenuModal组件
+- [x] 修改AuthModal组件
 
 #### 4.4 功能测试
 
-- [ ] 测试所有模态框的语言切换
-- [ ] 测试房间创建流程多语言
-- [ ] 测试用户设置多语言
-- [ ] 测试删除确认多语言
-- [ ] 测试认证流程多语言
+- [x] 测试所有模态框的语言切换
+- [x] 测试房间创建流程多语言
+- [x] 测试用户设置多语言
+- [x] 测试删除确认多语言
+- [x] 测试认证流程多语言
 
 ---
 

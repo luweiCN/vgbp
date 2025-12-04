@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/i18n/hooks/useI18n";
 import { UnverifiedEmailModal, VerifiedEmailModal } from "./EmailStatusModals";
 import {
   checkEmailStatus,
@@ -11,6 +12,8 @@ interface AuthFormProps {
 }
 
 export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
+  const { t } = useI18n();
+
   // 使用RoomManager的完整状态结构
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authFormData, setAuthFormData] = useState({
@@ -165,10 +168,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
       const result = await resendConfirmationEmail(registeredEmail);
 
       if (!result.success) {
-        setError(result.message || "重发验证邮件失败");
+        setError(result.message || t('ui.components.authForm.errors.resendFailed'));
       }
     } catch (err: any) {
-      setError(err.message || "重发验证邮件时发生错误");
+      setError(err.message || t('ui.components.authForm.errors.resendFailed'));
     } finally {
       setResendConfirmationLoading(false);
     }
@@ -186,24 +189,24 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     // 邮箱格式验证
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(authFormData.email)) {
-      setError("请输入有效的邮箱地址！");
+      setError(t('ui.components.authForm.errors.emailInvalid'));
       return;
     }
 
     if (authMode === "register") {
       if (!authFormData.username.trim()) {
-        setError("请输入用户名！");
+        setError(t('ui.components.authForm.errors.usernameRequired'));
         return;
       }
 
       if (authFormData.password !== authFormData.confirmPassword) {
-        setError("两次输入的密码不一致！");
+        setError(t('ui.components.authForm.errors.passwordMismatch'));
         return;
       }
     }
 
     if (authFormData.password.length < 6) {
-      setError("密码长度至少为6位！");
+      setError(t('ui.components.authForm.errors.passwordTooShort'));
       return;
     }
 
@@ -252,7 +255,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
       }
     } catch (err: any) {
       console.error("❌ 认证失败:", err);
-      const errorMessage = err.message || "注册或登录失败，请稍后重试";
+      const errorMessage = err.message || t('ui.components.authForm.errors.submitFailed');
       setError(errorMessage);
 
       // 如果是注册失败，清除任何邮箱验证相关的状态
@@ -275,12 +278,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
       {/* 头部 */}
       <div className="mb-6">
         <h3 className="text-xl font-bold text-white">
-          {authMode === "login" ? "登录账户" : "注册账户"}
+          {authMode === "login" ? t('ui.components.authForm.title.login') : t('ui.components.authForm.title.register')}
         </h3>
         <p className="text-sm text-zinc-400 mt-1">
           {authMode === "login"
-            ? "登录后即可创建和管理房间"
-            : "创建账户开始使用在线功能"}
+            ? t('ui.components.authForm.subtitle.login')
+            : t('ui.components.authForm.subtitle.register')}
         </p>
       </div>
 
@@ -294,7 +297,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
               : "text-zinc-400 hover:text-white hover:bg-zinc-600"
           }`}
         >
-          登录
+          {t('ui.components.authForm.actions.login')}
         </button>
         <button
           onClick={() => setAuthMode("register")}
@@ -304,7 +307,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
               : "text-zinc-400 hover:text-white hover:bg-zinc-600"
           }`}
         >
-          注册
+          {t('ui.components.authForm.actions.register')}
         </button>
       </div>
 
@@ -314,7 +317,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         {authMode === "register" && (
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
-              用户名 <span className="text-red-400">*</span>
+              {t('ui.components.authForm.fields.username.label')} <span className="text-red-400">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -343,7 +346,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                     })
                   }
                   className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                  placeholder="请输入用户名（中英文均可）"
+                  placeholder={t('ui.components.authForm.fields.username.placeholder')}
                   required
                 />
                 {authFormData.username && (
@@ -375,7 +378,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
               </div>
             </div>
             <div className="mt-1 text-xs text-zinc-500">
-              用户名将作为您在平台上的显示名称
+              {t('ui.components.authForm.fields.username.description')}
             </div>
           </div>
         )}
@@ -383,7 +386,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         {/* 邮箱字段 */}
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-2">
-            邮箱地址 <span className="text-red-400">*</span>
+            {t('ui.components.authForm.fields.email.label')} <span className="text-red-400">*</span>
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -407,7 +410,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                 value={authFormData.email}
                 onChange={handleEmailChange}
                 className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                placeholder="请输入邮箱地址（用于登录）"
+                placeholder={t('ui.components.authForm.fields.email.placeholder')}
                 required
               />
               {authFormData.email && (
@@ -442,7 +445,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             <>
               {emailChecking && (
                 <div className="text-blue-400 text-sm mt-1">
-                  正在检查邮箱状态...
+                  {t('ui.components.authForm.validation.checking')}
                 </div>
               )}
 
@@ -477,7 +480,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"
                           />
                         </svg>
-                        <span>邮箱已注册但未验证</span>
+                        <span>{t('ui.components.authForm.validation.emailRegisteredUnverified')}</span>
                       </>
                     )}
                     {emailCheckResult.status === "registered_verified" && (
@@ -495,7 +498,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                             d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                           />
                         </svg>
-                        <span>邮箱已注册并已验证</span>
+                        <span>{t('ui.components.authForm.validation.emailRegisteredVerified')}</span>
                         <button
                           type="button"
                           onClick={() => {
@@ -505,7 +508,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                           }}
                           className="ml-2 text-xs bg-green-600/20 hover:bg-green-600/30 px-2 py-1 rounded border border-green-600/50"
                         >
-                          去登录
+                          {t('ui.components.authForm.actions.goToLogin')}
                         </button>
                       </>
                     )}
@@ -524,7 +527,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <span>邮箱可以注册</span>
+                        <span>{t('ui.components.authForm.validation.emailAvailable')}</span>
                       </>
                     )}
                   </div>
@@ -550,7 +553,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    <span>该邮箱尚未注册</span>
+                    <span>{t('ui.components.authForm.validation.emailNotRegistered')}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -560,13 +563,13 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                       }}
                       className="ml-2 text-xs bg-blue-600/20 hover:bg-blue-600/30 px-2 py-1 rounded border border-blue-600/50"
                     >
-                      去注册
+                      {t('ui.components.authForm.actions.goToRegister')}
                     </button>
                   </div>
                 )}
 
               <div className="mt-1 text-xs text-zinc-500">
-                邮箱地址仅用于登录，不会公开显示
+                {t('ui.components.authForm.fields.email.privateNote')}
               </div>
             </>
           )}
@@ -575,7 +578,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         {/* 密码字段 */}
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-2">
-            密码 <span className="text-red-400">*</span>
+            {t('ui.components.authForm.fields.password.label')} <span className="text-red-400">*</span>
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -604,7 +607,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                   })
                 }
                 className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                placeholder="请输入密码（至少6位）"
+                placeholder={t('ui.components.authForm.fields.password.placeholder')}
                 required
               />
               <button
@@ -656,7 +659,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         {authMode === "register" && (
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
-              确认密码 <span className="text-red-400">*</span>
+              {t('ui.components.authForm.fields.confirmPassword.label')} <span className="text-red-400">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -685,7 +688,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                     })
                   }
                   className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                  placeholder="请再次输入密码"
+                  placeholder={t('ui.components.authForm.fields.confirmPassword.placeholder')}
                   required
                 />
                 <button
@@ -775,7 +778,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           {authFormLoading ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              {authMode === "login" ? "登录中..." : "注册中..."}
+              {authMode === "login" ? t('ui.components.authForm.actions.loggingIn') : t('ui.components.authForm.actions.registering')}
             </>
           ) : (
             <>
@@ -794,7 +797,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                       d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                     />
                   </svg>
-                  登录
+                  {t('ui.components.authForm.actions.login')}
                 </>
               ) : (
                 <>
@@ -811,7 +814,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                       d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
                     />
                   </svg>
-                  注册
+                  {t('ui.components.authForm.actions.register')}
                 </>
               )}
             </>
@@ -824,22 +827,22 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           <p className="text-xs text-zinc-500">
             {authMode === "login" ? (
               <>
-                还没有账户？{" "}
+                {t('ui.components.authForm.actions.noAccount')}{" "}
                 <button
                   onClick={handleModeSwitch}
                   className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
                 >
-                  立即注册
+                  {t('ui.components.authForm.actions.registerNow')}
                 </button>
               </>
             ) : (
               <>
-                已有账户？{" "}
+                {t('ui.components.authForm.actions.hasAccount')}{" "}
                 <button
                   onClick={handleModeSwitch}
                   className="text-green-400 hover:text-green-300 font-medium transition-colors"
                 >
-                  返回登录
+                  {t('ui.components.authForm.actions.backToLogin')}
                 </button>
               </>
             )}

@@ -115,6 +115,209 @@
         "toast": {
           "close": "关闭",
           "heroAvatar": "英雄头像"
+        },
+        "authForm": {
+          "title": {
+            "login": "登录账户",
+            "register": "注册账户"
+          },
+          "subtitle": {
+            "login": "登录后即可创建和管理房间",
+            "register": "创建账户开始使用在线功能"
+          },
+          "fields": {
+            "username": {
+              "label": "用户名",
+              "placeholder": "请输入用户名（中英文均可）",
+              "description": "用户名将作为您在平台上的显示名称"
+            },
+            "email": {
+              "label": "邮箱地址",
+              "placeholder": "请输入邮箱地址（用于登录）",
+              "privateNote": "邮箱地址仅用于登录，不会公开显示"
+            },
+            "password": {
+              "label": "密码",
+              "placeholder": "请输入密码（至少6位）"
+            },
+            "confirmPassword": {
+              "label": "确认密码",
+              "placeholder": "请再次输入密码"
+            }
+          },
+          "validation": {
+            "checking": "正在检查邮箱状态...",
+            "emailRegisteredUnverified": "邮箱已注册但未验证",
+            "emailRegisteredVerified": "邮箱已注册并已验证",
+            "emailAvailable": "邮箱可以注册",
+            "emailNotRegistered": "该邮箱尚未注册"
+          },
+          "errors": {
+            "emailInvalid": "请输入有效的邮箱地址！",
+            "usernameRequired": "请输入用户名！",
+            "passwordMismatch": "两次输入的密码不一致！",
+            "passwordTooShort": "密码长度至少为6位！",
+            "resendFailed": "重发验证邮件失败",
+            "submitFailed": "注册或登录失败，请稍后重试"
+          },
+          "actions": {
+            "login": "登录",
+            "register": "注册",
+            "loggingIn": "登录中...",
+            "registering": "注册中...",
+            "goToLogin": "去登录",
+            "goToRegister": "去注册",
+            "noAccount": "还没有账户？",
+            "registerNow": "立即注册",
+            "hasAccount": "已有账户？",
+            "backToLogin": "返回登录"
+          }
+        },
+        "emailModals": {
+          "unverified": {
+            "title": "邮箱需要验证",
+            "successBanner": "注册成功！",
+            "successMessage": "恭喜您，账户创建成功",
+            "description": "该邮箱已经注册，但是还未进行验证",
+            "emailSent": "我们已经向 {{email}} 发送了验证邮件，请检查邮箱并点击验证链接。",
+            "instructions": {
+              "checkEmail": "📧 请检查您的邮箱（包括垃圾邮件文件夹）",
+              "clickLink": "🔗 点击邮件中的验证链接完成验证",
+              "waitVerification": "⏱️ 验证成功后即可正常使用"
+            },
+            "actions": {
+              "gotIt": "我知道了",
+              "sending": "发送中...",
+              "resend": "重新发送邮件",
+              "resendWithCountdown": "重新发送 ({{countdown}}s)"
+            }
+          },
+          "verified": {
+            "title": "邮箱已验证",
+            "status": "邮箱已完成验证",
+            "description": "{{email}} 已经验证，您可以直接登录。",
+            "instructions": {
+              "verified": "✅ 您的邮箱已经完成验证",
+              "canLogin": "👤 可以直接使用此邮箱登录",
+              "startUsing": "🚀 开始使用 Vainglory BP 吧！"
+            },
+            "actions": {
+              "continueRegister": "继续注册",
+              "loginNow": "立即登录"
+            }
+          }
+        },
+        "roomForm": {
+          "title": {
+            "create": "创建新房间",
+            "edit": "编辑房间"
+          },
+          "fields": {
+            "name": {
+              "label": "房间名称",
+              "placeholder": {
+                "create": "{{username}}的房间 MM-DD HH:mm",
+                "edit": "请输入新的房间名称"
+              }
+            },
+            "description": {
+              "label": "房间描述",
+              "optional": "（可选）",
+              "placeholder": "输入房间描述（最多200字符）"
+            }
+          },
+          "buttons": {
+            "cancel": "取消",
+            "create": "创建房间",
+            "save": "保存修改"
+          },
+          "loading": {
+            "create": "创建中...",
+            "save": "保存中..."
+          },
+          "errors": {
+            "loginRequired": "请先登录后再进行操作",
+            "nameRequired": "请输入房间名称",
+            "permissionDenied": "只有房主才能编辑房间信息",
+            "submitFailed": "操作失败，请稍后重试"
+          },
+          "success": {
+            "create": "房间创建成功",
+            "update": "房间信息已更新"
+          }
+        },
+        "joinRoom": {
+          "title": "加入房间",
+          "fields": {
+            "idOrLink": {
+              "label": "房间ID或房间链接",
+              "placeholder": "输入房间ID或房间链接",
+              "support": "支持输入房间ID或完整的房间链接（如：{{url}}）"
+            }
+          },
+          "buttons": {
+            "join": "进入房间",
+            "cancel": "取消"
+          },
+          "loading": "加入中..."
+        },
+        "userSettings": {
+          "title": "用户设置",
+          "subtitle": "修改您的用户名",
+          "fields": {
+            "username": {
+              "label": "用户名",
+              "placeholder": "请输入新的用户名（中英文均可）",
+              "description": "用户名将作为您在平台上的显示名称"
+            }
+          },
+          "buttons": {
+            "update": "更新用户名",
+            "cancel": "取消"
+          },
+          "loading": "更新中..."
+        },
+        "deleteConfirm": {
+          "title": "删除房间",
+          "subtitle": "此操作不可恢复，请谨慎操作",
+          "mainQuestion": "确定要删除这个房间吗？",
+          "warning": "删除后将无法恢复，所有相关数据都会被清除",
+          "roomName": "房间名称：{{roomName}}",
+          "buttons": {
+            "confirm": "确认删除",
+            "cancel": "取消"
+          }
+        },
+        "roomManagerMenu": {
+          "title": "用户菜单",
+          "guest": {
+            "mode": "游客模式",
+            "description": "登录后可使用完整功能"
+          },
+          "sections": {
+            "user": "用户操作",
+            "rooms": "房间操作"
+          },
+          "userSettings": {
+            "settings": "用户设置",
+            "settingsDescription": "修改用户名",
+            "signOut": "退出登录",
+            "signOutDescription": "安全退出"
+          },
+          "auth": {
+            "loginOrRegister": "登录或注册",
+            "accessFullFeatures": "访问完整功能"
+          },
+          "roomActions": {
+            "join": "加入房间",
+            "joinDescription": "通过ID或链接加入",
+            "create": "创建房间",
+            "createDescription": "创建新的房间",
+            "createDescriptionForGuest": "需要登录后创建"
+          },
+          "errors": {
+            "signOutFailed": "退出登录失败"
+          }
         }
       }
     }
