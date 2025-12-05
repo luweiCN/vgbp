@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '@/i18n/hooks/useI18n';
 
 interface UserSettingsModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
   loading,
   error,
 }) => {
+  const { t } = useI18n();
   if (!isOpen) return null;
 
   return (
@@ -26,8 +28,8 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
       <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6 max-w-md w-full mx-auto shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-xl font-bold text-white">用户设置</h3>
-            <p className="text-sm text-zinc-400 mt-1">修改您的用户名</p>
+            <h3 className="text-xl font-bold text-white">{t('ui.components.userSettings.title')}</h3>
+            <p className="text-sm text-zinc-400 mt-1">{t('ui.components.userSettings.subtitle')}</p>
           </div>
           <button
             onClick={() => {
@@ -43,7 +45,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
         <div className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
-              用户名 <span className="text-red-400">*</span>
+              {t('ui.components.userSettings.fields.username.label')} <span className="text-red-400">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -68,12 +70,12 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
                   onUsernameChange(e.target.value)
                 }
                 className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                placeholder="请输入新的用户名（中英文均可）"
+                placeholder={t('ui.components.userSettings.fields.username.placeholder')}
                 required
               />
             </div>
             <div className="mt-1 text-xs text-zinc-500">
-              用户名将作为您在平台上的显示名称
+              {t('ui.components.userSettings.fields.username.description')}
             </div>
           </div>
 
@@ -107,10 +109,10 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  更新中...
+                  {t('ui.components.userSettings.loading')}
                 </div>
               ) : (
-                "更新用户名"
+                t('ui.components.userSettings.buttons.update')
               )}
             </button>
             <button
@@ -120,7 +122,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
               }}
               className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              取消
+              {t('ui.components.userSettings.buttons.cancel')}
             </button>
           </div>
         </div>

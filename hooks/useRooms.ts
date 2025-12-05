@@ -60,7 +60,10 @@ export const useRooms = () => {
 
   // 统一的房间获取函数，支持多种筛选和搜索选项
   const fetchRooms = useCallback(async (options?: RoomFetchOptions & { requestId?: number }) => {
-    const { currentPage, pageSize } = getCurrentPagination();
+    // 优先使用传递的页码参数，否则从URL获取
+    const urlPagination = getCurrentPagination();
+    const currentPage = options?.page ?? urlPagination.currentPage;
+    const pageSize = options?.pageSize ?? urlPagination.pageSize;
 
     const {
       ownerId,
@@ -229,13 +232,29 @@ export const useRooms = () => {
 
   // 分页验证函数 - 确保页码有效
   const validatePageNumber = useCallback((currentPage: number, pageSize: number, totalItems: number): number => {
-    const totalPages = Math.ceil(totalItems / pageSize);
-
-    // 如果当前页码无效（大于总页数或小于1），重置为1
-    if (currentPage < 1 || (totalPages > 0 && currentPage > totalPages)) {
+    // 如果页码不是有效数字或小于1，重置为1
+    if (!Number.isInteger(currentPage) || currentPage < 1) {
       return 1;
     }
 
+    // 如果每页数量不是有效数字或小于1，重置为1
+    if (!Number.isInteger(pageSize) || pageSize < 1) {
+      return 1;
+    }
+
+    // 如果总数据量为0或负数，返回第1页
+    if (totalItems <= 0) {
+      return 1;
+    }
+
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    // 如果当前页码超过最大页数，返回最后一页
+    if (currentPage > totalPages) {
+      return totalPages > 0 ? totalPages : 1;
+    }
+
+    // 页码有效，返回当前页码
     return currentPage;
   }, []);
 

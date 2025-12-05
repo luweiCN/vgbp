@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useI18n } from '@/i18n/hooks/useI18n';
 import { RoomSearchBox } from './RoomSearchBox';
 import RoomSortToggle from './RoomSortToggle';
 import OwnerToggle from './OwnerToggle';
@@ -9,7 +10,7 @@ interface FilterHeaderProps {
   totalRooms: number;
   filteredTotal: number;
   searchValue: string;
-  onSearchChange: (value: string) => void;
+  onSearchChange?: (value: string) => void;
   onSearch: (value: string) => void;
   onClearSearch: () => void;
   loading: boolean;
@@ -33,22 +34,30 @@ export const FilterHeader: React.FC<FilterHeaderProps> = ({
   clearFilters,
 }) => {
   const { user } = useAuth();
+  const { t } = useI18n();
   return (
     <div className="py-4 space-y-3">
       {/* 标题和统计 */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-white">房间列表</h2>
+        <h2 className="text-xl font-semibold text-white">
+          {t('ui.components.roomManager.header.title')}
+        </h2>
         <div className="text-sm text-blue-400">
           {filteredTotal === totalRooms ? (
-            <span>总共 {totalRooms} 个房间</span>
+            <span>{t('ui.components.roomManager.filter.totalRooms', { count: totalRooms })}</span>
           ) : (
             <>
               <span className="hidden sm:inline">
-                当前筛选条件下共 {filteredTotal} 个房间，总共 {totalRooms}{" "}
-                个房间
+                {t('ui.components.roomManager.filter.filteredRooms', {
+                  filtered: filteredTotal,
+                  total: totalRooms
+                })}
               </span>
               <span className="sm:hidden">
-                共{filteredTotal}/{totalRooms}个房间
+                {t('ui.components.roomManager.filter.filteredRoomsShort', {
+                  filtered: filteredTotal,
+                  total: totalRooms
+                })}
               </span>
             </>
           )}
@@ -71,7 +80,7 @@ export const FilterHeader: React.FC<FilterHeaderProps> = ({
         </div>
 
         {/* 右侧控制区 - 筛选和排序，与左侧拉开距离 */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-1 min-w-0 sm:flex-initial">
           {/* "我创建的"开关 */}
           {user?.id && (
             <OwnerToggle
@@ -79,7 +88,7 @@ export const FilterHeader: React.FC<FilterHeaderProps> = ({
               onChange={(checked: boolean) =>
                 setFilter("owner", checked ? "me" : "all")
               }
-              className="mx-2"
+              className="mr-2 sm:mx-2"
             />
           )}
 

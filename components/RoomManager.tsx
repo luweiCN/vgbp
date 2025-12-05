@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useRooms, Room } from "../hooks/useRooms";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
+import { useI18n } from "@/i18n/hooks/useI18n";
 import { Pagination } from "./Pagination";
 import { useRoomFilters } from "../hooks/useRoomFilters";
 import { RoomFormModal } from "./RoomFormModal";
@@ -13,7 +14,6 @@ import { RoomManagerLayout } from "./RoomManagerLayout";
 import { RoomHeader } from "./RoomHeader";
 import { FilterHeader } from "./FilterHeader";
 import { ScrollableContent } from "./ScrollableContent";
-import { PaginationFooter } from "./PaginationFooter";
 import { JoinRoomModal } from "./JoinRoomModal";
 import { AuthModal } from "./AuthModal";
 import { UserSettingsModal } from "./UserSettingsModal";
@@ -29,6 +29,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
   onEnterRoom,
   onBack,
 }) => {
+  const { t } = useI18n();
   // 保持所有原有状态
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
@@ -68,26 +69,19 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
   // 筛选和搜索状态管理
   const { filters, setFilter, setFilters, clearFilters } = useRoomFilters();
 
-  // 统一监听URL参数和用户状态变化
+  // 主要的数据加载 useEffect - 不依赖 filteredTotal
   useEffect(() => {
     const currentPage = filters.page || 1;
     const pageSize = filters.pageSize || 10;
 
-    // 验证页码是否有效，如果无效则重置为1
-    const validPage = validatePageNumber(currentPage, pageSize, filteredTotal);
-
-    // 如果页码被修正，更新筛选条件
-    if (validPage !== currentPage) {
-      setFilter('page', validPage);
-      return;
-    }
-
+    // 直接加载当前页数据，不进行预验证
+    // 页码验证将在数据加载完成后进行
     loadRoomData({
       search: filters.search,
       owner: filters.owner,
       sort: filters.sort,
       order: filters.order,
-      page: validPage,
+      page: currentPage,
       pageSize: filters.pageSize,
     });
   }, [
@@ -99,11 +93,39 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
     filters.pageSize, // 每页数量
     filters.t, // 时间戳参数，用于强制刷新
     user?.id, // 只监听用户ID变化，避免用户信息细节变化重复触发
-    filteredTotal, // 添加filteredTotal依赖以重新验证页码
-    validatePageNumber,
-    setFilter,
     loadRoomData,
   ]);
+
+  // 数据加载完成后的页码验证 - 依赖 filteredTotal
+  useEffect(() => {
+    // 只有在数据加载完成后（filteredTotal !== undefined）才进行验证
+    if (filteredTotal !== undefined && filteredTotal !== null) {
+      const currentPage = filters.page || 1;
+
+      // 获取实际的 pageSize - 如果没有设置，根据设备类型确定
+      const getActualPageSize = () => {
+        if (filters.pageSize) {
+          return filters.pageSize;
+        }
+        // 如果 URL 中没有 pageSize 参数，根据设备类型返回默认值
+        if (typeof window !== 'undefined') {
+          return window.innerWidth < 640 ? 5 : 10;
+        }
+        return 10;
+      };
+
+      const pageSize = getActualPageSize();
+
+      // 验证当前页码是否有效
+      const validPage = validatePageNumber(currentPage, pageSize, filteredTotal);
+
+      // 如果页码无效，修正它
+      if (validPage !== currentPage) {
+        console.log(`[RoomManager] 页码修正: ${currentPage} -> ${validPage} (总数: ${filteredTotal}, 每页: ${pageSize})`);
+        setFilter('page', validPage);
+      }
+    }
+  }, [filteredTotal, filters.page, filters.pageSize, validatePageNumber, setFilter]);
 
   const handleCreateRoom = () => {
     // 检查用户是否登录
@@ -142,7 +164,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
     e.preventDefault();
 
     if (!joinFormData.roomId.trim()) {
-      setError("请输入房间ID或房间链接！");
+      setError(t('ui.components.roomManager.join.error'));
       return;
     }
 
@@ -159,7 +181,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
         if (match) {
           roomId = match[1];
         } else {
-          throw new Error("无效的房间链接格式");
+          throw new Error(t('ui.components.roomManager.join.invalidLink'));
         }
       }
 
@@ -172,7 +194,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
         .single();
 
       if (roomError || !room) {
-        throw new Error("房间不存在");
+        throw new Error(t('ui.components.roomManager.join.roomNotFound'));
       }
 
       // 直接跳转到房间，不进行任何参与者相关的操作
@@ -183,7 +205,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
         onEnterRoom(roomId);
       }
     } catch (err: any) {
-      const errorMessage = err.message || "加入房间失败，请检查房间ID是否正确";
+      const errorMessage = err.message || t('ui.components.roomManager.join.joinFailed');
       setError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -202,11 +224,11 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
 
     try {
       await deleteRoom(roomId);
-      showSuccess("房间删除成功！");
+      showSuccess(t('ui.components.roomManager.delete.success'));
       // 删除后刷新数据
       await loadRoomData();
     } catch (err: any) {
-      const errorMessage = err.message || "删除房间失败，请稍后重试";
+      const errorMessage = err.message || t('ui.components.roomManager.delete.failed');
       setError(errorMessage);
       showError(errorMessage);
     }
@@ -215,12 +237,12 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
   // 更新用户名处理函数
   const handleUpdateUsername = async () => {
     if (!usernameFormData.username.trim()) {
-      setError("请输入新的用户名！");
+      setError(t('ui.components.roomManager.auth.updateUsername.error'));
       return;
     }
 
     if (usernameFormData.username === user?.username) {
-      setError("新用户名与当前用户名相同！");
+      setError(t('ui.components.roomManager.auth.updateUsername.sameUsername'));
       return;
     }
 
@@ -236,11 +258,6 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
     } finally {
       setUsernameFormLoading(false);
     }
-  };
-
-  // 搜索处理函数
-  const handleSearchChange = (_value: string) => {
-    // 这里可以添加实时搜索逻辑，但当前保持简洁
   };
 
   const handleSearch = (value: string) => {
@@ -260,13 +277,13 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
   // 渲染房间列表内容
   const renderRoomList = useCallback(() => {
     if (loading) {
-      return <div className="text-center py-8 text-gray-400">加载中...</div>;
+      return <div className="text-center py-8 text-gray-400">{t('ui.components.roomManager.list.loading')}</div>;
     }
 
     if (rooms.length === 0) {
       return (
         <div className="text-center py-8 text-gray-400">
-          <p>暂无符合条件的房间</p>
+          <p>{t('ui.components.roomManager.list.noRooms')}</p>
         </div>
       );
     }
@@ -302,7 +319,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
         </div>
       </>
     );
-  }, [loading, rooms, handleEditRoomClick, handleDeleteRoom, onEnterRoom]);
+  }, [loading, rooms, handleEditRoomClick, handleDeleteRoom, onEnterRoom, t]);
 
   // 渲染所有弹窗
   const renderModals = () => {
@@ -406,7 +423,7 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex items-center gap-3">
           <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-white">加载用户信息中...</div>
+          <div className="text-white">{t('ui.components.roomManager.auth.loadingUserInfo')}</div>
         </div>
       </div>
     );
@@ -430,7 +447,6 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
           totalRooms={totalRooms}
           filteredTotal={filteredTotal}
           searchValue={filters.search || ""}
-          onSearchChange={handleSearchChange}
           onSearch={handleSearch}
           onClearSearch={handleClearSearch}
           loading={loading}
@@ -444,13 +460,13 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
         <ScrollableContent>{renderRoomList()}</ScrollableContent>
       }
       paginationFooter={
-        <PaginationFooter>
+        <div className="py-4">
           <Pagination
             totalItems={totalRooms}
             containerWidth="full"
             isSticky={true}
           />
-        </PaginationFooter>
+        </div>
       }
       modals={renderModals()}
     />

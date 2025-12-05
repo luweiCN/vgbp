@@ -1,5 +1,6 @@
 import React from 'react';
 import { usePermissionCheck } from '../hooks/usePermissions';
+import { useI18n } from '../i18n/hooks/useI18n';
 
 interface PermissionIndicatorProps {
   roomId?: string;
@@ -10,41 +11,35 @@ const PermissionIndicator: React.FC<PermissionIndicatorProps> = ({
   roomId,
   showDetails = false
 }) => {
-  const { role, canEdit, canManageRoom, canDeleteRoom, canInviteUsers } = usePermissionCheck(roomId);
+  const { t } = useI18n();
+  const { role, canEdit, canManageRoom, canDeleteRoom } = usePermissionCheck(roomId);
 
   const getRoleInfo = () => {
     switch (role) {
       case 'owner':
         return {
-          text: '房主',
+          text: t('ui.components.permissionIndicator.owner.text'),
           color: 'bg-green-600',
           textColor: 'text-green-400',
           icon: '👑',
-          description: '拥有所有权限，可以管理房间和编辑英雄选择'
-        };
-      case 'participant':
-        return {
-          text: '参与者',
-          color: 'bg-blue-600',
-          textColor: 'text-blue-400',
-          icon: '👤',
-          description: '可以查看房间状态，邀请其他用户'
+          description: t('ui.components.permissionIndicator.owner.description')
         };
       case 'anonymous':
+        // 将匿名用户显示为"查看模式"
         return {
-          text: '查看模式',
+          text: t('ui.components.permissionIndicator.viewer.text'),
           color: 'bg-orange-600',
           textColor: 'text-orange-400',
           icon: '👁️',
-          description: '只能查看房间状态，不能编辑'
+          description: t('ui.components.permissionIndicator.viewer.description')
         };
       default:
         return {
-          text: '未知',
-          color: 'bg-gray-600',
-          textColor: 'text-gray-400',
-          icon: '❓',
-          description: '权限状态未知'
+          text: t('ui.components.permissionIndicator.participant.text'),
+          color: 'bg-blue-600',
+          textColor: 'text-blue-400',
+          icon: '👤',
+          description: t('ui.components.permissionIndicator.participant.description')
         };
     }
   };
@@ -65,7 +60,7 @@ const PermissionIndicator: React.FC<PermissionIndicatorProps> = ({
         </span>
         {canEdit && (
           <span className={`text-xs ${roleInfo.textColor} opacity-75 hidden sm:inline`}>
-            (可编辑)
+            {t('ui.components.permissionIndicator.editable')}
           </span>
         )}
       </div>

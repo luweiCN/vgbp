@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getHeroAvatarUrl, getHeroById } from '../data/heroes';
+import { useSafeI18n } from '../i18n/components/useSafeI18n';
 
 interface ToastProps {
   message: string;
@@ -18,9 +19,11 @@ const Toast: React.FC<ToastProps> = ({
   addedHeroIds,
   removedHeroIds
 }) => {
+  const { translate: t } = useSafeI18n();
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
+  
   useEffect(() => {
     // 进入动画
     setIsVisible(true);
@@ -52,7 +55,7 @@ const Toast: React.FC<ToastProps> = ({
         icon = "❌";
         break;
       case 'success':
-        typeStyles = "bg-green-900/90 border-green-700 text-green-100";
+        typeStyles = "bg-emerald-600/95 border-emerald-500 text-white shadow-2xl";
         icon = "✅";
         break;
       case 'warning':
@@ -105,7 +108,7 @@ const Toast: React.FC<ToastProps> = ({
                 <img 
                   key={heroId}
                   src={getHeroAvatarUrl(getHeroById(heroId) || { id: heroId })}
-                  alt="英雄头像"
+                  alt={t('ui.components.toast.heroAvatar')}
                   className="w-4 h-4 rounded border border-green-500 relative z-10"
                   style={{ marginLeft: index === 0 ? '0' : '-2px' }}
                   onError={(e) => {
@@ -134,7 +137,7 @@ const Toast: React.FC<ToastProps> = ({
                 <img 
                   key={heroId}
                   src={getHeroAvatarUrl(getHeroById(heroId) || { id: heroId })}
-                  alt="英雄头像"
+                  alt={t('ui.components.toast.heroAvatar')}
                   className="w-4 h-4 rounded border border-red-500 relative z-10 opacity-60"
                   style={{ marginLeft: index === 0 ? '0' : '-2px' }}
                   onError={(e) => {
@@ -161,7 +164,7 @@ const Toast: React.FC<ToastProps> = ({
         <button
           onClick={handleClose}
           className="flex-shrink-0 ml-2 text-zinc-400 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10"
-          aria-label="关闭"
+          aria-label={t('ui.components.toast.close')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -185,6 +188,10 @@ interface ToastContainerProps {
 }
 
 const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove }) => {
+  if (toasts.length === 0) {
+    return null;
+  }
+
   return (
     <div className="fixed top-4 right-4 space-y-2 pointer-events-none" style={{ zIndex: 999999 }}>
       {toasts.map((toast) => (

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '@/i18n/hooks/useI18n';
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   onConfirm,
   roomName,
 }) => {
+  const { t } = useI18n();
   if (!isOpen) return null;
 
   return (
@@ -20,9 +22,9 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6 max-w-md w-full mx-auto shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-xl font-bold text-white">删除房间</h3>
+            <h3 className="text-xl font-bold text-white">{t('ui.components.deleteConfirm.title')}</h3>
             <p className="text-sm text-zinc-400 mt-1">
-              此操作不可恢复，请谨慎操作
+              {t('ui.components.deleteConfirm.subtitle')}
             </p>
           </div>
           <button
@@ -50,14 +52,14 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
             </svg>
             <div>
               <p className="text-red-400 font-medium">
-                确定要删除这个房间吗？
+                {t('ui.components.deleteConfirm.mainQuestion')}
               </p>
               <p className="text-red-300 text-sm mt-1">
-                删除后将无法恢复，所有相关数据都会被清除
+                {t('ui.components.deleteConfirm.warning')}
               </p>
               {roomName && (
                 <p className="text-red-200 text-xs mt-2">
-                  房间名称：{roomName}
+                  {t('ui.components.deleteConfirm.roomName', { roomName: roomName })}
                 </p>
               )}
             </div>
@@ -82,13 +84,13 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
               />
             </svg>
-            确认删除
+            {t('ui.components.deleteConfirm.buttons.confirm')}
           </button>
           <button
             onClick={onClose}
             className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            取消
+            {t('ui.components.deleteConfirm.buttons.cancel')}
           </button>
         </div>
       </div>

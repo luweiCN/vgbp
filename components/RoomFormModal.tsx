@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../services/supabase';
+import { useAuth } from '@/hooks/useAuth';
+import { useI18n } from '@/i18n/hooks/useI18n';
+import { supabase } from '@/services/supabase';
 
 interface Room {
   id: string;
@@ -25,6 +26,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   onSuccess
 }) => {
   const { user } = useAuth();
+  const { t } = useI18n();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -44,16 +46,21 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         });
       } else {
         // 创建模式：填入默认房间名
-        const defaultName = user?.username
-          ? `${user.username}的房间 ${new Date().toLocaleString('zh-CN', {
-              month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit'
-            }).replace(/\//g, '-').replace(',', '')}`
-          : '';
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const timeStr = `${month}-${day} ${hours}:${minutes}`;
+
+        const defaultName = user?.username ? t('ui.components.roomForm.fields.name.placeholder.create', {
+          username: user.username
+        }) : '';
+
+        // 替换时间占位符
+        const finalDefaultName = defaultName.replace('MM-DD HH:mm', timeStr);
         setFormData({
-          name: defaultName,
+          name: finalDefaultName,
           description: ''
         });
       }
@@ -66,13 +73,13 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
     // 检查用户是否登录
     if (!user) {
-      setError('请先登录后再进行操作');
+      setError(t('ui.components.roomForm.errors.loginRequired'));
       return;
     }
 
     // 检查表单数据
     if (!formData.name.trim()) {
-      setError('请输入房间名称');
+      setError(t('ui.components.roomForm.errors.nameRequired'));
       return;
     }
 
@@ -94,11 +101,11 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
         if (createError) throw createError;
 
-        onSuccess?.('房间创建成功', newRoom);
+        onSuccess?.(t('ui.components.roomForm.success.create'), newRoom);
       } else if (room) {
         // 编辑房间：检查权限
         if (room.owner_id !== user.id) {
-          setError('只有房主才能编辑房间信息');
+          setError(t('ui.components.roomForm.errors.permissionDenied'));
           return;
         }
 
@@ -117,14 +124,14 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
         if (updateError) throw updateError;
 
-        onSuccess?.('房间信息已更新', updatedRoom);
+        onSuccess?.(t('ui.components.roomForm.success.update'), updatedRoom);
       }
 
       // 关闭弹窗并重置状态
       setFormData({ name: '', description: '' });
       onClose();
     } catch (err: any) {
-      setError(err.message || '操作失败，请稍后重试');
+      setError(err.message || t('ui.components.roomForm.errors.submitFailed'));
     } finally {
       setLoading(false);
     }
@@ -138,21 +145,21 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
   const getPlaceholder = () => {
     if (mode === 'edit') {
-      return '请输入新的房间名称';
+      return t('ui.components.roomForm.fields.name.placeholder.edit');
     }
-    return `${user?.username || ''}的房间 YYYY-MM-DD HH:mm`;
+    return t('ui.components.roomForm.fields.name.placeholder.create', { username: user?.username || '' });
   };
 
   const getTitle = () => {
-    return mode === 'edit' ? '编辑房间' : '创建新房间';
+    return mode === 'edit' ? t('ui.components.roomForm.title.edit') : t('ui.components.roomForm.title.create');
   };
 
   const getSubmitButtonText = () => {
-    return mode === 'edit' ? '保存修改' : '创建房间';
+    return mode === 'edit' ? t('ui.components.roomForm.buttons.save') : t('ui.components.roomForm.buttons.create');
   };
 
   const getLoadingText = () => {
-    return mode === 'edit' ? '保存中...' : '创建中...';
+    return mode === 'edit' ? t('ui.components.roomForm.loading.save') : t('ui.components.roomForm.loading.create');
   };
 
   if (!isOpen) return null;
@@ -173,7 +180,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
-              房间名称 <span className="text-red-400">*</span>
+              {t('ui.components.roomForm.fields.name.label')} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -191,7 +198,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
-              房间描述 <span className="text-zinc-500">（可选）</span>
+              {t('ui.components.roomForm.fields.description.label')} <span className="text-zinc-500">{t('ui.components.roomForm.fields.description.optional')}</span>
             </label>
             <textarea
               value={formData.description}
@@ -199,7 +206,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
               className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors"
               rows={3}
               maxLength={200}
-              placeholder="输入房间描述（最多200字符）"
+              placeholder={t('ui.components.roomForm.fields.description.placeholder')}
             />
             <div className="mt-1 text-xs text-zinc-500 text-right">
               {formData.description.length}/200
@@ -237,7 +244,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
               onClick={handleClose}
               className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              取消
+              {t('ui.components.roomForm.buttons.cancel')}
             </button>
           </div>
         </form>

@@ -3,8 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigat
 import HomePage from './pages/HomePage';
 import RoomsPage from './pages/RoomsPage';
 import RoomPage from './pages/RoomPage';
-import { useToast } from './hooks/useToast';
+import { ToastProvider, useToastContext } from './contexts/ToastContext';
 import { ToastContainer } from './components/Toast';
+import { I18nProvider } from './i18n/components/I18nProvider';
 
 // 房间页面包装组件
 const RoomPageWrapper: React.FC = () => {
@@ -32,16 +33,21 @@ const AppWithRouter: React.FC = () => {
   const basename = isGitHubPages ? '/vgbp/' : '/';
 
   return (
-    <Router basename={basename}>
-      <AppContent />
-    </Router>
+    <ToastProvider>
+      <I18nProvider>
+        <Router basename={basename}>
+          <AppContent />
+        </Router>
+      </I18nProvider>
+    </ToastProvider>
   );
 };
 
 const AppContent: React.FC = () => {
   const navigate = useNavigate();
-  const { showError, toasts, removeToast } = useToast();
+  const { showError, showSuccess, toasts, removeToast } = useToastContext();
 
+  
   // 处理进入房间
   const handleEnterRoom = useCallback((roomId: string) => {
     // 使用 React Router 导航
