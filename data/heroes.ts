@@ -1,4 +1,4 @@
-import { Hero, HeroRole, AttackType, Language } from "../types";
+import { Hero, HeroRole, AttackType, Language } from "@/types";
 import { pinyin } from "pinyin-pro";
 
 // 英雄数据配置

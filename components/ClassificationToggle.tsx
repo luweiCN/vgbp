@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ClassificationMode } from '../data/heroes';
-import { useI18n } from '../i18n/hooks/useI18n';
-import { useDefaultIsMobile } from '../hooks/useIsMobile';
+import { ClassificationMode } from '@/data/heroes';
+import { useI18n } from '@/i18n/hooks/useI18n';
+import { useDefaultIsMobile } from '@/hooks/useIsMobile';
 
 interface ClassificationToggleProps {
   classificationMode: ClassificationMode;
