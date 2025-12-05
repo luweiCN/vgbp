@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Globe } from 'lucide-react';
 import { useSafeI18n } from './useSafeI18n';
 import { LanguageSelectorProps } from '../types';
-import { useIsSmallScreen } from '../../hooks/useIsMobile';
+import { useIsSmallScreen } from '@/hooks/useIsMobile';
 
 /**
  * LanguageSelector组件 - 提供语言切换功能

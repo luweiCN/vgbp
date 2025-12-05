@@ -1,7 +1,7 @@
 import React from 'react';
-import { Hero, HeroRole, Language } from '../types';
-import { getHeroAvatarUrl } from '../data/heroes';
-import { useI18n } from '../i18n/hooks/useI18n';
+import { Hero, HeroRole, Language } from '@/types';
+import { getHeroAvatarUrl } from '@/data/heroes';
+import { useI18n } from '@/i18n/hooks/useI18n';
 
 interface HeroCardProps {
   hero: Hero;

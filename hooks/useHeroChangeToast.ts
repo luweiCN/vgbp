@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { getHeroById } from '../data/heroes';
+import { getHeroById } from '@/data/heroes';
 
 
 export const useHeroChangeToast = (
