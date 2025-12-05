@@ -100,9 +100,7 @@
         },
         "roomSearchBox": {
           "clearButtonTitle": "Clear search",
-          "placeholder": "Search room names and descriptions...",
-          "searchButton": "Search",
-          "searchButtonTitle": "Search rooms"
+          "placeholder": "Search room names and descriptions..."
         },
         "roomSortToggle": {
           "ascOrder": "Ascending",
@@ -327,7 +325,7 @@
             "tacticalTool": "Tactical Draft Tool"
           },
           "search": {
-            "placeholder": "Search / 搜索...",
+            "placeholder": "Search heroes...",
             "clearTitle": "Clear search",
             "noHeroesFound": "No heroes found matching \"{{searchTerm}}\""
           },

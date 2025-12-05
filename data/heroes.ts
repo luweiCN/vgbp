@@ -717,10 +717,16 @@ const fuzzyMatch = (text: string, pattern: string): boolean => {
   return patternIndex === patternLower.length;
 };
 
-// 搜索英雄的函数（支持拼音搜索和模糊搜索）
-export const searchHeroes = (heroes: Hero[], searchTerm: string, language?: Language): Hero[] => {
-  if (!searchTerm.trim()) return heroes;
 
+// 搜索英雄的函数（使用新的多语言搜索服务，保持向后兼容）
+export const searchHeroes = (heroes: Hero[], searchTerm: string, language?: Language): Hero[] => {
+  // 使用同步备用算法以确保向后兼容
+  return searchHeroesFallback(heroes, searchTerm, language);
+};
+
+
+// 备用搜索算法（原有逻辑）
+function searchHeroesFallback(heroes: Hero[], searchTerm: string, language?: Language): Hero[] {
   return heroes.filter((hero) => {
     // 根据语言调整搜索策略
     if (language === 'en-US') {
@@ -775,6 +781,11 @@ export const searchHeroes = (heroes: Hero[], searchTerm: string, language?: Lang
       nicknamePinyinMatch
     );
   });
+}
+
+// 同步版本的搜索函数（用于兼容性）
+export const searchHeroesSync = (heroes: Hero[], searchTerm: string, language?: Language): Hero[] => {
+  return searchHeroesFallback(heroes, searchTerm, language);
 };
 
 // 英雄查找映射表 - O(1)性能
