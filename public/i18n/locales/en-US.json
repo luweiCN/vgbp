@@ -100,7 +100,9 @@
         },
         "roomSearchBox": {
           "clearButtonTitle": "Clear search",
-          "placeholder": "Search room names and descriptions..."
+          "placeholder": "Search room names and descriptions...",
+          "searchButton": "Search",
+          "searchButtonTitle": "Search rooms"
         },
         "roomSortToggle": {
           "ascOrder": "Ascending",
@@ -477,6 +479,117 @@
         },
         "heroAvatar": {
           "alt": "Hero Avatar"
+        },
+        "api": {
+          "errors": {
+            "invalidCredentials": "Invalid email or password",
+            "emailNotConfirmed": "Please verify your email address first",
+            "userNotFound": "User not found",
+            "signupDisabled": "Sign up is disabled",
+            "emailAlreadyRegistered": "This email is already registered",
+            "weakPassword": "Password is too weak, please use a stronger password",
+            "invalidEmail": "Invalid email format",
+            "tooManyRequests": "Too many requests, please try again later",
+            "sessionExpired": "Session expired, please log in again",
+            "invalidRefreshToken": "Invalid refresh token, please log in again",
+            "permissionDenied": "Permission denied",
+            "notFound": "Data not found",
+            "duplicateEntry": "Data already exists",
+            "serviceUnavailable": "Email service temporarily unavailable, please try again later",
+            "rateLimitExceeded": "Too many requests, please try again later",
+            "emailNotFound": "Email address not found",
+            "invalidPassword": "Incorrect password",
+            "authTimeout": "Authentication timeout",
+            "networkError": "Network connection error",
+            "unknownError": "Unknown error",
+            "serverError": "Server error, please try again later",
+            "invalidEmailFormat": "Please provide a valid email address",
+            "sendConfirmationFailed": "Failed to send confirmation email",
+            "resendConfirmationFailed": "Failed to resend confirmation email",
+            "checkEmailFailed": "Failed to check email",
+            "emailNotRegistered": "This email is not registered yet, please sign up first",
+            "emailAlreadyVerified": "This email has already been verified, you can log in directly",
+            "emailCheckError": "An error occurred while checking email status, please try again later",
+            "sendingEmailError": "An error occurred while sending verification email, please try again later",
+            "resendEmailError": "An error occurred while resending verification email, please try again later"
+          },
+          "success": {
+            "emailSent": "Email sent successfully",
+            "confirmationEmailSent": "Confirmation email has been sent, please check your inbox (including spam folder)",
+            "resendEmailSent": "Verification email has been resent, please check your inbox",
+            "emailVerified": "Email verified successfully",
+            "roomCreated": "Room created successfully",
+            "roomUpdated": "Room updated successfully",
+            "roomDeleted": "Room deleted successfully",
+            "heroSelectionUpdated": "Hero selection updated",
+            "userLoggedIn": "Login successful",
+            "userRegistered": "Registration successful",
+            "passwordReset": "Password reset successful",
+            "profileUpdated": "Profile updated successfully"
+          },
+          "messages": {
+            "emailAvailable": "Email is available for registration",
+            "emailRegistered": "Email is registered",
+            "emailNotVerified": "Email not verified",
+            "emailVerified": "Email verified",
+            "roomDeleted": "Room deleted",
+            "heroAdded": "Hero added",
+            "heroRemoved": "Hero removed",
+            "selectionsCleared": "Selections cleared",
+            "dataSynced": "Data synced",
+            "settingsSaved": "Settings saved",
+            "roomJoined": "Joined room",
+            "roomLeft": "Left room",
+            "changesSaved": "Changes saved",
+            "operationSuccessful": "Operation successful",
+            "verificationEmailSent": "Verification email sent",
+            "verificationLinkGenerated": "Verification link generated, please click the link below to verify your email",
+            "pleaseWait": "Please wait...",
+            "loading": "Loading...",
+            "processing": "Processing..."
+          },
+          "status": {
+            "notRegistered": "Not registered",
+            "registeredUnverified": "Registered but not verified",
+            "registeredVerified": "Registered and verified",
+            "active": "Active",
+            "inactive": "Inactive",
+            "pending": "Pending",
+            "completed": "Completed",
+            "failed": "Failed",
+            "cancelled": "Cancelled",
+            "expired": "Expired"
+          },
+          "email": {
+            "verification": {
+              "send": {
+                "title": "Send verification email",
+                "subject": "[Vainglory BP] Please verify your email address",
+                "success": "Confirmation email sent successfully",
+                "error": "Failed to send confirmation email",
+                "invalidEmail": "Please provide a valid email address",
+                "serviceUnavailable": "Email service not configured",
+                "tryAgain": "An error occurred while sending verification email, please try again later"
+              },
+              "resend": {
+                "title": "Resend verification email",
+                "subject": "[Vainglory BP] Resend verification email",
+                "success": "Verification email has been sent, please check your inbox (including spam folder)",
+                "rateLimit": "Please try again later, too many requests",
+                "cooldownSeconds": "Please wait {{seconds}} seconds before trying again",
+                "notRegistered": "This email is not registered yet, please sign up first",
+                "alreadyVerified": "This email has already been verified, you can log in directly",
+                "manualLink": "Verification link generated, please click the link below to verify your email"
+              },
+              "check": {
+                "success": "Email status check successful",
+                "validEmail": "Email is available for registration",
+                "verified": "Email is registered and verified, you can log in directly",
+                "unverified": "Email is registered but not verified, please check your email or resend verification email",
+                "error": "An error occurred while checking email status, please try again later"
+              }
+            }
+          }
         }
       }
     }

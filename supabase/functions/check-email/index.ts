@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, accept-language',
 }
 
 interface CheckEmailRequest {
@@ -18,6 +18,16 @@ interface CheckEmailResponse {
   message: string;
 }
 
+/**
+ * 从请求头检测语言偏好
+ */
+function detectLanguageFromHeaders(headers: Headers): 'zh-CN' | 'en-US' {
+  const acceptLanguage = headers.get('accept-language') || '';
+  if (acceptLanguage.includes('zh')) return 'zh-CN';
+  if (acceptLanguage.includes('en')) return 'en-US';
+  return 'zh-CN'; // 默认中文
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -27,11 +37,18 @@ serve(async (req) => {
   try {
     const { email }: CheckEmailRequest = await req.json()
 
+    // 检测语言偏好
+    const language = detectLanguageFromHeaders(req.headers);
+
     if (!email || typeof email !== 'string' || !email.includes('@')) {
+      const errorMessage = language === 'zh-CN'
+        ? '请提供有效的邮箱地址'
+        : 'Please provide a valid email address';
+
       return new Response(
         JSON.stringify({
           error: 'Invalid email format',
-          message: '请提供有效的邮箱地址'
+          message: errorMessage
         }),
         {
           status: 400,
@@ -79,14 +96,20 @@ serve(async (req) => {
 
       if (exactUser) {
         // User found, check verification status
+        const isVerified = !!exactUser.email_confirmed_at;
+
         response = {
-          status: exactUser.email_confirmed_at ? 'registered_verified' : 'registered_unverified',
+          status: isVerified ? 'registered_verified' : 'registered_unverified',
           email,
           createdAt: exactUser.created_at,
           lastSignInAt: exactUser.last_sign_in_at,
-          message: exactUser.email_confirmed_at
-            ? '邮箱已注册且已验证，可以直接登录'
-            : '邮箱已注册但未验证，请检查邮件或重新发送验证邮件'
+          message: isVerified
+            ? (language === 'zh-CN'
+                ? '邮箱已注册且已验证，可以直接登录'
+                : 'Email is registered and verified, you can log in directly')
+            : (language === 'zh-CN'
+                ? '邮箱已注册但未验证，请检查邮件或重新发送验证邮件'
+                : 'Email is registered but not verified, please check your email or resend verification email')
         };
 
         console.log('Exact user found:', response);
@@ -95,7 +118,9 @@ serve(async (req) => {
         response = {
           status: 'not_registered',
           email,
-          message: '邮箱可以注册'
+          message: language === 'zh-CN'
+            ? '邮箱可以注册'
+            : 'Email is available for registration'
         };
         console.log('User not found');
       }
@@ -107,7 +132,9 @@ serve(async (req) => {
       response = {
         status: 'not_registered',
         email,
-        message: '邮箱可以注册'
+        message: language === 'zh-CN'
+          ? '邮箱可以注册'
+          : 'Email is available for registration'
       };
     }
 
@@ -123,10 +150,16 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error checking email status:', error)
 
+    // 检测语言偏好
+    const language = detectLanguageFromHeaders(req.headers);
+    const errorMessage = language === 'zh-CN'
+      ? '检查邮箱状态时发生错误，请稍后重试'
+      : 'An error occurred while checking email status, please try again later';
+
     return new Response(
       JSON.stringify({
         error: 'Internal server error',
-        message: '检查邮箱状态时发生错误，请稍后重试'
+        message: errorMessage
       }),
       {
         status: 500,
