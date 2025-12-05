@@ -1,4 +1,4 @@
-import { Hero, HeroRole, AttackType } from "../types";
+import { Hero, HeroRole, AttackType, Language } from "../types";
 import { pinyin } from "pinyin-pro";
 
 // 英雄数据配置
@@ -718,10 +718,18 @@ const fuzzyMatch = (text: string, pattern: string): boolean => {
 };
 
 // 搜索英雄的函数（支持拼音搜索和模糊搜索）
-export const searchHeroes = (heroes: Hero[], searchTerm: string): Hero[] => {
+export const searchHeroes = (heroes: Hero[], searchTerm: string, language?: Language): Hero[] => {
   if (!searchTerm.trim()) return heroes;
 
   return heroes.filter((hero) => {
+    // 根据语言调整搜索策略
+    if (language === 'en-US') {
+      // 英文环境：只搜索英文名
+      const nameMatch = fuzzyMatch(hero.name, searchTerm);
+      return nameMatch;
+    }
+
+    // 中文环境：支持所有搜索方式
     // 1. 英文名称模糊匹配（支持不连续字符）
     const nameMatch = fuzzyMatch(hero.name, searchTerm);
 
