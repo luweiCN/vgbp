@@ -1,0 +1,597 @@
+{
+  "meta": {
+    "language": "zh-CN",
+    "version": "1.0.0",
+    "lastUpdated": "2025-12-04"
+  },
+  "translations": {
+    "ui": {
+      "common": {
+        "switchLanguage": "切换语言"
+      },
+      "components": {
+        "entryPage": {
+          "language": "Language:",
+          "modes": {
+            "bottomInfo": "选择本地模式快速开始，或进入在线模式体验云端房间功能",
+            "local": "本地模式",
+            "localDesc": "立即使用本地存储的英雄选择功能，无需注册登录，所有数据保存在浏览器本地",
+            "localFeatures": "• 即开即用 • 无需登录 • 离线可用 • 数据本地存储",
+            "online": "在线模式",
+            "onlineDesc": "浏览房间列表，创建自己的房间或加入他人房间，支持数据云端存储和共享",
+            "onlineFeatures": "• 房间管理 • 数据存储 • 云端同步 • 多人使用"
+          }
+        },
+        "filterChips": {
+          "all": "全部房间",
+          "ascOrder": "升序",
+          "createdTime": "创建时间",
+          "descOrder": "降序",
+          "direction": "方向",
+          "filter": "筛选:",
+          "mine": "我创建的",
+          "owner": "所有者",
+          "reset": "重置",
+          "resetAllFilters": "重置所有筛选条件",
+          "search": "搜索",
+          "sort": "排序",
+          "updatedTime": "更新时间"
+        },
+        "ownerToggle": {
+          "label": "只看我的"
+        },
+        "pagination": {
+          "currentPageInfo": "第 {{current}} 页，共 {{total}} 页",
+          "currentPageInfoMobile": "{{current}}/{{total}} 页",
+          "itemsPerPage": "条 / 页",
+          "nextPage": "下一页",
+          "previousPage": "上一页"
+        },
+        "roomItem": {
+          "copyLink": "复制链接",
+          "created": "创建",
+          "createdAt": "创建时间",
+          "deleteRoom": "删除房间",
+          "editRoom": "编辑房间",
+          "enterRoom": "进入房间",
+          "heroesSelected": "已选择 {{count}} 个英雄",
+          "linkCopied": "房间链接已复制到剪贴板！",
+          "noHeroesSelected": "暂未选择英雄",
+          "unknownUser": "未知用户",
+          "updated": "更新",
+          "updatedAt": "更新时间"
+        },
+        "roomManager": {
+          "auth": {
+            "loadingUserInfo": "加载用户信息中...",
+            "updateUsername": {
+              "error": "请输入新的用户名！",
+              "sameUsername": "新用户名与当前用户名相同！"
+            }
+          },
+          "delete": {
+            "failed": "删除房间失败，请稍后重试",
+            "success": "房间删除成功！"
+          },
+          "filter": {
+            "filteredRooms": "当前筛选条件下共 {{filtered}} 个房间，总共 {{total}} 个房间",
+            "filteredRoomsShort": "共{{filtered}}/{{total}}个房间",
+            "totalRooms": "总共 {{count}} 个房间"
+          },
+          "header": {
+            "backToHome": "返回首页",
+            "createRoom": "创建房间",
+            "createRoomShort": "创建",
+            "guest": "游客",
+            "joinRoom": "加入房间",
+            "joinRoomShort": "加入",
+            "title": "房间列表"
+          },
+          "join": {
+            "error": "请输入房间ID或房间链接！",
+            "invalidLink": "无效的房间链接格式",
+            "joinFailed": "加入房间失败，请检查房间ID",
+            "roomNotFound": "房间不存在"
+          },
+          "list": {
+            "loading": "加载中...",
+            "noRooms": "暂无符合条件的房间"
+          }
+        },
+        "roomSearchBox": {
+          "clearButtonTitle": "清空搜索",
+          "placeholder": "搜索房间名称和描述...",
+          "searchButton": "搜索",
+          "searchButtonTitle": "搜索房间"
+        },
+        "roomSortToggle": {
+          "ascOrder": "升序",
+          "createdTime": "创建时间",
+          "descOrder": "降序",
+          "sortDirectionTitle": "排序方式：",
+          "sortLabel": "排序",
+          "updatedTime": "更新时间"
+        },
+        "toast": {
+          "close": "关闭",
+          "heroAvatar": "英雄头像"
+        },
+        "authForm": {
+          "title": {
+            "login": "登录账户",
+            "register": "注册账户"
+          },
+          "subtitle": {
+            "login": "登录后即可创建和管理房间",
+            "register": "创建账户开始使用在线功能"
+          },
+          "fields": {
+            "username": {
+              "label": "用户名",
+              "placeholder": "请输入用户名（中英文均可）",
+              "description": "用户名将作为您在平台上的显示名称"
+            },
+            "email": {
+              "label": "邮箱地址",
+              "placeholder": "请输入邮箱地址（用于登录）",
+              "privateNote": "邮箱地址仅用于登录，不会公开显示"
+            },
+            "password": {
+              "label": "密码",
+              "placeholder": "请输入密码（至少6位）"
+            },
+            "confirmPassword": {
+              "label": "确认密码",
+              "placeholder": "请再次输入密码"
+            }
+          },
+          "validation": {
+            "checking": "正在检查邮箱状态...",
+            "emailRegisteredUnverified": "邮箱已注册但未验证",
+            "emailRegisteredVerified": "邮箱已注册并已验证",
+            "emailAvailable": "邮箱可以注册",
+            "emailNotRegistered": "该邮箱尚未注册"
+          },
+          "errors": {
+            "emailInvalid": "请输入有效的邮箱地址！",
+            "usernameRequired": "请输入用户名！",
+            "passwordMismatch": "两次输入的密码不一致！",
+            "passwordTooShort": "密码长度至少为6位！",
+            "resendFailed": "重发验证邮件失败",
+            "submitFailed": "注册或登录失败，请稍后重试"
+          },
+          "actions": {
+            "login": "登录",
+            "register": "注册",
+            "loggingIn": "登录中...",
+            "registering": "注册中...",
+            "goToLogin": "去登录",
+            "goToRegister": "去注册",
+            "noAccount": "还没有账户？",
+            "registerNow": "立即注册",
+            "hasAccount": "已有账户？",
+            "backToLogin": "返回登录"
+          }
+        },
+        "emailModals": {
+          "unverified": {
+            "title": "邮箱需要验证",
+            "successBanner": "注册成功！",
+            "successMessage": "恭喜您，账户创建成功",
+            "description": "该邮箱已经注册，但是还未进行验证",
+            "emailSent": "我们已经向 {{email}} 发送了验证邮件，请检查邮箱并点击验证链接。",
+            "instructions": {
+              "checkEmail": "📧 请检查您的邮箱（包括垃圾邮件文件夹）",
+              "clickLink": "🔗 点击邮件中的验证链接完成验证",
+              "waitVerification": "⏱️ 验证成功后即可正常使用"
+            },
+            "actions": {
+              "gotIt": "我知道了",
+              "sending": "发送中...",
+              "resend": "重新发送邮件",
+              "resendWithCountdown": "重新发送 ({{countdown}}s)"
+            }
+          },
+          "verified": {
+            "title": "邮箱已验证",
+            "status": "邮箱已完成验证",
+            "description": "{{email}} 已经验证，您可以直接登录。",
+            "instructions": {
+              "verified": "✅ 您的邮箱已经完成验证",
+              "canLogin": "👤 可以直接使用此邮箱登录",
+              "startUsing": "🚀 开始使用 Vainglory BP 吧！"
+            },
+            "actions": {
+              "continueRegister": "继续注册",
+              "loginNow": "立即登录"
+            }
+          }
+        },
+        "roomForm": {
+          "title": {
+            "create": "创建新房间",
+            "edit": "编辑房间"
+          },
+          "fields": {
+            "name": {
+              "label": "房间名称",
+              "placeholder": {
+                "create": "{{username}}的房间 MM-DD HH:mm",
+                "edit": "请输入新的房间名称"
+              }
+            },
+            "description": {
+              "label": "房间描述",
+              "optional": "（可选）",
+              "placeholder": "输入房间描述（最多200字符）"
+            }
+          },
+          "buttons": {
+            "cancel": "取消",
+            "create": "创建房间",
+            "save": "保存修改"
+          },
+          "loading": {
+            "create": "创建中...",
+            "save": "保存中..."
+          },
+          "errors": {
+            "loginRequired": "请先登录后再进行操作",
+            "nameRequired": "请输入房间名称",
+            "permissionDenied": "只有房主才能编辑房间信息",
+            "submitFailed": "操作失败，请稍后重试"
+          },
+          "success": {
+            "create": "房间创建成功",
+            "update": "房间信息已更新"
+          }
+        },
+        "joinRoom": {
+          "title": "加入房间",
+          "fields": {
+            "idOrLink": {
+              "label": "房间ID或房间链接",
+              "placeholder": "输入房间ID或房间链接",
+              "support": "支持输入房间ID或完整的房间链接（如：{{url}}）"
+            }
+          },
+          "buttons": {
+            "join": "进入房间",
+            "cancel": "取消"
+          },
+          "loading": "加入中..."
+        },
+        "userSettings": {
+          "title": "用户设置",
+          "subtitle": "修改您的用户名",
+          "fields": {
+            "username": {
+              "label": "用户名",
+              "placeholder": "请输入新的用户名（中英文均可）",
+              "description": "用户名将作为您在平台上的显示名称"
+            }
+          },
+          "buttons": {
+            "update": "更新用户名",
+            "cancel": "取消"
+          },
+          "loading": "更新中..."
+        },
+        "deleteConfirm": {
+          "title": "删除房间",
+          "subtitle": "此操作不可恢复，请谨慎操作",
+          "mainQuestion": "确定要删除这个房间吗？",
+          "warning": "删除后将无法恢复，所有相关数据都会被清除",
+          "roomName": "房间名称：{{roomName}}",
+          "buttons": {
+            "confirm": "确认删除",
+            "cancel": "取消"
+          }
+        },
+        "roomManagerMenu": {
+          "title": "用户菜单",
+          "guest": {
+            "mode": "游客模式",
+            "description": "登录后可使用完整功能"
+          },
+          "sections": {
+            "user": "用户操作",
+            "rooms": "房间操作"
+          },
+          "userSettings": {
+            "settings": "用户设置",
+            "settingsDescription": "修改用户名",
+            "signOut": "退出登录",
+            "signOutDescription": "安全退出"
+          },
+          "auth": {
+            "loginOrRegister": "登录或注册",
+            "accessFullFeatures": "访问完整功能"
+          },
+          "roomActions": {
+            "join": "加入房间",
+            "joinDescription": "通过ID或链接加入",
+            "create": "创建房间",
+            "createDescription": "创建新的房间",
+            "createDescriptionForGuest": "需要登录后创建"
+          },
+          "errors": {
+            "signOutFailed": "退出登录失败"
+          }
+        },
+        "roomPage": {
+          "title": {
+            "localMode": "本地模式",
+            "onlineMode": "房间 {{roomId}}",
+            "browserTitle": "{{roomName}} - Vainglory BP",
+            "tacticalTool": "Tactical Draft Tool"
+          },
+          "search": {
+            "placeholder": "搜索英雄...",
+            "clearTitle": "清空搜索",
+            "noHeroesFound": "没有找到匹配 \"{{searchTerm}}\" 的英雄"
+          },
+          "progress": {
+            "desktop": "已选 {{selected}} 个英雄，剩余 {{remaining}} 个英雄",
+            "mobile": "已选 {{selected}}/{{total}}",
+            "selectedLabel": "已选",
+            "remainingLabel": "剩余",
+            "unit": "个英雄",
+            "unitShort": "个",
+            "percentage": "%"
+          },
+          "controls": {
+            "resetBP": "重置BP",
+            "editRoom": "编辑房间",
+            "hideSelected": "隐藏已选",
+            "showSelected": "显示已选英雄",
+            "hideSelectedShort": "隐藏已选",
+            "compactLayout": "紧凑布局",
+            "autoLayout": "自动布局",
+            "currentPosition": "当前位置:",
+            "noHeroesSelected": "还没有选择英雄",
+            "viewSelected": "查看已选英雄"
+          },
+          "sections": {
+            "captain": "辅助",
+            "jungle": "打野",
+            "carry": "对线",
+            "captainStat": "已选 {{count}} 个，剩余 {{remaining}} 个",
+            "jungleStat": "已选 {{count}} 个，剩余 {{remaining}} 个",
+            "carryStat": "已选 {{count}} 个，剩余 {{remaining}} 个"
+          },
+          "selectedHeroesButton": "已选英雄 ({{count}})",
+          "status": {
+            "syncing": "同步中...",
+            "syncFailed": "同步失败: {{error}}",
+            "syncFailedPrefix": "同步失败"
+          }
+        },
+        "selectedHeroesModal": {
+          "title": "已选英雄",
+          "subtitle": "共选择了 {{count}} 个英雄",
+          "emptyTitle": "还没有选择任何英雄",
+          "emptyDescription": "点击英雄卡片来选择英雄",
+          "categories": {
+            "captain": "辅助",
+            "jungle": "打野",
+            "carry": "对线"
+          },
+          "heroCount": "{{count}} 个英雄",
+          "reset": "重置BP",
+          "close": "关闭"
+        },
+        "resetConfirmModal": {
+          "title": "确认重置BP",
+          "message": "确定要清空已选择的 {{count}} 个英雄吗？此操作不可撤销。",
+          "cancel": "取消",
+          "confirm": "确认重置"
+        },
+        "classificationInfoModal": {
+          "title": "英雄分类说明",
+          "official": {
+            "title": "官方分类",
+            "description": "基于游戏内的官方角色分类。"
+          },
+          "common": {
+            "title": "常用分类",
+            "description": "常见分类是我们最常使用这个英雄打的位置，比如官方分类中把牛头放在了对线英雄，但是我们最常见的是牛头去打辅助位置。"
+          },
+          "flex": {
+            "title": "灵活分类",
+            "description": "灵活分类包含英雄可以胜任的所有位置。以盲豹格雷为例，在官方分类中他属于打野英雄，而在常见分类中属于对线英雄。实际上这个英雄既能物理出装打对线，也能法术肉装去打野，甚至还能打辅助位置。灵活分类标明了某个英雄在实战中可以胜任的所有常见位置。"
+          }
+        },
+        "classificationToggle": {
+          "official": "官方",
+          "common": "常见",
+          "flex": "灵活",
+          "infoTitle": "分类说明",
+          "heroClassification": "英雄分类:",
+          "officialDesc": "按官方定位分类",
+          "commonDesc": "按玩家常见位置分类",
+          "flexDesc": "按理论上可以打的位置分类",
+          "officialShort": "官方",
+          "commonShort": "常见",
+          "flexShort": "灵活"
+        },
+        "realtimeStatus": {
+          "connection": {
+            "realtime": "实时",
+            "polling": "轮询",
+            "offline": "离线"
+          },
+          "status": {
+            "connected": "连接正常",
+            "syncing": "同步中",
+            "polling": "轮询中",
+            "disconnected": "连接断开",
+            "pollingDisconnected": "轮询断开",
+            "offline": "已断开"
+          },
+          "time": {
+            "never": "从未同步",
+            "justNow": "刚刚",
+            "secondsAgo": "{{count}}秒前",
+            "minutesAgo": "{{count}}分钟前",
+            "lastActivity": "最后活动",
+            "lastSend": "发送"
+          }
+        },
+        "permissionIndicator": {
+          "owner": {
+            "text": "房主",
+            "description": "拥有所有权限，可以管理房间和编辑英雄选择"
+          },
+          "participant": {
+            "text": "参与者",
+            "description": "可以查看房间状态，邀请其他用户"
+          },
+          "viewer": {
+            "text": "查看模式",
+            "description": "只能查看房间状态，不能编辑"
+          },
+          "unknown": {
+            "text": "未知",
+            "description": "权限状态未知"
+          },
+          "editable": "（可编辑）"
+        },
+        "layoutToggle": {
+          "title": "点击切换布局模式",
+          "auto": "自动",
+          "three": "3栏",
+          "four": "4栏",
+          "five": "5栏"
+        },
+        "heroSelectionToast": {
+          "added": "新增",
+          "removed": "移除",
+          "close": "关闭",
+          "closing": "正在关闭"
+        },
+        "heroChangeToast": {
+          "addedWithNames": "新增英雄：{{names}}{{hasMore ? '等' : ''}}",
+          "addedWithCount": "新增了{{count}}个英雄",
+          "removedWithNames": "取消英雄：{{names}}{{hasMore ? '等' : ''}}",
+          "removedWithCount": "取消了{{count}}个英雄",
+          "changed": "英雄变化：新增{{addedNames}}{{hasMoreAdded ? '等' : ''}}，取消{{removedNames}}{{hasMoreRemoved ? '等' : ''}}"
+        },
+        "heroAvatar": {
+          "alt": "英雄头像"
+        }
+      },
+      "api": {
+        "errors": {
+          "invalidCredentials": "邮箱或密码错误",
+          "emailNotConfirmed": "请先验证您的邮箱地址",
+          "userNotFound": "用户不存在",
+          "signupDisabled": "注册功能已禁用",
+          "emailAlreadyRegistered": "该邮箱已被注册",
+          "weakPassword": "密码强度不够，请使用更复杂的密码",
+          "invalidEmail": "邮箱格式不正确",
+          "tooManyRequests": "请求过于频繁，请稍后再试",
+          "sessionExpired": "会话已过期，请重新登录",
+          "invalidRefreshToken": "刷新令牌无效，请重新登录",
+          "permissionDenied": "没有操作权限",
+          "notFound": "数据不存在",
+          "duplicateEntry": "数据已存在",
+          "serviceUnavailable": "邮件服务暂时不可用，请稍后重试",
+          "rateLimitExceeded": "请求过于频繁，请稍后再试",
+          "emailNotFound": "邮箱地址未找到",
+          "invalidPassword": "密码错误",
+          "authTimeout": "认证超时",
+          "networkError": "网络连接错误",
+          "unknownError": "未知错误",
+          "serverError": "服务器错误，请稍后重试",
+          "invalidEmailFormat": "请提供有效的邮箱地址",
+          "sendConfirmationFailed": "发送确认邮件失败",
+          "resendConfirmationFailed": "重发确认邮件失败",
+          "checkEmailFailed": "检查邮箱失败",
+          "emailNotRegistered": "该邮箱尚未注册，请先注册账户",
+          "emailAlreadyVerified": "该邮箱已经验证，可以直接登录",
+          "emailCheckError": "检查邮箱状态时发生错误，请稍后重试",
+          "sendingEmailError": "发送验证邮件时发生错误，请稍后重试",
+          "resendEmailError": "重发验证邮件时发生错误，请稍后重试"
+        },
+        "success": {
+          "emailSent": "邮件发送成功",
+          "confirmationEmailSent": "确认邮件已发送，请检查您的邮箱（包括垃圾邮件文件夹）",
+          "resendEmailSent": "验证邮件已重新发送，请检查您的邮箱",
+          "emailVerified": "邮箱验证成功",
+          "roomCreated": "房间创建成功",
+          "roomUpdated": "房间更新成功",
+          "roomDeleted": "房间删除成功",
+          "heroSelectionUpdated": "英雄选择已更新",
+          "userLoggedIn": "登录成功",
+          "userRegistered": "注册成功",
+          "passwordReset": "密码重置成功",
+          "profileUpdated": "个人资料更新成功"
+        },
+        "messages": {
+          "emailAvailable": "邮箱可以注册",
+          "emailRegistered": "邮箱已注册",
+          "emailNotVerified": "邮箱未验证",
+          "emailVerified": "邮箱已验证",
+          "roomDeleted": "房间已删除",
+          "heroAdded": "英雄已添加",
+          "heroRemoved": "英雄已移除",
+          "selectionsCleared": "选择已清空",
+          "dataSynced": "数据已同步",
+          "settingsSaved": "设置已保存",
+          "roomJoined": "已加入房间",
+          "roomLeft": "已离开房间",
+          "changesSaved": "更改已保存",
+          "operationSuccessful": "操作成功",
+          "verificationEmailSent": "验证邮件已发送",
+          "verificationLinkGenerated": "验证链接已生成，请点击下方链接完成邮箱验证",
+          "pleaseWait": "请稍候...",
+          "loading": "加载中...",
+          "processing": "处理中..."
+        },
+        "status": {
+          "notRegistered": "未注册",
+          "registeredUnverified": "已注册但未验证",
+          "registeredVerified": "已注册且已验证",
+          "active": "活跃",
+          "inactive": "非活跃",
+          "pending": "待处理",
+          "completed": "已完成",
+          "failed": "失败",
+          "cancelled": "已取消",
+          "expired": "已过期"
+        },
+        "email": {
+          "verification": {
+            "send": {
+              "title": "发送验证邮件",
+              "subject": "[Vainglory BP] 请验证您的邮箱地址",
+              "success": "确认邮件发送成功",
+              "error": "发送确认邮件失败",
+              "invalidEmail": "请提供有效的邮箱地址",
+              "serviceUnavailable": "邮件服务未配置",
+              "tryAgain": "发送验证邮件时发生错误，请稍后重试"
+            },
+            "resend": {
+              "title": "重新发送验证邮件",
+              "subject": "[Vainglory BP] 重新发送验证邮件",
+              "success": "验证邮件已发送，请检查您的邮箱（包括垃圾邮件文件夹）",
+              "rateLimit": "请稍后再试，发送频率过高",
+              "cooldownSeconds": "请等待 {{seconds}} 秒后再试",
+              "notRegistered": "该邮箱尚未注册，请先注册账户",
+              "alreadyVerified": "该邮箱已经验证，可以直接登录",
+              "manualLink": "验证链接已生成，请点击下方链接完成邮箱验证"
+            },
+            "check": {
+              "success": "邮箱状态查询成功",
+              "validEmail": "邮箱可以注册",
+              "verified": "邮箱已注册且已验证，可以直接登录",
+              "unverified": "邮箱已注册但未验证，请检查邮件或重新发送验证邮件",
+              "error": "检查邮箱状态时发生错误，请稍后重试"
+            }
+          }
+        }
+      }
+    }
+  }
+}

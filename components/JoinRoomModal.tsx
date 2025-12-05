@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '@/i18n/hooks/useI18n';
 
 interface JoinRoomModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({
   loading,
   error,
 }) => {
+  const { t } = useI18n();
   const getRoomUrl = (roomId: string) => {
     if (typeof window !== "undefined") {
       return `${window.location.origin}/room/${roomId}`;
@@ -32,7 +34,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-90 flex items-center justify-center p-4">
       <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6 max-w-md w-full mx-auto shadow-2xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">加入房间</h2>
+          <h2 className="text-xl font-bold text-white">{t('ui.components.joinRoom.title')}</h2>
           <button
             onClick={onClose}
             className="text-zinc-400 hover:text-white text-2xl transition-colors"
@@ -44,7 +46,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({
         <form onSubmit={onSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
-              房间ID或房间链接 <span className="text-red-400">*</span>
+              {t('ui.components.joinRoom.fields.idOrLink.label')} <span className="text-red-400">*</span>
             </label>
             <div className="relative">
               <input
@@ -55,7 +57,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({
                 }
                 className="w-full px-4 py-3 pr-12 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                 required
-                placeholder="输入房间ID或房间链接"
+                placeholder={t('ui.components.joinRoom.fields.idOrLink.placeholder')}
               />
               {roomId && (
                 <button
@@ -80,7 +82,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({
               )}
             </div>
             <div className="mt-2 text-xs text-zinc-500">
-              支持输入房间ID或完整的房间链接（如：{getRoomUrl("abc123")}）
+              {t('ui.components.joinRoom.fields.idOrLink.support', { url: getRoomUrl("abc123") })}
             </div>
           </div>
 
@@ -99,10 +101,10 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  加入中...
+                  {t('ui.components.joinRoom.loading')}
                 </div>
               ) : (
-                "进入房间"
+                t('ui.components.joinRoom.buttons.join')
               )}
             </button>
             <button
@@ -110,7 +112,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({
               onClick={onClose}
               className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              取消
+              {t('ui.components.joinRoom.buttons.cancel')}
             </button>
           </div>
         </form>

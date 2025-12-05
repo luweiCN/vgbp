@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '../i18n/hooks/useI18n';
 
 interface RealtimeStatusProps {
   isConnected: boolean;
@@ -15,6 +16,8 @@ const RealtimeStatus: React.FC<RealtimeStatusProps> = ({
   syncMethod,
   isOnlineMode
 }) => {
+  const { t } = useI18n();
+
   if (!isOnlineMode) {
     return null;
   }
@@ -28,14 +31,14 @@ const RealtimeStatus: React.FC<RealtimeStatusProps> = ({
   };
 
   const formatSyncTime = (time: number | null): string => {
-    if (!time) return '从未同步';
+    if (!time) return t('ui.components.realtimeStatus.time.never');
 
     const now = Date.now();
     const diff = now - time;
 
-    if (diff < 1000) return '刚刚';
-    if (diff < 60000) return `${Math.floor(diff / 1000)}秒前`;
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+    if (diff < 1000) return t('ui.components.realtimeStatus.time.justNow');
+    if (diff < 60000) return t('ui.components.realtimeStatus.time.secondsAgo', { count: Math.floor(diff / 1000) });
+    if (diff < 3600000) return t('ui.components.realtimeStatus.time.minutesAgo', { count: Math.floor(diff / 60000) });
     return new Date(time).toLocaleTimeString();
   };
 
@@ -55,28 +58,28 @@ const RealtimeStatus: React.FC<RealtimeStatusProps> = ({
 
   const getStatusText = () => {
     if (syncMethod === 'realtime' && isConnected) {
-      return '连接正常';
+      return t('ui.components.realtimeStatus.status.connected');
     } else if (syncMethod === 'realtime' && hasRecentActivity) {
-      return '同步中';
+      return t('ui.components.realtimeStatus.status.syncing');
     } else if (syncMethod === 'polling' && hasRecentActivity) {
-      return '轮询中';
+      return t('ui.components.realtimeStatus.status.polling');
     } else if (syncMethod === 'realtime') {
-      return '连接断开';
+      return t('ui.components.realtimeStatus.status.disconnected');
     } else if (syncMethod === 'polling') {
-      return '轮询断开';
+      return t('ui.components.realtimeStatus.status.pollingDisconnected');
     } else {
-      return '已断开';
+      return t('ui.components.realtimeStatus.status.offline');
     }
   };
 
   const getSyncMethodText = () => {
     switch (syncMethod) {
       case 'realtime':
-        return '实时';
+        return t('ui.components.realtimeStatus.connection.realtime');
       case 'polling':
-        return '轮询';
+        return t('ui.components.realtimeStatus.connection.polling');
       default:
-        return '离线';
+        return t('ui.components.realtimeStatus.connection.offline');
     }
   };
 
@@ -113,25 +116,25 @@ const RealtimeStatus: React.FC<RealtimeStatusProps> = ({
 
       {/* 最后同步时间 - 桌面端显示完整文字，移动端只显示时间 */}
       <div className="flex items-center gap-1">
-        <svg 
-          className="w-3 h-3" 
-          fill="none" 
-          viewBox="0 0 24 24" 
+        <svg
+          className="w-3 h-3"
+          fill="none"
+          viewBox="0 0 24 24"
           stroke="currentColor"
-          title={`最后活动: ${formatSyncTime(getLastActivityTime())}`}
+          title={`${t('ui.components.realtimeStatus.time.lastActivity')}: ${formatSyncTime(getLastActivityTime())}`}
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <span className="hidden sm:inline">最后活动: {formatSyncTime(getLastActivityTime())}</span>
+        <span className="hidden sm:inline">{t('ui.components.realtimeStatus.time.lastActivity')}: {formatSyncTime(getLastActivityTime())}</span>
         <span className="sm:hidden">{formatSyncTime(getLastActivityTime())}</span>
       </div>
 
       {/* 详细信息提示 */}
       {syncMethod === 'realtime' && lastSendTime && (
         <div className="hidden sm:block text-zinc-500">
-          发送: {formatSyncTime(lastSendTime)}
+          {t('ui.components.realtimeStatus.time.lastSend')}: {formatSyncTime(lastSendTime)}
         </div>
       )}
     </div>

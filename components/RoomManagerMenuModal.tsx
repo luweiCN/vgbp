@@ -1,5 +1,6 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
+import { useI18n } from '@/i18n/hooks/useI18n';
 
 interface RoomManagerMenuModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
   onOpenLogin,
 }) => {
   const { user, signOut } = useAuth();
+  const { t } = useI18n();
 
   if (!isOpen) return null;
 
@@ -35,7 +37,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
         <div className="p-6">
           {/* 菜单头部 */}
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-lg font-semibold text-white">用户菜单</h3>
+            <h3 className="text-lg font-semibold text-white">{t('ui.components.roomManagerMenu.title')}</h3>
             <button
               onClick={onClose}
               className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
@@ -94,10 +96,10 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-white font-medium truncate">
-                        游客模式
+                        {t('ui.components.roomManagerMenu.guest.mode')}
                       </div>
                       <div className="text-zinc-400 text-sm truncate">
-                        登录后可使用完整功能
+                        {t('ui.components.roomManagerMenu.guest.description')}
                       </div>
                     </div>
                   </>
@@ -108,7 +110,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
             {/* 用户操作区域 */}
             <div className="space-y-3">
               <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                用户操作
+                {t('ui.components.roomManagerMenu.sections.user')}
               </h4>
               {user ? (
                 <>
@@ -135,9 +137,9 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                       </svg>
                     </div>
                     <div>
-                      <div className="text-white">用户设置</div>
+                      <div className="text-white">{t('ui.components.roomManagerMenu.userSettings.settings')}</div>
                       <div className="text-xs text-zinc-500">
-                        修改用户名
+                        {t('ui.components.roomManagerMenu.userSettings.settingsDescription')}
                       </div>
                     </div>
                   </button>
@@ -148,7 +150,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                         await signOut();
                         onClose();
                       } catch (error) {
-                        console.error('退出登录失败:', error);
+                        console.error('Sign out failed:', error);
                       }
                     }}
                     className="w-full px-4 py-3 text-left text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 border border-zinc-700/50 rounded-lg transition-all duration-200 flex items-center gap-3"
@@ -169,9 +171,9 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                       </svg>
                     </div>
                     <div>
-                      <div className="text-white">退出登录</div>
+                      <div className="text-white">{t('ui.components.roomManagerMenu.userSettings.signOut')}</div>
                       <div className="text-xs text-zinc-500">
-                        安全退出
+                        {t('ui.components.roomManagerMenu.userSettings.signOutDescription')}
                       </div>
                     </div>
                   </button>
@@ -200,9 +202,9 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                     </svg>
                   </div>
                   <div>
-                    <div>登录或注册</div>
+                    <div>{t('ui.components.roomManagerMenu.auth.loginOrRegister')}</div>
                     <div className="text-xs text-blue-100">
-                      访问完整功能
+                      {t('ui.components.roomManagerMenu.auth.accessFullFeatures')}
                     </div>
                   </div>
                 </button>
@@ -212,7 +214,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
             {/* 房间操作区域 - 所有用户都可见 */}
             <div className="space-y-3">
               <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                房间操作
+                {t('ui.components.roomManagerMenu.sections.rooms')}
               </h4>
 
               <button
@@ -238,9 +240,9 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                   </svg>
                 </div>
                 <div>
-                  <div>加入房间</div>
+                  <div>{t('ui.components.roomManagerMenu.roomActions.join')}</div>
                   <div className="text-xs text-purple-100">
-                    通过ID或链接加入
+                    {t('ui.components.roomManagerMenu.roomActions.joinDescription')}
                   </div>
                 </div>
               </button>
@@ -268,9 +270,9 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                   </svg>
                 </div>
                 <div>
-                  <div>创建房间</div>
+                  <div>{t('ui.components.roomManagerMenu.roomActions.create')}</div>
                   <div className="text-xs text-green-100">
-                    {user ? "创建新的房间" : "需要登录后创建"}
+                    {user ? t('ui.components.roomManagerMenu.roomActions.createDescription') : t('ui.components.roomManagerMenu.roomActions.createDescriptionForGuest')}
                   </div>
                 </div>
               </button>

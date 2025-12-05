@@ -1,4 +1,4 @@
-import { Hero, HeroRole, AttackType } from "../types";
+import { Hero, HeroRole, AttackType, Language } from "@/types";
 import { pinyin } from "pinyin-pro";
 
 // 英雄数据配置
@@ -652,8 +652,11 @@ export const getHeroesByRole = (
   }
 };
 
-// 直接使用 Vercel Blob URL（暂时方案）
+// Vercel Blob URL（生产环境使用）
 const VERCEL_BLOB_BASE_URL = 'https://nksf7fmzcvduehht.public.blob.vercel-storage.com/heroes';
+
+// OSS URL（开发环境使用）
+const OSS_BASE_URL = 'https://www.luwei.space:4014/default/vainglory/heroes';
 
 // 图片URL缓存
 const avatarUrlCache = new Map<string, string>();
@@ -677,9 +680,15 @@ export const getHeroAvatarUrl = (hero: Hero, ossBaseUrl?: string): string => {
   else if (ossBaseUrl) {
     url = `${ossBaseUrl}/${hero.id}.jpg`;
   }
-  // 默认使用 Vercel Blob
+  // 根据环境选择使用 OSS 或 Vercel Blob
   else {
-    url = `${VERCEL_BLOB_BASE_URL}/${hero.id}.jpg`;
+    // 开发环境使用 OSS，生产环境使用 Vercel Blob
+    const isDev = import.meta.env.DEV;
+    if (isDev) {
+      url = `${OSS_BASE_URL}/${hero.id}.jpg`;
+    } else {
+      url = `${VERCEL_BLOB_BASE_URL}/${hero.id}.jpg`;
+    }
   }
 
   // 缓存结果
@@ -708,11 +717,25 @@ const fuzzyMatch = (text: string, pattern: string): boolean => {
   return patternIndex === patternLower.length;
 };
 
-// 搜索英雄的函数（支持拼音搜索和模糊搜索）
-export const searchHeroes = (heroes: Hero[], searchTerm: string): Hero[] => {
-  if (!searchTerm.trim()) return heroes;
 
+// 搜索英雄的函数（使用新的多语言搜索服务，保持向后兼容）
+export const searchHeroes = (heroes: Hero[], searchTerm: string, language?: Language): Hero[] => {
+  // 使用同步备用算法以确保向后兼容
+  return searchHeroesFallback(heroes, searchTerm, language);
+};
+
+
+// 备用搜索算法（原有逻辑）
+function searchHeroesFallback(heroes: Hero[], searchTerm: string, language?: Language): Hero[] {
   return heroes.filter((hero) => {
+    // 根据语言调整搜索策略
+    if (language === 'en-US') {
+      // 英文环境：只搜索英文名
+      const nameMatch = fuzzyMatch(hero.name, searchTerm);
+      return nameMatch;
+    }
+
+    // 中文环境：支持所有搜索方式
     // 1. 英文名称模糊匹配（支持不连续字符）
     const nameMatch = fuzzyMatch(hero.name, searchTerm);
 
@@ -758,6 +781,11 @@ export const searchHeroes = (heroes: Hero[], searchTerm: string): Hero[] => {
       nicknamePinyinMatch
     );
   });
+}
+
+// 同步版本的搜索函数（用于兼容性）
+export const searchHeroesSync = (heroes: Hero[], searchTerm: string, language?: Language): Hero[] => {
+  return searchHeroesFallback(heroes, searchTerm, language);
 };
 
 // 英雄查找映射表 - O(1)性能

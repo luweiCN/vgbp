@@ -2,6 +2,19 @@
 
 Instructions for AI coding assistants using OpenSpec for spec-driven development.
 
+## 🌐 重要：语言偏好要求
+
+**项目语言偏好**：本项目主要面向中文用户，所有 AI 助手必须使用中文与用户交流，除非用户明确要求使用英文。
+
+### 交流标准
+- **默认交流语言**：中文（普通话）
+- **代码注释**：优先使用中文，技术术语保留英文
+- **文档编写**：使用中文撰写，变量和函数名遵循编程约定
+- **错误信息**：面向用户的错误信息使用中文
+- **提交信息**：使用中文描述功能变更
+
+请在所有交流中遵循此语言偏好，包括提案创建、代码实现、问题解答等所有环节。
+
 ## TL;DR Quick Checklist
 
 - Search existing work: `openspec spec list --long`, `openspec list` (use `rg` only for full-text search)

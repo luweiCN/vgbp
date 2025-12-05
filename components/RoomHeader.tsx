@@ -1,8 +1,10 @@
 import React from 'react';
-import { User } from '../hooks/useAuth';
+import { AuthUser } from '../hooks/useAuth';
+import { useI18n } from '@/i18n/hooks/useI18n';
+import { LanguageToggle } from '@/i18n/components/LanguageSelector';
 
 interface RoomHeaderProps {
-  user: User | null;
+  user: AuthUser | null;
   onBack?: () => void;
   onJoinRoom: () => void;
   onCreateRoom: () => void;
@@ -18,6 +20,7 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
   onUserMenuToggle,
   showMobileMenu,
 }) => {
+  const { t } = useI18n();
   return (
     <div className="flex justify-between items-center h-16 sm:h-[70px]">
       <div className="flex flex-col gap-2">
@@ -27,7 +30,7 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
             <button
               onClick={onBack}
               className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800/60 rounded-lg transition-colors flex-shrink-0"
-              title="返回首页"
+              title={t('ui.components.roomManager.header.backToHome')}
             >
               <svg
                 className="w-5 h-5"
@@ -81,8 +84,8 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
               />
             </svg>
-            <span className="hidden sm:inline">加入房间</span>
-            <span className="sm:hidden">加入</span>
+            <span className="hidden sm:inline">{t('ui.components.roomManager.header.joinRoom')}</span>
+            <span className="sm:hidden">{t('ui.components.roomManager.header.joinRoomShort')}</span>
           </button>
 
           <button
@@ -102,10 +105,14 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
                 d="M12 4v16m8-8H4"
               />
             </svg>
-            <span className="hidden sm:inline">创建房间</span>
-            <span className="sm:hidden">创建</span>
+            <span className="hidden sm:inline">{t('ui.components.roomManager.header.createRoom')}</span>
+            <span className="sm:hidden">{t('ui.components.roomManager.header.createRoomShort')}</span>
           </button>
+
         </div>
+
+        {/* 语言切换器 */}
+        <LanguageToggle className="flex-shrink-0" />
 
         {/* 右侧：用户信息 */}
         <div
@@ -139,7 +146,7 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
             )}
           </div>
           <span className="text-white text-sm font-medium hidden sm:inline">
-            {user ? user.username : "游客"}
+            {user ? user.username : t('ui.components.roomManager.header.guest')}
           </span>
           <svg
             className="w-3 h-3 text-slate-400"

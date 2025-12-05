@@ -1,11 +1,14 @@
 import { useEffect, useRef } from 'react';
-import { getHeroById } from '../data/heroes';
-
+import { getHeroById } from '@/data/heroes';
+import { Language } from '@/types';
 
 
 export const useHeroChangeToast = (
   selectedHeroes: Set<string>,
-  onShowToast: (message: string, addedHeroIds: string[], removedHeroIds: string[]) => void
+  onShowToast: (message: string, addedHeroIds: string[], removedHeroIds: string[]) => void,
+  t: (key: string, params?: Record<string, any>) => string,
+  isReady: boolean = true,
+  language: Language = 'zh-CN'
 ): void => {
   // 用于跟踪上一次的英雄选择状态，用于diff计算
   const previousHeroesRef = useRef<Set<string>>(new Set());
@@ -15,7 +18,7 @@ export const useHeroChangeToast = (
   // 监听selectedHeroes变化，计算diff
   useEffect(() => {
     // 防止重复处理
-    if (isProcessingRef.current) {
+    if (isProcessingRef.current || !isReady) {
       return;
     }
 
@@ -33,21 +36,51 @@ export const useHeroChangeToast = (
       const addedCount = addedHeroes.length;
       const removedCount = removedHeroes.length;
       let message = '';
-      
+
       if (addedCount > 0 && removedCount === 0) {
-        message = addedCount <= 3 
-          ? `房间新增了英雄：${addedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、')}${addedCount > 3 ? '等' : ''}`
-          : `房间新增了${addedCount}个英雄`;
+        if (addedCount <= 3) {
+          const names = addedHeroes.slice(0, 3).map(heroId => {
+            const hero = getHeroById(heroId);
+            return language === 'zh-CN' ? hero?.cnName : hero?.name;
+          }).join('、');
+          const hasMore = addedCount > 3;
+          const suffix = hasMore ? (language === 'zh-CN' ? '等' : ' & more') : '';
+          message = language === 'zh-CN'
+            ? `新增英雄：${names}${suffix}`
+            : `Added: ${names}${suffix}`;
+        } else {
+          message = t('ui.components.heroChangeToast.addedWithCount', { count: addedCount });
+        }
       } else if (removedCount > 0 && addedCount === 0) {
-        message = removedCount <= 3 
-          ? `房间取消了英雄：${removedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、')}${removedCount > 3 ? '等' : ''}`
-          : `房间取消了${removedCount}个英雄`;
+        if (removedCount <= 3) {
+          const names = removedHeroes.slice(0, 3).map(heroId => {
+            const hero = getHeroById(heroId);
+            return language === 'zh-CN' ? hero?.cnName : hero?.name;
+          }).join('、');
+          const hasMore = removedCount > 3;
+          const suffix = hasMore ? (language === 'zh-CN' ? '等' : ' & more') : '';
+          message = language === 'zh-CN'
+            ? `取消英雄：${names}${suffix}`
+            : `Removed: ${names}${suffix}`;
+        } else {
+          message = t('ui.components.heroChangeToast.removedWithCount', { count: removedCount });
+        }
       } else if (addedCount > 0 && removedCount > 0) {
-        const addedNames = addedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、');
-        const removedNames = removedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、');
-        message = `房间英雄变化：新增${addedNames}${addedCount > 3 ? '等' : ''}，取消${removedNames}${removedCount > 3 ? '等' : ''}`;
+        const addedNames = addedHeroes.slice(0, 3).map(heroId => {
+          const hero = getHeroById(heroId);
+          return language === 'zh-CN' ? hero?.cnName : hero?.name;
+        }).join('、');
+        const removedNames = removedHeroes.slice(0, 3).map(heroId => {
+          const hero = getHeroById(heroId);
+          return language === 'zh-CN' ? hero?.cnName : hero?.name;
+        }).join('、');
+        const addedSuffix = addedCount > 3 ? (language === 'zh-CN' ? '等' : ' & more') : '';
+        const removedSuffix = removedCount > 3 ? (language === 'zh-CN' ? '等' : ' & more') : '';
+        message = language === 'zh-CN'
+          ? `英雄变化：新增${addedNames}${addedSuffix}，取消${removedNames}${removedSuffix}`
+          : `Changed: Added ${addedNames}${addedSuffix}, Removed ${removedNames}${removedSuffix}`;
       }
-      
+
       // 创建diff标识
       const diffKey = `${addedHeroes.join(',')}-${removedHeroes.join(',')}`;
       
