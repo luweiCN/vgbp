@@ -22,6 +22,7 @@ import { ToastContainer } from '@/components/Toast';
 import HeroSelectionToastContainer from '@/components/HeroSelectionToastContainer';
 import { supabase } from '@/services/supabase';
 import { useDefaultIsMobile } from '@/hooks/useIsMobile';
+// import { useEnhancedSearch } from '@/hooks/useEnhancedSearch'; // TODO: 暂时注释，等搜索建议功能完善后再启用
 
 
 // 现在使用 Vercel Blob，不再需要 OSS 配置
@@ -136,6 +137,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
     }
   };
 
+  
   // 获取房间信息
   useEffect(() => {
     const fetchRoomInfo = async () => {
@@ -579,7 +581,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
 
             {/* Mobile Search Box - Only shown on mobile */}
             <div className="md:hidden">
-              <div className="flex items-center w-full bg-zinc-800/50 border border-zinc-800 rounded-lg px-3 py-1.5 gap-2">
+              <div className="flex items-center w-full bg-zinc-800/50 border border-zinc-800 rounded-lg px-3 py-1.5 mt-3 gap-2">
                 {/* Search Icon */}
                 <svg
                   className="h-4 w-4 text-zinc-400 flex-shrink-0"
@@ -629,7 +631,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
           </div>
 
           {/* Progress and Controls Section */}
-          <div className="sm:border-t sm:border-zinc-800 pt-3 pb-2">
+          <div className="sm:border-t sm:border-zinc-800 sm:mt-3 pt-3 pb-2">
         {/* Desktop Layout - Two Rows */}
             <div className="hidden sm:block space-y-3">
               {/* First Row: Progress + Classification + Hide Selected */}
@@ -930,9 +932,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
               </div>
             </div>
 
-            {/* Border between sections */}
-            <div className="border-t border-zinc-800 pt-2 mt-2"></div>
-
+            
             </div>
         </div>
       </header>

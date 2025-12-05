@@ -100,9 +100,7 @@
         },
         "roomSearchBox": {
           "clearButtonTitle": "清空搜索",
-          "placeholder": "搜索房间名称和描述...",
-          "searchButton": "搜索",
-          "searchButtonTitle": "搜索房间"
+          "placeholder": "搜索房间名称和描述..."
         },
         "roomSortToggle": {
           "ascOrder": "升序",
@@ -327,9 +325,9 @@
             "tacticalTool": "Tactical Draft Tool"
           },
           "search": {
-            "placeholder": "Search / 搜索...",
-            "clearTitle": "Clear search",
-            "noHeroesFound": "No heroes found matching \"{{searchTerm}}\""
+            "placeholder": "搜索英雄...",
+            "clearTitle": "清空搜索",
+            "noHeroesFound": "没有找到匹配 \"{{searchTerm}}\" 的英雄"
           },
           "progress": {
             "desktop": "已选 {{selected}} 个英雄，剩余 {{remaining}} 个英雄",
