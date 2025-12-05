@@ -49,9 +49,9 @@ export const useBPState = (roomId?: string): BPStateHook => {
   const isOnlineMode = !!roomId && roomId !== 'local';
 
   // 权限判断：
-  // - 本地模式（roomId为'local'）：总是可编辑
+  // - 本地模式（roomId为null或'local'）：总是可编辑
   // - 在线模式：登录用户且是房间创建人才能编辑
-  const canEdit = roomId === 'local' || !!(user && roomOwner && user.id === roomOwner);
+  const canEdit = !roomId || roomId === 'local' || !!(user && roomOwner && user.id === roomOwner);
   const isOwner = !!(user && roomOwner && user.id === roomOwner);
 
   // 从本地存储加载
