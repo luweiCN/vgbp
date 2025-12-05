@@ -15,6 +15,7 @@ import { useBPState } from '@/hooks/useBPState';
 import { useHeroChangeToast } from '@/hooks/useHeroChangeToast';
 import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/hooks/useAuth';
+import { useRoomSettings } from '@/hooks/useRoomSettings';
 import { useI18n } from '@/i18n/hooks/useI18n';
 import { LanguageToggle } from '@/i18n/components/LanguageSelector';
 import { ToastContainer } from '@/components/Toast';
@@ -22,9 +23,6 @@ import HeroSelectionToastContainer from '@/components/HeroSelectionToastContaine
 import { supabase } from '@/services/supabase';
 import { useDefaultIsMobile } from '@/hooks/useIsMobile';
 
-// 本地存储的key
-const CLASSIFICATION_MODE_KEY = 'vainglory-draft-classification-mode';
-const HIDE_SELECTED_KEY = 'vainglory-draft-hide-selected';
 
 // 现在使用 Vercel Blob，不再需要 OSS 配置
 
@@ -40,7 +38,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
 
   const { showSuccess, showInfo, toasts, removeToast } = useToast();
   const { user } = useAuth();
-  const { t, language } = useI18n();
+  const { t, language, isLanguageReady } = useI18n();
 
 
 
@@ -67,34 +65,26 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
   // 使用英雄变化Toast hook
   useHeroChangeToast(selectedHeroes, (message: string, addedHeroIds: string[], removedHeroIds: string[]) => {
     showInfo(message, addedHeroIds, removedHeroIds);
-  }, t);
+  }, t, isLanguageReady, language);
+
+  // 使用统一的房间设置管理
+  const {
+    layoutMode,
+    hideSelected,
+    isCompactLayout,
+    classificationMode,
+    setLayoutMode,
+    setHideSelected,
+    setIsCompactLayout,
+    setClassificationMode,
+  } = useRoomSettings();
 
   // 搜索和过滤状态
   const [searchTerm, setSearchTerm] = useState('');
-  const [classificationMode, setClassificationMode] = useState<ClassificationMode>(() => {
-    try {
-      const stored = localStorage.getItem(CLASSIFICATION_MODE_KEY);
-      return stored ? JSON.parse(stored) : ClassificationMode.OFFICIAL;
-    } catch (error) {
-      console.error('Failed to load classificationMode from localStorage:', error);
-      return ClassificationMode.OFFICIAL;
-    }
-  });
-
-  const [hideSelected, setHideSelected] = useState(() => {
-    try {
-      const stored = localStorage.getItem(HIDE_SELECTED_KEY);
-      return stored ? JSON.parse(stored) : false;
-    } catch (error) {
-      console.error('Failed to load hideSelected from localStorage:', error);
-      return false;
-    }
-  });
 
   const [showSelectedHeroes, setShowSelectedHeroes] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showClassificationInfo, setShowClassificationInfo] = useState(false);
-  const [layoutMode, setLayoutMode] = useState<"auto" | "3" | "4" | "5">("auto");
   const [currentVisibleSection, setCurrentVisibleSection] = useState<"captain" | "jungle" | "carry" | null>(null);
   const isMobile = useDefaultIsMobile();
 
@@ -118,24 +108,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingRoom, setEditingRoom] = useState<any>(null);
 
-  // 保存分类模式到本地存储
-  const saveClassificationMode = useCallback((mode: ClassificationMode) => {
-    try {
-      localStorage.setItem(CLASSIFICATION_MODE_KEY, JSON.stringify(mode));
-    } catch (error) {
-      console.error('Failed to save classification mode to localStorage:', error);
-    }
-  }, []);
-
-  // 保存隐藏选项到本地存储
-  const saveHideSelected = useCallback((hide: boolean) => {
-    try {
-      localStorage.setItem(HIDE_SELECTED_KEY, JSON.stringify(hide));
-    } catch (error) {
-      console.error('Failed to save hide selected to localStorage:', error);
-    }
-  }, []);
-
+  
   // Handlers
   const handleToggleHero = useCallback(async (id: string) => {
     await toggleHero(id);
@@ -303,16 +276,19 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
 
   // Get grid classes based on layout mode
   const getGridClasses = () => {
+    const isCompact = isCompactLayout;
+    const gapClass = isCompact ? "gap-0" : "gap-2 sm:gap-3";
+
     switch (layoutMode) {
       case "3":
-        return "max-w-2xl mx-auto grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-2 sm:gap-3";
+        return `max-w-2xl mx-auto grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 ${gapClass}`;
       case "4":
-        return "max-w-4xl mx-auto grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 gap-2 sm:gap-3";
+        return `max-w-4xl mx-auto grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 ${gapClass}`;
       case "5":
-        return "max-w-5xl mx-auto grid grid-cols-5 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-5 gap-2 sm:gap-3";
+        return `max-w-5xl mx-auto grid grid-cols-5 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-5 ${gapClass}`;
       case "auto":
       default:
-        return "grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 sm:gap-3";
+        return `grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 ${gapClass}`;
     }
   };
 
@@ -407,6 +383,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
               onToggle={isOnlineMode && !canEdit ? undefined : handleToggleHero}
               // 不再需要 ossBaseUrl，默认使用 Vercel Blob
               disabled={isOnlineMode && !canEdit}
+              isCompactLayout={isCompactLayout}
             />
           ))}
         </div>
@@ -583,7 +560,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                    </button>
                  )}
 
-                 {/* Language Toggle */}
+                   {/* Language Toggle */}
                  <LanguageToggle />
                </div>
             </div>
@@ -653,82 +630,45 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
 
           {/* Progress and Controls Section */}
           <div className="sm:border-t sm:border-zinc-800 pt-3 pb-2">
-            {/* Hide Selected Toggle */}
-            <div className="hidden sm:flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="text-sm text-zinc-400">
-                  {t('ui.components.roomPage.progress.desktop', {
-                    selected: selectedHeroes.size,
-                    remaining: HEROES.length - selectedHeroes.size
-                  })}
+        {/* Desktop Layout - Two Rows */}
+            <div className="hidden sm:block space-y-3">
+              {/* First Row: Progress + Classification + Hide Selected */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="text-sm text-zinc-400">
+                    {t('ui.components.roomPage.progress.desktop', {
+                      selected: selectedHeroes.size,
+                      remaining: HEROES.length - selectedHeroes.size
+                    })}
+                  </div>
+                  {/* Progress Bar */}
+                  <div className="w-20 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 transition-all duration-500"
+                      style={{ width: `${Math.round((selectedHeroes.size / HEROES.length) * 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-zinc-500">
+                    {Math.round((selectedHeroes.size / HEROES.length) * 100)}%
+                  </div>
                 </div>
-
-                {/* Progress Bar */}
-                <div className="w-20 h-2 bg-zinc-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 transition-all duration-500"
-                    style={{ width: `${Math.round((selectedHeroes.size / HEROES.length) * 100)}%` }}
-                  ></div>
-                </div>
-
-                <div className="text-xs text-zinc-500">
-                  {Math.round((selectedHeroes.size / HEROES.length) * 100)}%
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                  <LayoutToggle layoutMode={layoutMode} onChange={setLayoutMode} />
-                  <span className="text-xs text-zinc-500">{t('ui.components.roomPage.controls.hideSelectedShort')}</span>
-                  <button
-                    onClick={() => {
-                    if (selectedHeroes.size > 0) {
-                      const newValue = !hideSelected;
-                      setHideSelected(newValue);
-                      saveHideSelected(newValue);
-                    }
-                  }}
-                    disabled={selectedHeroes.size === 0}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      selectedHeroes.size === 0
-                        ? "bg-zinc-700 cursor-not-allowed opacity-50"
-                        : hideSelected
-                        ? "bg-orange-600"
-                        : "bg-zinc-600"
-                    }`}
-                    title={selectedHeroes.size === 0 ? t('ui.components.roomPage.controls.noHeroesSelected') : (hideSelected ? t('ui.components.roomPage.controls.showSelected') : t('ui.components.roomPage.controls.hideSelected'))}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        hideSelected ? "translate-x-6" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile Layout - Single Row */}
-            <div className="sm:hidden">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-sm text-zinc-400 whitespace-nowrap">
-                  {t('ui.components.roomPage.progress.mobile', {
-                    selected: selectedHeroes.size,
-                    remaining: HEROES.length - selectedHeroes.size,
-                    total: HEROES.length
-                  })}
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <LayoutToggle layoutMode={layoutMode} onChange={setLayoutMode} />
+                <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+                  <ClassificationToggle
+                    classificationMode={classificationMode}
+                    onChange={setClassificationMode}
+                    onSave={setClassificationMode}
+                    onShowInfo={() => setShowClassificationInfo(true)}
+                  />
                   <span className="text-xs text-zinc-500">{t('ui.components.roomPage.controls.hideSelectedShort')}</span>
                   <button
                     onClick={() => {
                       const newValue = !hideSelected;
                       setHideSelected(newValue);
-                      saveHideSelected(newValue);
+                      setHideSelected(newValue);
                     }}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       hideSelected
-                        ? "bg-orange-600"
+                        ? "bg-blue-600"
                         : "bg-zinc-600"
                     }`}
                     title={hideSelected ? t('ui.components.roomPage.controls.showSelected') : t('ui.components.roomPage.controls.hideSelected')}
@@ -741,41 +681,11 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* Border between sections */}
-            <div className="border-t border-zinc-800 pt-2 mt-2"></div>
-
-            {/* Current Section Indicator */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-500 hidden sm:inline">{t('ui.components.roomPage.controls.currentPosition')}</span>
-                {isMobile ? (
-                  // 移动端循环切换
-                  <div className="flex gap-1">
-                    <button
-                      onClick={handleMobileSectionToggle}
-                      className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        currentVisibleSection === 'captain'
-                          ? 'bg-yellow-500 text-black'
-                          : currentVisibleSection === 'jungle'
-                          ? 'bg-emerald-500 text-black'
-                          : currentVisibleSection === 'carry'
-                          ? 'bg-red-500 text-white'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
-                      }`}
-                    >
-                      {currentVisibleSection === 'captain'
-                        ? t('ui.components.roomPage.sections.captain')
-                        : currentVisibleSection === 'jungle'
-                        ? t('ui.components.roomPage.sections.jungle')
-                        : currentVisibleSection === 'carry'
-                        ? t('ui.components.roomPage.sections.carry')
-                        : t('ui.components.roomPage.sections.captain')}
-                    </button>
-                  </div>
-                ) : (
-                  // 桌面端三个独立按钮
+              {/* Second Row: Current Position + Layout Controls */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-xs text-zinc-500">{t('ui.components.roomPage.controls.currentPosition')}</span>
                   <div className="flex gap-1">
                     <button
                       onClick={() => {
@@ -832,20 +742,198 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                       {t('ui.components.roomPage.sections.carry')}
                     </button>
                   </div>
-                )}
-              </div>
-
-              {/* Classification Mode Toggle */}
-              <div className="flex items-center gap-2">
-                <ClassificationToggle
-                  classificationMode={classificationMode}
-                  onChange={setClassificationMode}
-                  onSave={saveClassificationMode}
-                  onShowInfo={() => setShowClassificationInfo(true)}
-                />
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <LayoutToggle layoutMode={layoutMode} onChange={setLayoutMode} />
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-zinc-500">
+                      {t('ui.components.roomPage.controls.compactLayout')}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const newValue = !isCompactLayout;
+                        setIsCompactLayout(newValue);
+                        setIsCompactLayout(newValue);
+                      }}
+                      className={`
+                        relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                        ${isCompactLayout ? 'bg-blue-600' : 'bg-zinc-600'}
+                      `}
+                      title={isCompactLayout ? t('ui.components.roomPage.controls.autoLayout') : t('ui.components.roomPage.controls.compactLayout')}
+                    >
+                      <span
+                        className={`
+                          inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                          ${isCompactLayout ? 'translate-x-6' : 'translate-x-1'}
+                        `}
+                      />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+
+            {/* Mobile Layout - Two Rows */}
+            <div className="sm:hidden space-y-3">
+              {/* First Row: Progress + Classification + Hide Selected */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm text-zinc-400 whitespace-nowrap">
+                  {t('ui.components.roomPage.progress.mobile', {
+                    selected: selectedHeroes.size,
+                    remaining: HEROES.length - selectedHeroes.size,
+                    total: HEROES.length
+                  })}
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <ClassificationToggle
+                    classificationMode={classificationMode}
+                    onChange={setClassificationMode}
+                    onSave={setClassificationMode}
+                    onShowInfo={() => setShowClassificationInfo(true)}
+                  />
+                  <span className="text-xs text-zinc-500">{t('ui.components.roomPage.controls.hideSelectedShort')}</span>
+                  <button
+                    onClick={() => {
+                      const newValue = !hideSelected;
+                      setHideSelected(newValue);
+                      setHideSelected(newValue);
+                    }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      hideSelected
+                        ? "bg-blue-600"
+                        : "bg-zinc-600"
+                    }`}
+                    title={hideSelected ? t('ui.components.roomPage.controls.showSelected') : t('ui.components.roomPage.controls.hideSelected')}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        hideSelected ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {/* Second Row: Current Position + Layout Controls */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-xs text-zinc-500">{t('ui.components.roomPage.controls.currentPosition')}</span>
+                  {isMobile ? (
+                    // 移动端循环切换 - 恢复原来的样式
+                    <button
+                      onClick={handleMobileSectionToggle}
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                        currentVisibleSection === 'captain'
+                          ? 'bg-yellow-500 text-black'
+                          : currentVisibleSection === 'jungle'
+                          ? 'bg-emerald-500 text-black'
+                          : currentVisibleSection === 'carry'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                      }`}
+                    >
+                      {currentVisibleSection === 'captain'
+                        ? t('ui.components.roomPage.sections.captain')
+                        : currentVisibleSection === 'jungle'
+                        ? t('ui.components.roomPage.sections.jungle')
+                        : currentVisibleSection === 'carry'
+                        ? t('ui.components.roomPage.sections.carry')
+                        : t('ui.components.roomPage.sections.captain')}
+                    </button>
+                  ) : (
+                    // 桌面端三个独立按钮
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => {
+                          const element = document.getElementById('captain-section');
+                          if (element) {
+                            const header = document.querySelector('header');
+                            const headerHeight = header ? header.offsetHeight : 100;
+                            const elementTop = element.offsetTop - headerHeight - 20;
+                            window.scrollTo({ top: elementTop, behavior: 'smooth' });
+                          }
+                        }}
+                        className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                          currentVisibleSection === 'captain'
+                            ? 'bg-yellow-500 text-black'
+                            : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                        }`}
+                      >
+                        {t('ui.components.roomPage.sections.captain')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          const element = document.getElementById('jungle-section');
+                          if (element) {
+                            const header = document.querySelector('header');
+                            const headerHeight = header ? header.offsetHeight : 100;
+                            const elementTop = element.offsetTop - headerHeight - 20;
+                            window.scrollTo({ top: elementTop, behavior: 'smooth' });
+                          }
+                        }}
+                        className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                          currentVisibleSection === 'jungle'
+                            ? 'bg-emerald-500 text-black'
+                            : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                        }`}
+                      >
+                        {t('ui.components.roomPage.sections.jungle')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          const element = document.getElementById('carry-section');
+                          if (element) {
+                            const header = document.querySelector('header');
+                            const headerHeight = header ? header.offsetHeight : 100;
+                            const elementTop = element.offsetTop - headerHeight - 20;
+                            window.scrollTo({ top: elementTop, behavior: 'smooth' });
+                          }
+                        }}
+                        className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                          currentVisibleSection === 'carry'
+                            ? 'bg-red-500 text-white'
+                            : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                        }`}
+                      >
+                        {t('ui.components.roomPage.sections.carry')}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <LayoutToggle layoutMode={layoutMode} onChange={setLayoutMode} />
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-zinc-500">
+                      {t('ui.components.roomPage.controls.compactLayout')}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const newValue = !isCompactLayout;
+                        setIsCompactLayout(newValue);
+                        setIsCompactLayout(newValue);
+                      }}
+                      className={`
+                        relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                        ${isCompactLayout ? 'bg-blue-600' : 'bg-zinc-600'}
+                      `}
+                      title={isCompactLayout ? t('ui.components.roomPage.controls.autoLayout') : t('ui.components.roomPage.controls.compactLayout')}
+                    >
+                      <span
+                        className={`
+                          inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                          ${isCompactLayout ? 'translate-x-6' : 'translate-x-1'}
+                        `}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Border between sections */}
+            <div className="border-t border-zinc-800 pt-2 mt-2"></div>
+
+            </div>
         </div>
       </header>
 

@@ -48,15 +48,6 @@ const ClassificationToggle: React.FC<ClassificationToggleProps> = ({
     return (
       <div className="flex items-center gap-2">
         <button
-          onClick={handleCompactToggle}
-          className="flex items-center gap-2 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-          </svg>
-          <span>{getModeText(classificationMode, t)}</span>
-        </button>
-        <button
           onClick={onShowInfo}
           className="p-1 text-zinc-400 hover:text-zinc-200 transition-colors"
           title={t('ui.components.classificationToggle.infoTitle')}
@@ -64,6 +55,15 @@ const ClassificationToggle: React.FC<ClassificationToggleProps> = ({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
+        </button>
+        <button
+          onClick={handleCompactToggle}
+          className="flex items-center gap-2 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+          <span>{getModeText(classificationMode, t)}</span>
         </button>
       </div>
     );

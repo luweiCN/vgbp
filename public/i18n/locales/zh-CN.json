@@ -346,6 +346,8 @@
             "hideSelected": "隐藏已选",
             "showSelected": "显示已选英雄",
             "hideSelectedShort": "隐藏已选",
+            "compactLayout": "紧凑布局",
+            "autoLayout": "自动布局",
             "currentPosition": "当前位置:",
             "noHeroesSelected": "还没有选择英雄",
             "viewSelected": "查看已选英雄"
@@ -401,9 +403,9 @@
           }
         },
         "classificationToggle": {
-          "official": "官方定位",
-          "common": "常见位置",
-          "flex": "灵活位置",
+          "official": "官方",
+          "common": "常见",
+          "flex": "灵活",
           "infoTitle": "分类说明",
           "heroClassification": "英雄分类:",
           "officialDesc": "按官方定位分类",
@@ -469,11 +471,11 @@
           "closing": "正在关闭"
         },
         "heroChangeToast": {
-          "addedWithNames": "房间新增了英雄：{{names}}{{hasMore ? '等' : ''}}",
-          "addedWithCount": "房间新增了{{count}}个英雄",
-          "removedWithNames": "房间取消了英雄：{{names}}{{hasMore ? '等' : ''}}",
-          "removedWithCount": "房间取消了{{count}}个英雄",
-          "changed": "房间英雄变化：新增{{addedNames}}{{hasMoreAdded ? '等' : ''}}，取消{{removedNames}}{{hasMoreRemoved ? '等' : ''}}"
+          "addedWithNames": "新增英雄：{{names}}{{hasMore ? '等' : ''}}",
+          "addedWithCount": "新增了{{count}}个英雄",
+          "removedWithNames": "取消英雄：{{names}}{{hasMore ? '等' : ''}}",
+          "removedWithCount": "取消了{{count}}个英雄",
+          "changed": "英雄变化：新增{{addedNames}}{{hasMoreAdded ? '等' : ''}}，取消{{removedNames}}{{hasMoreRemoved ? '等' : ''}}"
         },
         "heroAvatar": {
           "alt": "英雄头像"
