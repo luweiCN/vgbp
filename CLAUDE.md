@@ -190,3 +190,101 @@ npm run preview  # 本地预览生产构建
 
 ### 环境变量
 构建时会注入 `GEMINI_API_KEY`，确保在部署环境中正确配置。
+
+## 多语言开发规范 (重要)
+
+### 项目国际化状态
+✅ **已完整实现多语言支持**
+- 支持中文(zh-CN)和英文(en-US)
+- 自研 i18n 系统，基于 React Context
+- 语言包预加载优化
+- 完整的 UI 组件国际化
+
+### 开发新功能时的多语言要求
+
+#### 1. 文本国际化
+**所有用户可见的文本必须使用翻译函数：**
+
+```typescript
+// ❌ 错误示例
+<button>确认</button>
+<p>请选择英雄</p>
+
+// ✅ 正确示例
+import { useI18n } from '@/i18n/components/I18nProvider';
+
+const { t } = useI18n();
+<button>{t('common.confirm')}</button>
+<p>{t('hero.selectPrompt')}</p>
+```
+
+#### 2. 翻译键命名规范
+```
+格式: 模块.组件.功能.具体文本
+示例:
+- ui.common.confirm
+- ui.roomList.filter.searchPlaceholder
+- hero.modal.reset.warning
+- error.auth.invalidCredentials
+```
+
+#### 3. 添加新翻译步骤
+1. 更新 `/public/i18n/locales/zh-CN.json`
+2. 更新 `/public/i18n/locales/en-US.json`
+3. 保持键名完全一致
+4. 英文翻译要语义准确
+
+#### 4. 使用 Hook
+```typescript
+import { useI18n } from '@/i18n/components/I18nProvider';
+
+const { t, language, setLanguage } = useI18n();
+
+// 简单翻译
+t('ui.components.entryPage.modes.local')
+
+// 带参数翻译
+t('pagination.currentPageInfo', { current: 1, total: 10 })
+
+// 复数形式
+tc('items.count', itemCount, { count: itemCount })
+```
+
+#### 5. 性能注意事项
+- 使用 React.memo 优化包含翻译的组件
+- 复杂翻译使用 useMemo 缓存结果
+- 避免在渲染路径中创建大量对象
+
+### 已实现的 i18n 功能
+- 语言自动检测和切换
+- localStorage 持久化
+- 跨标签页同步
+- 语言包预加载
+- 错误处理和回退
+- React DevTools 调试支持
+
+### i18n 文件结构
+```
+/i18n/
+├── services/
+│   └── i18n.service.ts      # 核心服务，单例模式
+├── components/
+│   ├── I18nProvider.tsx     # Context Provider
+│   └── LanguageSelector.tsx # 语言切换器
+└── types.ts                 # TypeScript 类型定义
+
+/public/i18n/locales/
+├── zh-CN.json               # 中文语言包
+└── en-US.json               # 英文语言包
+```
+
+### 调试多语言
+- React DevTools 中查看 I18nProvider 状态
+- Console 中查看语言包加载日志
+- 切换语言检查所有 UI 更新
+
+### 扩展新语言（如需要）
+1. 创建新的语言包文件 `/public/i18n/locales/[lang].json`
+2. 更新 `i18n.service.ts` 支持新语言
+3. 更新类型定义
+4. 更新 LanguageSelector 组件
