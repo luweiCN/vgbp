@@ -45,10 +45,13 @@ export const useBPState = (roomId?: string): BPStateHook => {
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
   // 判断是否为在线模式
-  const isOnlineMode = !!roomId;
+  // roomId为'local'或undefined/null时是本地模式
+  const isOnlineMode = !!roomId && roomId !== 'local';
 
-  // 权限判断：登录用户且是房间创建人才能编辑
-  const canEdit = !!(user && roomOwner && user.id === roomOwner);
+  // 权限判断：
+  // - 本地模式（roomId为'local'）：总是可编辑
+  // - 在线模式：登录用户且是房间创建人才能编辑
+  const canEdit = roomId === 'local' || !!(user && roomOwner && user.id === roomOwner);
   const isOwner = !!(user && roomOwner && user.id === roomOwner);
 
   // 从本地存储加载
@@ -67,7 +70,8 @@ export const useBPState = (roomId?: string): BPStateHook => {
 
   // 从数据库加载
   const loadFromDatabase = useCallback(async () => {
-    if (!roomId) {
+    // 如果是本地模式或者没有roomId，不从数据库加载
+    if (!roomId || roomId === 'local') {
       return;
     }
 
