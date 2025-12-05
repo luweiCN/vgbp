@@ -405,7 +405,7 @@ export const RoomItem: React.FC<RoomItemProps> = memo(({
         </div>
 
         <div className="mb-3">
-          <h3 className="text-base font-semibold text-white mb-1 pr-10">
+          <h3 className="text-base font-semibold text-white mb-1 pr-10 max-w-[260px] md:max-w-[500px] truncate">
             {room.name}
           </h3>
           {room.description && (

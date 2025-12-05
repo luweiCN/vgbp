@@ -100,7 +100,9 @@
         },
         "roomSearchBox": {
           "clearButtonTitle": "清空搜索",
-          "placeholder": "搜索房间名称和描述..."
+          "placeholder": "搜索房间名称和描述...",
+          "searchButton": "搜索",
+          "searchButtonTitle": "搜索房间"
         },
         "roomSortToggle": {
           "ascOrder": "升序",
@@ -477,6 +479,117 @@
         },
         "heroAvatar": {
           "alt": "英雄头像"
+        }
+      },
+      "api": {
+        "errors": {
+          "invalidCredentials": "邮箱或密码错误",
+          "emailNotConfirmed": "请先验证您的邮箱地址",
+          "userNotFound": "用户不存在",
+          "signupDisabled": "注册功能已禁用",
+          "emailAlreadyRegistered": "该邮箱已被注册",
+          "weakPassword": "密码强度不够，请使用更复杂的密码",
+          "invalidEmail": "邮箱格式不正确",
+          "tooManyRequests": "请求过于频繁，请稍后再试",
+          "sessionExpired": "会话已过期，请重新登录",
+          "invalidRefreshToken": "刷新令牌无效，请重新登录",
+          "permissionDenied": "没有操作权限",
+          "notFound": "数据不存在",
+          "duplicateEntry": "数据已存在",
+          "serviceUnavailable": "邮件服务暂时不可用，请稍后重试",
+          "rateLimitExceeded": "请求过于频繁，请稍后再试",
+          "emailNotFound": "邮箱地址未找到",
+          "invalidPassword": "密码错误",
+          "authTimeout": "认证超时",
+          "networkError": "网络连接错误",
+          "unknownError": "未知错误",
+          "serverError": "服务器错误，请稍后重试",
+          "invalidEmailFormat": "请提供有效的邮箱地址",
+          "sendConfirmationFailed": "发送确认邮件失败",
+          "resendConfirmationFailed": "重发确认邮件失败",
+          "checkEmailFailed": "检查邮箱失败",
+          "emailNotRegistered": "该邮箱尚未注册，请先注册账户",
+          "emailAlreadyVerified": "该邮箱已经验证，可以直接登录",
+          "emailCheckError": "检查邮箱状态时发生错误，请稍后重试",
+          "sendingEmailError": "发送验证邮件时发生错误，请稍后重试",
+          "resendEmailError": "重发验证邮件时发生错误，请稍后重试"
+        },
+        "success": {
+          "emailSent": "邮件发送成功",
+          "confirmationEmailSent": "确认邮件已发送，请检查您的邮箱（包括垃圾邮件文件夹）",
+          "resendEmailSent": "验证邮件已重新发送，请检查您的邮箱",
+          "emailVerified": "邮箱验证成功",
+          "roomCreated": "房间创建成功",
+          "roomUpdated": "房间更新成功",
+          "roomDeleted": "房间删除成功",
+          "heroSelectionUpdated": "英雄选择已更新",
+          "userLoggedIn": "登录成功",
+          "userRegistered": "注册成功",
+          "passwordReset": "密码重置成功",
+          "profileUpdated": "个人资料更新成功"
+        },
+        "messages": {
+          "emailAvailable": "邮箱可以注册",
+          "emailRegistered": "邮箱已注册",
+          "emailNotVerified": "邮箱未验证",
+          "emailVerified": "邮箱已验证",
+          "roomDeleted": "房间已删除",
+          "heroAdded": "英雄已添加",
+          "heroRemoved": "英雄已移除",
+          "selectionsCleared": "选择已清空",
+          "dataSynced": "数据已同步",
+          "settingsSaved": "设置已保存",
+          "roomJoined": "已加入房间",
+          "roomLeft": "已离开房间",
+          "changesSaved": "更改已保存",
+          "operationSuccessful": "操作成功",
+          "verificationEmailSent": "验证邮件已发送",
+          "verificationLinkGenerated": "验证链接已生成，请点击下方链接完成邮箱验证",
+          "pleaseWait": "请稍候...",
+          "loading": "加载中...",
+          "processing": "处理中..."
+        },
+        "status": {
+          "notRegistered": "未注册",
+          "registeredUnverified": "已注册但未验证",
+          "registeredVerified": "已注册且已验证",
+          "active": "活跃",
+          "inactive": "非活跃",
+          "pending": "待处理",
+          "completed": "已完成",
+          "failed": "失败",
+          "cancelled": "已取消",
+          "expired": "已过期"
+        },
+        "email": {
+          "verification": {
+            "send": {
+              "title": "发送验证邮件",
+              "subject": "[Vainglory BP] 请验证您的邮箱地址",
+              "success": "确认邮件发送成功",
+              "error": "发送确认邮件失败",
+              "invalidEmail": "请提供有效的邮箱地址",
+              "serviceUnavailable": "邮件服务未配置",
+              "tryAgain": "发送验证邮件时发生错误，请稍后重试"
+            },
+            "resend": {
+              "title": "重新发送验证邮件",
+              "subject": "[Vainglory BP] 重新发送验证邮件",
+              "success": "验证邮件已发送，请检查您的邮箱（包括垃圾邮件文件夹）",
+              "rateLimit": "请稍后再试，发送频率过高",
+              "cooldownSeconds": "请等待 {{seconds}} 秒后再试",
+              "notRegistered": "该邮箱尚未注册，请先注册账户",
+              "alreadyVerified": "该邮箱已经验证，可以直接登录",
+              "manualLink": "验证链接已生成，请点击下方链接完成邮箱验证"
+            },
+            "check": {
+              "success": "邮箱状态查询成功",
+              "validEmail": "邮箱可以注册",
+              "verified": "邮箱已注册且已验证，可以直接登录",
+              "unverified": "邮箱已注册但未验证，请检查邮件或重新发送验证邮件",
+              "error": "检查邮箱状态时发生错误，请稍后重试"
+            }
+          }
         }
       }
     }

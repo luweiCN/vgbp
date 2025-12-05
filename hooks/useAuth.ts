@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { checkEmailStatus, resendConfirmationEmail } from '../services/userCheckService';
+import { Language } from '../i18n/types';
 
 export interface AuthUser {
   id: string;
@@ -301,7 +302,10 @@ export const useAuth = () => {
       password
     });
 
-    if (error) throw error;
+    if (error) {
+      // 错误已经被代理翻译，直接抛出
+      throw new Error(error.message);
+    }
     return data;
   };
 
@@ -313,15 +317,29 @@ export const useAuth = () => {
     // 获取当前网站的 URL，用于邮件验证重定向
     const redirectTo = `${window.location.origin}`;
 
+    // 获取当前语言设置
+    const currentLanguage = (() => {
+      try {
+        return localStorage.getItem('i18n-language') as Language || 'zh-CN';
+      } catch {
+        return 'zh-CN';
+      }
+    })();
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectTo
+        data: {
+          language: currentLanguage
+        },
+        redirectTo: redirectTo
       }
     });
 
-    if (error) throw error;
+    if (error) {
+      throw new Error(error.message);
+    }
 
     // 如果提供了用户名，更新profile
     if (username && data.user) {
@@ -330,7 +348,9 @@ export const useAuth = () => {
         .update({ username })
         .eq('id', data.user.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        throw new Error(profileError.message);
+      }
     }
 
     return data;
