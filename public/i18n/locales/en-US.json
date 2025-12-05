@@ -332,9 +332,9 @@
             "noHeroesFound": "No heroes found matching \"{{searchTerm}}\""
           },
           "progress": {
-            "desktop": "Selected {{selected}} heroes, {{remaining}} remaining",
-            "mobile": "Selected {{selected}}/{{total}}",
-            "selectedLabel": "Selected",
+            "desktop": "Picked {{selected}} heroes, {{remaining}} remaining",
+            "mobile": "Picked {{selected}}/{{total}}",
+            "selectedLabel": "Picked",
             "remainingLabel": "remaining",
             "unit": "heroes",
             "unitShort": "",
@@ -343,9 +343,11 @@
           "controls": {
             "resetBP": "Reset BP",
             "editRoom": "Edit Room",
-            "hideSelected": "Hide Selected",
-            "showSelected": "View Selected Heroes",
-            "hideSelectedShort": "Hide Selected",
+            "hideSelected": "Hide Picked",
+            "showSelected": "View Picked Heroes",
+            "hideSelectedShort": "Hide Picked",
+            "compactLayout": "Compact",
+            "autoLayout": "Auto",
             "currentPosition": "Current:",
             "noHeroesSelected": "No heroes selected yet",
             "viewSelected": "View selected heroes"
@@ -469,11 +471,11 @@
           "closing": "Closing"
         },
         "heroChangeToast": {
-          "addedWithNames": "Added heroes: {{names}}{{hasMore ? ' & more' : ''}}",
+          "addedWithNames": "Added: {{names}}{{hasMore ? ' & more' : ''}}",
           "addedWithCount": "Added {{count}} heroes",
-          "removedWithNames": "Removed heroes: {{names}}{{hasMore ? ' & more' : ''}}",
+          "removedWithNames": "Removed: {{names}}{{hasMore ? ' & more' : ''}}",
           "removedWithCount": "Removed {{count}} heroes",
-          "changed": "Heroes changed: Added {{addedNames}}{{hasMoreAdded ? ' & more' : ''}}, Removed {{removedNames}}{{hasMoreRemoved ? ' & more' : ''}}"
+          "changed": "Changed: Added {{addedNames}}{{hasMoreAdded ? ' & more' : ''}}, Removed {{removedNames}}{{hasMoreRemoved ? ' & more' : ''}}"
         },
         "heroAvatar": {
           "alt": "Hero Avatar"
