@@ -93,8 +93,11 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                              </button>
                            )}
                          </div>
-                         <p className="text-xs text-zinc-400 mt-1 font-medium">{hero.cnName}</p>
-                         <p className="text-xs text-zinc-500">{hero.name}</p>
+                         {/* 中文名 - 只在中文环境显示 */}
+                         {language === 'zh-CN' && (
+                           <p className="text-xs text-zinc-400 mt-1 font-medium truncate">{hero.cnName}</p>
+                         )}
+                         <p className="text-xs text-zinc-500 truncate">{hero.name}</p>
                        </div>
                      ))}
                    </div>
@@ -141,8 +144,11 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                              </button>
                            )}
                          </div>
-                         <p className="text-xs text-zinc-400 mt-1 font-medium">{hero.cnName}</p>
-                         <p className="text-xs text-zinc-500">{hero.name}</p>
+                         {/* 中文名 - 只在中文环境显示 */}
+                         {language === 'zh-CN' && (
+                           <p className="text-xs text-zinc-400 mt-1 font-medium truncate">{hero.cnName}</p>
+                         )}
+                         <p className="text-xs text-zinc-500 truncate">{hero.name}</p>
                        </div>
                      ))}
                    </div>
@@ -189,8 +195,11 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                              </button>
                            )}
                         </div>
-                        <p className="text-xs text-zinc-400 mt-1 font-medium">{hero.cnName}</p>
-                        <p className="text-xs text-zinc-500">{hero.name}</p>
+                        {/* 中文名 - 只在中文环境显示 */}
+                        {language === 'zh-CN' && (
+                          <p className="text-xs text-zinc-400 mt-1 font-medium truncate">{hero.cnName}</p>
+                        )}
+                        <p className="text-xs text-zinc-500 truncate">{hero.name}</p>
                       </div>
                     ))}
                   </div>

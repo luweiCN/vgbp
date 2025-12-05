@@ -252,12 +252,12 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
 
   // Filter Logic
   const filteredHeroes = useMemo(() => {
-    let heroes = searchHeroes(HEROES, searchTerm);
+    let heroes = searchHeroes(HEROES, searchTerm, language);
     if (hideSelected) {
       heroes = heroes.filter((hero) => !selectedHeroes.has(hero.id));
     }
     return heroes;
-  }, [searchTerm, selectedHeroes, hideSelected]);
+  }, [searchTerm, selectedHeroes, hideSelected, language]);
 
   const groupedHeroes: Record<HeroRole, Hero[]> = useMemo(() => {
     const roleFilter = (hero: Hero, role: HeroRole) => {
