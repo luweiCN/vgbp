@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { Globe } from 'lucide-react';
 import { useSafeI18n } from './useSafeI18n';
 import { LanguageSelectorProps } from '../types';
+import { useIsSmallScreen } from '../../hooks/useIsMobile';
 
 /**
  * LanguageSelector组件 - 提供语言切换功能
@@ -214,6 +216,10 @@ export const LanguageSelector = ({
  */
 export const LanguageToggle = ({ className = '' }) => {
   const { language, setLanguage, isReady, translate: t } = useSafeI18n();
+  const [buttonPosition, setButtonPosition] = React.useState<{ top: number; left: number } | null>(null);
+  const [isHovering, setIsHovering] = React.useState(false);
+  const isMobile = useIsSmallScreen();
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
 
   const languages = [
     { code: 'zh-CN', name: '中文', flag: '中' },
@@ -225,6 +231,37 @@ export const LanguageToggle = ({ className = '' }) => {
   const currentLang = languages[currentIndex];
   const nextLang = languages[nextIndex];
 
+  
+  // 更新按钮位置
+  useEffect(() => {
+    if (buttonRef.current && isReady) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setButtonPosition({
+        top: rect.bottom + 8,
+        left: rect.left + rect.width / 2
+      });
+    }
+
+    const handleUpdatePosition = () => {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setButtonPosition({
+          top: rect.bottom + 8,
+          left: rect.left + rect.width / 2
+        });
+      }
+    };
+
+    // 监听滚动和窗口大小变化
+    window.addEventListener('scroll', handleUpdatePosition);
+    window.addEventListener('resize', handleUpdatePosition);
+
+    return () => {
+      window.removeEventListener('scroll', handleUpdatePosition);
+      window.removeEventListener('resize', handleUpdatePosition);
+    };
+  }, [isReady]);
+
   if (!isReady) {
     return (
       <div className={`w-10 h-10 bg-zinc-800 rounded-lg flex items-center justify-center ${className}`}>
@@ -233,40 +270,21 @@ export const LanguageToggle = ({ className = '' }) => {
     );
   }
 
-  return (
-    <button
-      className={`
-        relative flex items-center justify-center gap-1 w-auto h-[38px] px-3 rounded-xl bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 cursor-pointer hover:bg-slate-800/80 transition-all duration-200
-        group
-        ${className}
-      `}
-      onClick={async () => {
-        try {
-          await setLanguage(nextLang.code as any);
-        } catch (error) {
-          console.error('Failed to switch language:', error);
-        }
-      }}
-      title={`切换到 ${nextLang.name}`}
-      aria-label={`当前语言: ${currentLang.name}, 点击切换到 ${nextLang.name}`}
-    >
-      {/* 图标和文字容器 */}
-      <div className="flex items-center gap-1">
-        {/* Lucide React 地球图标 */}
-        <Globe
-          className="w-4 h-4 text-zinc-300 group-hover:text-white transition-colors duration-200"
-          strokeWidth={1.5}
-        />
+  // Tooltip 组件
+  const Tooltip = () => {
+    if (!buttonPosition || isMobile) return null;
 
-        {/* 语言文字 */}
-        <span className="text-xs font-medium text-zinc-300 group-hover:text-white transition-colors duration-200">
-          {currentLang.code === 'zh-CN' ? '中' : 'EN'}
-        </span>
-      </div>
-
-      
-      {/* 切换提示 */}
-      <div className="absolute top-14 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-zinc-900 text-xs text-zinc-200 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap shadow-lg border border-zinc-700/50 z-50">
+    return ReactDOM.createPortal(
+      <div
+        className="fixed px-3 py-1.5 bg-zinc-900 text-xs text-zinc-200 rounded-lg transition-all duration-300 pointer-events-none whitespace-nowrap shadow-xl border border-zinc-700/50"
+        style={{
+          zIndex: 999999,
+          top: `${buttonPosition.top}px`,
+          left: `${buttonPosition.left}px`,
+          transform: `translateX(-50%) ${isHovering ? 'translateY(0)' : 'translateY(4px)'}`,
+          opacity: isHovering ? 1 : 0
+        }}
+      >
         <div className="flex flex-col items-center gap-1">
           <span className="text-zinc-400 text-xs">{t('ui.common.switchLanguage')}</span>
           <span className="flex items-center gap-2">
@@ -277,8 +295,49 @@ export const LanguageToggle = ({ className = '' }) => {
           </span>
         </div>
         <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-zinc-900 rotate-45 border-t border-l border-zinc-700/50"></div>
-      </div>
-    </button>
+      </div>,
+      document.body
+    );
+  };
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        className={`
+          relative flex items-center justify-center gap-1 w-auto h-[38px] px-3 rounded-xl bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 cursor-pointer hover:bg-slate-800/80 transition-all duration-200
+          ${className}
+        `}
+        onClick={async () => {
+          try {
+            await setLanguage(nextLang.code as any);
+          } catch (error) {
+            console.error('Failed to switch language:', error);
+          }
+        }}
+        onMouseEnter={() => !isMobile && setIsHovering(true)}
+        onMouseLeave={() => !isMobile && setIsHovering(false)}
+        title={isMobile ? undefined : `切换到 ${nextLang.name}`}
+        aria-label={`当前语言: ${currentLang.name}, 点击切换到 ${nextLang.name}`}
+      >
+        {/* 图标和文字容器 */}
+        <div className="flex items-center gap-1">
+          {/* Lucide React 地球图标 */}
+          <Globe
+            className="w-4 h-4 text-zinc-300 group-hover:text-white transition-colors duration-200"
+            strokeWidth={1.5}
+          />
+
+          {/* 语言文字 */}
+          <span className="text-xs font-medium text-zinc-300 group-hover:text-white transition-colors duration-200">
+            {currentLang.code === 'zh-CN' ? '中' : 'EN'}
+          </span>
+        </div>
+      </button>
+
+      {/* 使用 Portal 渲染 Tooltip */}
+      <Tooltip />
+    </>
   );
 };
 

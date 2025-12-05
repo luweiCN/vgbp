@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getHeroAvatarUrl, getHeroById } from '../data/heroes';
+import { useI18n } from '../i18n/hooks/useI18n';
 
 interface HeroAvatarProps {
   heroId: string;
@@ -11,6 +12,7 @@ interface HeroAvatarProps {
 const HeroAvatar: React.FC<HeroAvatarProps> = ({ heroId, borderColor, opacity = 1, style }) => {
   const [imageError, setImageError] = useState(false);
   const hero = getHeroById(heroId);
+  const { t } = useI18n();
 
   return (
     <div
@@ -24,7 +26,7 @@ const HeroAvatar: React.FC<HeroAvatarProps> = ({ heroId, borderColor, opacity = 
       ) : (
         <img
           src={getHeroAvatarUrl(hero || { id: heroId })}
-          alt="英雄头像"
+          alt={t('ui.components.heroAvatar.alt')}
           className="w-full h-full object-cover"
           onError={() => setImageError(true)}
         />
@@ -48,6 +50,7 @@ const HeroSelectionToast: React.FC<HeroSelectionToastProps> = ({
   duration = 4000,
   onClose
 }) => {
+  const { t } = useI18n();
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
@@ -123,7 +126,7 @@ const HeroSelectionToast: React.FC<HeroSelectionToastProps> = ({
                 {/* 新增英雄 */}
                 {addedHeroIds && addedHeroIds.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <div className="text-xs text-green-400 font-medium">新增</div>
+                    <div className="text-xs text-green-400 font-medium">{t('ui.components.heroSelectionToast.added')}</div>
                     <div className="flex items-center">
                       {addedHeroIds.slice(0, 4).map((heroId: string, index: number) => (
                         <HeroAvatar
@@ -157,7 +160,7 @@ const HeroSelectionToast: React.FC<HeroSelectionToastProps> = ({
                 {/* 移除英雄 */}
                 {removedHeroIds && removedHeroIds.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <div className="text-xs text-red-400 font-medium">移除</div>
+                    <div className="text-xs text-red-400 font-medium">{t('ui.components.heroSelectionToast.removed')}</div>
                     <div className="flex items-center">
                       {removedHeroIds.slice(0, 4).map((heroId: string, index: number) => (
                         <HeroAvatar
@@ -187,7 +190,8 @@ const HeroSelectionToast: React.FC<HeroSelectionToastProps> = ({
           <button
             onClick={handleClose}
             className="flex-shrink-0 w-8 h-8 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white transition-all duration-150 flex items-center justify-center"
-            aria-label="关闭"
+            aria-label={t('ui.components.heroSelectionToast.close')}
+            title={isLeaving ? t('ui.components.heroSelectionToast.closing') : t('ui.components.heroSelectionToast.close')}
             type="button"
             disabled={isLeaving} // 防止动画期间重复点击
           >

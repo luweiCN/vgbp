@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HEROES } from '../constants';
-import { searchHeroes, getHeroesByRole, ClassificationMode } from '../data/heroes';
+import { searchHeroes, ClassificationMode } from '../data/heroes';
 import HeroCard from '../components/HeroCard';
 import OnlineModeIndicator from '../components/OnlineModeIndicator';
 import SelectedHeroesModal from '../components/SelectedHeroesModal';
@@ -15,12 +15,14 @@ import { useBPState } from '../hooks/useBPState';
 import { useHeroChangeToast } from '../hooks/useHeroChangeToast';
 import { useToast } from '../hooks/useToast';
 import { useAuth } from '../hooks/useAuth';
+import { useI18n } from '../i18n/hooks/useI18n';
+import { LanguageToggle } from '../i18n/components/LanguageSelector';
 import { ToastContainer } from '../components/Toast';
 import HeroSelectionToastContainer from '../components/HeroSelectionToastContainer';
 import { supabase } from '../services/supabase';
+import { useDefaultIsMobile } from '../hooks/useIsMobile';
 
 // 本地存储的key
-const STORAGE_KEY = 'vainglory-draft-selected-heroes';
 const CLASSIFICATION_MODE_KEY = 'vainglory-draft-classification-mode';
 const HIDE_SELECTED_KEY = 'vainglory-draft-hide-selected';
 
@@ -28,19 +30,17 @@ const HIDE_SELECTED_KEY = 'vainglory-draft-hide-selected';
 
 interface RoomPageProps {
   roomId: string;
-  onBack: () => void;
 }
 
-const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
+const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
   const navigate = useNavigate();
 
   // 判断是本地模式还是在线模式
   const isLocalMode = roomId === 'local';
-  const pageTitle = isLocalMode ? '本地模式' : `房间 ${roomId}`;
-  const pageSubtitle = isLocalMode ? '本地BP功能' : '在线BP功能';
 
-  const { showError, showSuccess, showInfo, toasts, removeToast } = useToast();
+  const { showSuccess, showInfo, toasts, removeToast } = useToast();
   const { user } = useAuth();
+  const { t, language } = useI18n();
 
 
 
@@ -61,13 +61,13 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
   } = useBPState(isLocalMode ? null : roomId);
 
   // 分离英雄选择相关的Toast和其他Toast
-  const heroSelectionToasts = toasts.filter(toast => toast.type === 'info' && (toast.addedHeroIds || toast.removedHeroIds));
-  const otherToasts = toasts.filter(toast => toast.type !== 'info' || (!toast.addedHeroIds && !toast.removedHeroIds));
+  const heroSelectionToasts = toasts.filter((toast: any) => toast.type === 'info' && (toast.addedHeroIds || toast.removedHeroIds));
+  const otherToasts = toasts.filter((toast: any) => toast.type !== 'info' || (!toast.addedHeroIds && !toast.removedHeroIds));
 
   // 使用英雄变化Toast hook
   useHeroChangeToast(selectedHeroes, (message: string, addedHeroIds: string[], removedHeroIds: string[]) => {
     showInfo(message, addedHeroIds, removedHeroIds);
-  });
+  }, t);
 
   // 搜索和过滤状态
   const [searchTerm, setSearchTerm] = useState('');
@@ -96,6 +96,24 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
   const [showClassificationInfo, setShowClassificationInfo] = useState(false);
   const [layoutMode, setLayoutMode] = useState<"auto" | "3" | "4" | "5">("auto");
   const [currentVisibleSection, setCurrentVisibleSection] = useState<"captain" | "jungle" | "carry" | null>(null);
+  const isMobile = useDefaultIsMobile();
+
+  // 处理移动端循环切换
+  const handleMobileSectionToggle = () => {
+    const sections: Array<"captain" | "jungle" | "carry"> = ["captain", "jungle", "carry"];
+    const currentIndex = currentVisibleSection ? sections.indexOf(currentVisibleSection) : 0;
+    const nextIndex = (currentIndex + 1) % sections.length;
+    const nextSection = sections[nextIndex];
+
+    // 滚动到对应分区
+    const element = document.getElementById(`${nextSection}-section`);
+    if (element) {
+      const header = document.querySelector('header');
+      const headerHeight = header ? header.offsetHeight : 100;
+      const elementTop = element.offsetTop - headerHeight - 20;
+      window.scrollTo({ top: elementTop, behavior: 'smooth' });
+    }
+  };
   const [roomName, setRoomName] = useState<string | null>(null);
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingRoom, setEditingRoom] = useState<any>(null);
@@ -135,15 +153,6 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
       setShowResetConfirm(true);
     }
   }, [selectedHeroes.size]);
-
-  // 返回按钮的文本和目标
-  const getBackButtonText = () => {
-    if (isLocalMode) {
-      return '← 返回首页';
-    } else {
-      return '← 返回房间列表';
-    }
-  };
 
   const handleBack = () => {
     if (isLocalMode) {
@@ -264,9 +273,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
     };
 
     return {
-      [HeroRole.CAPTAIN]: filteredHeroes.filter((h) => roleFilter(h, HeroRole.CAPTAIN)),
-      [HeroRole.JUNGLE]: filteredHeroes.filter((h) => roleFilter(h, HeroRole.JUNGLE)),
-      [HeroRole.CARRY]: filteredHeroes.filter((h) => roleFilter(h, HeroRole.CARRY)),
+      [HeroRole.CAPTAIN]: filteredHeroes.filter((h: Hero) => roleFilter(h, HeroRole.CAPTAIN)),
+      [HeroRole.JUNGLE]: filteredHeroes.filter((h: Hero) => roleFilter(h, HeroRole.JUNGLE)),
+      [HeroRole.CARRY]: filteredHeroes.filter((h: Hero) => roleFilter(h, HeroRole.CARRY)),
     };
   }, [filteredHeroes, classificationMode]);
 
@@ -286,9 +295,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
     };
 
     return {
-      [HeroRole.CAPTAIN]: selectedHeroesArray.filter((h) => roleFilter(h, HeroRole.CAPTAIN)),
-      [HeroRole.JUNGLE]: selectedHeroesArray.filter((h) => roleFilter(h, HeroRole.JUNGLE)),
-      [HeroRole.CARRY]: selectedHeroesArray.filter((h) => roleFilter(h, HeroRole.CARRY)),
+      [HeroRole.CAPTAIN]: selectedHeroesArray.filter((h: Hero) => roleFilter(h, HeroRole.CAPTAIN)),
+      [HeroRole.JUNGLE]: selectedHeroesArray.filter((h: Hero) => roleFilter(h, HeroRole.JUNGLE)),
+      [HeroRole.CARRY]: selectedHeroesArray.filter((h: Hero) => roleFilter(h, HeroRole.CARRY)),
     };
   }, [selectedHeroes, classificationMode]);
 
@@ -335,7 +344,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
           <h2 className="text-2xl font-black uppercase tracking-tighter">
             {title}
           </h2>
-          <span className="text-lg font-bold opacity-60">{cnTitle}</span>
+          {language === 'zh-CN' && (
+            <span className="text-lg font-bold opacity-60">{cnTitle}</span>
+          )}
           <span className="ml-auto text-xs font-mono bg-zinc-900 px-2 py-1 rounded-full text-zinc-500">
             <span className="hidden sm:inline">
               已选 {selectedHeroes.size > 0 ? (() => {
@@ -427,7 +438,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
           <div className="flex flex-col">
             <div className="flex items-center justify-between gap-4">
               {/* Left Section: Back Button, Logo, Title */}
-              <div className="flex items-center gap-3 overflow-hidden" style={{width: canEdit ? '60vw' : '80vw', maxWidth: canEdit ? '60vw' : '80vw'}}>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 {(isOnlineMode || isLocalMode) && (
                   <button
                     onClick={handleBack}
@@ -462,7 +473,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                             <button
                               onClick={handleEditRoomClick}
                               className="p-0.5 text-zinc-400 hover:text-blue-400 hover:bg-blue-600/20 rounded transition-colors flex-shrink-0"
-                              title="编辑房间"
+                              title={t('ui.components.roomPage.controls.editRoom')}
                             >
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -484,7 +495,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                             <button
                               onClick={handleEditRoomClick}
                               className="p-0.5 text-zinc-400 hover:text-blue-400 hover:bg-blue-600/20 rounded transition-colors flex-shrink-0"
-                              title="编辑房间"
+                              title={t('ui.components.roomPage.controls.editRoom')}
                             >
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -506,8 +517,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
               </div>
 
               {/* Center Section: Search Box - Hidden on mobile, shown on desktop */}
-              <div className="hidden md:flex flex-grow justify-center max-w-md mx-4">
-                <div className="flex items-center w-full bg-zinc-800/50 border border-zinc-800 rounded-lg px-3 py-1.5 gap-2">
+              <div className="hidden md:flex justify-center w-56 flex-shrink-0">
+                <div className="flex items-center w-full h-[38px] bg-zinc-800/50 border border-zinc-800 rounded-lg px-3 gap-2">
                   {/* Search Icon */}
                   <svg
                     className="h-4 w-4 text-zinc-400 flex-shrink-0"
@@ -525,9 +536,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                   {/* Input Field */}
                   <input
                     type="text"
-                    placeholder="Search / 搜索..."
+                    placeholder={t('ui.components.roomPage.search.placeholder')}
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e: any) => setSearchTerm(e.target.value)}
                     className="flex-1 bg-transparent text-sm text-white placeholder-zinc-400 outline-none border-none focus:outline-none focus:ring-0"
                   />
                   {/* Clear Button */}
@@ -535,7 +546,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                     <button
                       onClick={() => setSearchTerm("")}
                       className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
-                      title="Clear search"
+                      title={t('ui.components.roomPage.search.clearTitle')}
                     >
                       <svg
                         className="h-4 w-4"
@@ -555,23 +566,26 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                 </div>
               </div>
 
-               {/* Right Section: Reset Button - Only show for room owners */}
-               {canEdit && (
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  {/* Reset BP Button */}
-                  <button
-                    onClick={handleResetClick}
-                    disabled={selectedHeroes.size === 0}
-                    className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg border transition-colors flex items-center gap-2 whitespace-nowrap ${
-                      selectedHeroes.size === 0
-                        ? "bg-zinc-900 text-zinc-600 border-zinc-800 cursor-not-allowed"
-                        : "bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 shadow-lg shadow-red-500/20"
-                    }`}
-                  >
-                    重置BP
-                  </button>
-                </div>
-              )}
+               {/* Right Section: Reset Button and Language Toggle */}
+               <div className="flex items-center gap-3 flex-shrink-0">
+                 {/* Reset BP Button - Only show for room owners */}
+                 {canEdit && (
+                   <button
+                     onClick={handleResetClick}
+                     disabled={selectedHeroes.size === 0}
+                     className={`relative flex items-center justify-center gap-1 w-auto h-[38px] px-4 rounded-xl transition-all duration-200 font-medium text-sm whitespace-nowrap ${
+                       selectedHeroes.size === 0
+                         ? "bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 text-zinc-600 cursor-not-allowed"
+                         : "bg-red-600/90 backdrop-blur-sm border border-red-600/50 hover:bg-red-700 text-white shadow-lg shadow-red-500/20"
+                     }`}
+                   >
+                     {t('ui.components.roomPage.controls.resetBP')}
+                   </button>
+                 )}
+
+                 {/* Language Toggle */}
+                 <LanguageToggle />
+               </div>
             </div>
 
             {/* Online Mode Indicator - Below Logo, Above Search Box */}
@@ -606,9 +620,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                 {/* Input Field */}
                 <input
                   type="text"
-                  placeholder="Search / 搜索..."
+                  placeholder={t('ui.components.roomPage.search.placeholder')}
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e: any) => setSearchTerm(e.target.value)}
                   className="flex-1 bg-transparent text-sm text-white placeholder-zinc-400 outline-none border-none focus:outline-none focus:ring-0"
                 />
                 {/* Clear Button */}
@@ -643,7 +657,10 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
             <div className="hidden sm:flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="text-sm text-zinc-400">
-                  已选 <span className="font-semibold text-white">{selectedHeroes.size}</span> 个英雄，剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroes.size}</span> 个英雄
+                  {t('ui.components.roomPage.progress.desktop', {
+                    selected: selectedHeroes.size,
+                    remaining: HEROES.length - selectedHeroes.size
+                  })}
                 </div>
 
                 {/* Progress Bar */}
@@ -661,7 +678,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
               <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                   <LayoutToggle layoutMode={layoutMode} onChange={setLayoutMode} />
-                  <span className="text-xs text-zinc-500">隐藏已选</span>
+                  <span className="text-xs text-zinc-500">{t('ui.components.roomPage.controls.hideSelectedShort')}</span>
                   <button
                     onClick={() => {
                     if (selectedHeroes.size > 0) {
@@ -678,7 +695,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                         ? "bg-orange-600"
                         : "bg-zinc-600"
                     }`}
-                    title={selectedHeroes.size === 0 ? "请先选择英雄" : (hideSelected ? "显示已选英雄" : "隐藏已选英雄")}
+                    title={selectedHeroes.size === 0 ? t('ui.components.roomPage.controls.noHeroesSelected') : (hideSelected ? t('ui.components.roomPage.controls.showSelected') : t('ui.components.roomPage.controls.hideSelected'))}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -694,11 +711,15 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
             <div className="sm:hidden">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-sm text-zinc-400 whitespace-nowrap">
-                  已选 <span className="font-semibold text-white">{selectedHeroes.size}</span> 个，剩余 <span className="font-semibold text-white">{HEROES.length - selectedHeroes.size}</span> 个
+                  {t('ui.components.roomPage.progress.mobile', {
+                    selected: selectedHeroes.size,
+                    remaining: HEROES.length - selectedHeroes.size,
+                    total: HEROES.length
+                  })}
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <LayoutToggle layoutMode={layoutMode} onChange={setLayoutMode} />
-                  <span className="text-xs text-zinc-500">隐藏已选</span>
+                  <span className="text-xs text-zinc-500">{t('ui.components.roomPage.controls.hideSelectedShort')}</span>
                   <button
                     onClick={() => {
                       const newValue = !hideSelected;
@@ -710,7 +731,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
                         ? "bg-orange-600"
                         : "bg-zinc-600"
                     }`}
-                    title={hideSelected ? "显示已选英雄" : "隐藏已选英雄"}
+                    title={hideSelected ? t('ui.components.roomPage.controls.showSelected') : t('ui.components.roomPage.controls.hideSelected')}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -728,63 +749,90 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
             {/* Current Section Indicator */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-500 hidden sm:inline">当前位置:</span>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => {
-                      const element = document.getElementById('captain-section');
-                      if (element) {
-                        const header = document.querySelector('header');
-                        const headerHeight = header ? header.offsetHeight : 100;
-                        const elementTop = element.offsetTop - headerHeight - 20;
-                        window.scrollTo({ top: elementTop, behavior: 'smooth' });
-                      }
-                    }}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                      currentVisibleSection === 'captain'
-                        ? 'bg-yellow-500 text-black'
-                        : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
-                    }`}
-                  >
-                    辅助
-                  </button>
-                  <button
-                    onClick={() => {
-                      const element = document.getElementById('jungle-section');
-                      if (element) {
-                        const header = document.querySelector('header');
-                        const headerHeight = header ? header.offsetHeight : 100;
-                        const elementTop = element.offsetTop - headerHeight - 20;
-                        window.scrollTo({ top: elementTop, behavior: 'smooth' });
-                      }
-                    }}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                      currentVisibleSection === 'jungle'
-                        ? 'bg-emerald-500 text-black'
-                        : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
-                    }`}
-                  >
-                    打野
-                  </button>
-                  <button
-                    onClick={() => {
-                      const element = document.getElementById('carry-section');
-                      if (element) {
-                        const header = document.querySelector('header');
-                        const headerHeight = header ? header.offsetHeight : 100;
-                        const elementTop = element.offsetTop - headerHeight - 20;
-                        window.scrollTo({ top: elementTop, behavior: 'smooth' });
-                      }
-                    }}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                      currentVisibleSection === 'carry'
-                        ? 'bg-red-500 text-white'
-                        : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
-                    }`}
-                  >
-                    输出
-                  </button>
-                </div>
+                <span className="text-xs text-zinc-500 hidden sm:inline">{t('ui.components.roomPage.controls.currentPosition')}</span>
+                {isMobile ? (
+                  // 移动端循环切换
+                  <div className="flex gap-1">
+                    <button
+                      onClick={handleMobileSectionToggle}
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                        currentVisibleSection === 'captain'
+                          ? 'bg-yellow-500 text-black'
+                          : currentVisibleSection === 'jungle'
+                          ? 'bg-emerald-500 text-black'
+                          : currentVisibleSection === 'carry'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                      }`}
+                    >
+                      {currentVisibleSection === 'captain'
+                        ? t('ui.components.roomPage.sections.captain')
+                        : currentVisibleSection === 'jungle'
+                        ? t('ui.components.roomPage.sections.jungle')
+                        : currentVisibleSection === 'carry'
+                        ? t('ui.components.roomPage.sections.carry')
+                        : t('ui.components.roomPage.sections.captain')}
+                    </button>
+                  </div>
+                ) : (
+                  // 桌面端三个独立按钮
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => {
+                        const element = document.getElementById('captain-section');
+                        if (element) {
+                          const header = document.querySelector('header');
+                          const headerHeight = header ? header.offsetHeight : 100;
+                          const elementTop = element.offsetTop - headerHeight - 20;
+                          window.scrollTo({ top: elementTop, behavior: 'smooth' });
+                        }
+                      }}
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                        currentVisibleSection === 'captain'
+                          ? 'bg-yellow-500 text-black'
+                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                      }`}
+                    >
+                      {t('ui.components.roomPage.sections.captain')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const element = document.getElementById('jungle-section');
+                        if (element) {
+                          const header = document.querySelector('header');
+                          const headerHeight = header ? header.offsetHeight : 100;
+                          const elementTop = element.offsetTop - headerHeight - 20;
+                          window.scrollTo({ top: elementTop, behavior: 'smooth' });
+                        }
+                      }}
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                        currentVisibleSection === 'jungle'
+                          ? 'bg-emerald-500 text-black'
+                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                      }`}
+                    >
+                      {t('ui.components.roomPage.sections.jungle')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const element = document.getElementById('carry-section');
+                        if (element) {
+                          const header = document.querySelector('header');
+                          const headerHeight = header ? header.offsetHeight : 100;
+                          const elementTop = element.offsetTop - headerHeight - 20;
+                          window.scrollTo({ top: elementTop, behavior: 'smooth' });
+                        }
+                      }}
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                        currentVisibleSection === 'carry'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                      }`}
+                    >
+                      {t('ui.components.roomPage.sections.carry')}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Classification Mode Toggle */}
@@ -806,7 +854,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
         <div className="fixed top-20 right-4 z-50 bg-blue-900/90 border border-blue-700 text-blue-200 px-4 py-2 rounded-lg shadow-lg">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm">同步中...</span>
+            <span className="text-sm">{t('ui.components.roomPage.status.syncing')}</span>
           </div>
         </div>
       )}
@@ -817,7 +865,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-sm">同步失败: {bpError}</span>
+            <span className="text-sm">{t('ui.components.roomPage.status.syncFailed', { error: bpError })}</span>
           </div>
         </div>
       )}
@@ -839,31 +887,31 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
       )}
 
       {/* Main Grid */}
-      <main className={`max-w-[1400px] mx-auto px-4 pb-8 ${getMainContainerClasses()}`}>
+      <main className={`max-w-[1400px] mx-auto px-4 py-4 pb-8 ${getMainContainerClasses()}`}>
         {!hasAnyHeroes ? (
           <div className="text-center py-20 opacity-50">
             <p className="text-xl font-medium">
-              No heroes found matching "{searchTerm}"
+              {t('ui.components.roomPage.search.noHeroesFound', { searchTerm })}
             </p>
           </div>
         ) : (
           <>
             {renderSection(
               HeroRole.CAPTAIN,
-              "Captain",
-              "辅助",
+              "captains",
+              t('ui.components.roomPage.sections.captain'),
               "text-yellow-500",
             )}
             {renderSection(
               HeroRole.JUNGLE,
-              "Jungle",
-              "打野",
+              "junglers",
+              t('ui.components.roomPage.sections.jungle'),
               "text-emerald-500",
             )}
             {renderSection(
               HeroRole.CARRY,
-              "Carry",
-              "对线",
+              "laners",
+              t('ui.components.roomPage.sections.carry'),
               "text-red-500",
             )}
           </>
@@ -879,7 +927,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
             : "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 shadow-lg shadow-blue-500/20"
         }`}
         disabled={selectedHeroes.size === 0}
-        title={selectedHeroes.size === 0 ? "还没有选择英雄" : "查看已选英雄"}
+        title={selectedHeroes.size === 0 ? t('ui.components.roomPage.controls.noHeroesSelected') : t('ui.components.roomPage.controls.viewSelected')}
       >
         <svg
           className="w-5 h-5"
@@ -900,7 +948,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId, onBack }) => {
             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
           />
         </svg>
-        已选英雄 ({selectedHeroes.size})
+        {t('ui.components.roomPage.selectedHeroesButton', { count: selectedHeroes.size })}
       </button>
 
       {/* Selected Heroes Modal */}
