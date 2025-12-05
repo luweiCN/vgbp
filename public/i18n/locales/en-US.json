@@ -318,6 +318,165 @@
           "errors": {
             "signOutFailed": "Failed to sign out"
           }
+        },
+        "roomPage": {
+          "title": {
+            "localMode": "Local Mode",
+            "onlineMode": "Room {{roomId}}",
+            "browserTitle": "{{roomName}} - Vainglory BP",
+            "tacticalTool": "Tactical Draft Tool"
+          },
+          "search": {
+            "placeholder": "Search / 搜索...",
+            "clearTitle": "Clear search",
+            "noHeroesFound": "No heroes found matching \"{{searchTerm}}\""
+          },
+          "progress": {
+            "desktop": "Selected {{selected}} heroes, {{remaining}} remaining",
+            "mobile": "Selected {{selected}}/{{total}}",
+            "selectedLabel": "Selected",
+            "remainingLabel": "remaining",
+            "unit": "heroes",
+            "unitShort": "",
+            "percentage": "%"
+          },
+          "controls": {
+            "resetBP": "Reset BP",
+            "editRoom": "Edit Room",
+            "hideSelected": "Hide Selected",
+            "showSelected": "View Selected Heroes",
+            "hideSelectedShort": "Hide Selected",
+            "currentPosition": "Current:",
+            "noHeroesSelected": "No heroes selected yet",
+            "viewSelected": "View selected heroes"
+          },
+          "sections": {
+            "captain": "Captains",
+            "jungle": "Junglers",
+            "carry": "Laners",
+            "captainStat": "Selected {{count}}, {{remaining}} remaining",
+            "jungleStat": "Selected {{count}}, {{remaining}} remaining",
+            "carryStat": "Selected {{count}}, {{remaining}} remaining"
+          },
+          "selectedHeroesButton": "Selected ({{count}})",
+          "status": {
+            "syncing": "Syncing...",
+            "syncFailed": "Sync failed: {{error}}",
+            "syncFailedPrefix": "Sync failed"
+          }
+        },
+        "selectedHeroesModal": {
+          "title": "Selected Heroes",
+          "subtitle": "Total {{count}} heroes selected",
+          "emptyTitle": "No heroes selected yet",
+          "emptyDescription": "Click on hero cards to select heroes",
+          "categories": {
+            "captain": "Roamer",
+            "jungle": "Jungle",
+            "carry": "Laner"
+          },
+          "heroCount": "{{count}} heroes",
+          "reset": "Reset BP",
+          "close": "Close"
+        },
+        "resetConfirmModal": {
+          "title": "Confirm Reset BP",
+          "message": "Are you sure you want to clear the selected {{count}} heroes? This action cannot be undone.",
+          "cancel": "Cancel",
+          "confirm": "Confirm Reset"
+        },
+        "classificationInfoModal": {
+          "title": "Hero Classification Guide",
+          "official": {
+            "title": "Official Classification",
+            "description": "Based on the official hero classification within the game."
+          },
+          "common": {
+            "title": "Common Classification",
+            "description": "Common classification represents the positions where we most frequently use this hero. For example, in the official classification, Amalel is placed as a Carry hero, but most commonly we see Amalel playing as a Support."
+          },
+          "flex": {
+            "title": "Flexible Classification",
+            "description": "Flexible classification includes all positions a hero can handle. For example, Glaive - in official classification he belongs to Jungle heroes, while in common classification he belongs to Carry heroes. This hero can build physical damage for Carry, build tanky with crystal damage for Jungle, or even play as a Roamer. Flexible classification shows all common positions a hero can handle in actual gameplay."
+          }
+        },
+        "classificationToggle": {
+          "official": "Official",
+          "common": "Common",
+          "flex": "Flexible",
+          "infoTitle": "Classification Guide",
+          "heroClassification": "Hero Classification:",
+          "officialDesc": "Classified by official position",
+          "commonDesc": "Classified by player common positions",
+          "flexDesc": "Classified by theoretically playable positions",
+          "officialShort": "Official",
+          "commonShort": "Common",
+          "flexShort": "Flexible"
+        },
+        "realtimeStatus": {
+          "connection": {
+            "realtime": "Real-time",
+            "polling": "Polling",
+            "offline": "Offline"
+          },
+          "status": {
+            "connected": "Connected",
+            "syncing": "Syncing",
+            "polling": "Polling",
+            "disconnected": "Offline",
+            "pollingDisconnected": "Polling off",
+            "offline": "Offline"
+          },
+          "time": {
+            "never": "Never",
+            "justNow": "Just now",
+            "secondsAgo": "{{count}}s ago",
+            "minutesAgo": "{{count}}m ago",
+            "lastActivity": "Last activity",
+            "lastSend": "Sent"
+          }
+        },
+        "permissionIndicator": {
+          "owner": {
+            "text": "Owner",
+            "description": "Has all permissions, can manage room and edit hero selection"
+          },
+          "participant": {
+            "text": "Participant",
+            "description": "Can view room status and invite other users"
+          },
+          "viewer": {
+            "text": "View Mode",
+            "description": "Can only view room status, cannot edit"
+          },
+          "unknown": {
+            "text": "Unknown",
+            "description": "Permission status unknown"
+          },
+          "editable": "(editable)"
+        },
+        "layoutToggle": {
+          "title": "Click to toggle layout mode",
+          "auto": "Auto",
+          "three": "3 cols",
+          "four": "4 cols",
+          "five": "5 cols"
+        },
+        "heroSelectionToast": {
+          "added": "Added",
+          "removed": "Removed",
+          "close": "Close",
+          "closing": "Closing"
+        },
+        "heroChangeToast": {
+          "addedWithNames": "Added heroes: {{names}}{{hasMore ? ' & more' : ''}}",
+          "addedWithCount": "Added {{count}} heroes",
+          "removedWithNames": "Removed heroes: {{names}}{{hasMore ? ' & more' : ''}}",
+          "removedWithCount": "Removed {{count}} heroes",
+          "changed": "Heroes changed: Added {{addedNames}}{{hasMoreAdded ? ' & more' : ''}}, Removed {{removedNames}}{{hasMoreRemoved ? ' & more' : ''}}"
+        },
+        "heroAvatar": {
+          "alt": "Hero Avatar"
         }
       }
     }

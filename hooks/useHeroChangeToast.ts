@@ -2,10 +2,10 @@ import { useEffect, useRef } from 'react';
 import { getHeroById } from '../data/heroes';
 
 
-
 export const useHeroChangeToast = (
   selectedHeroes: Set<string>,
-  onShowToast: (message: string, addedHeroIds: string[], removedHeroIds: string[]) => void
+  onShowToast: (message: string, addedHeroIds: string[], removedHeroIds: string[]) => void,
+  t: (key: string, params?: Record<string, any>) => string
 ): void => {
   // 用于跟踪上一次的英雄选择状态，用于diff计算
   const previousHeroesRef = useRef<Set<string>>(new Set());
@@ -33,19 +33,30 @@ export const useHeroChangeToast = (
       const addedCount = addedHeroes.length;
       const removedCount = removedHeroes.length;
       let message = '';
-      
+
       if (addedCount > 0 && removedCount === 0) {
-        message = addedCount <= 3 
-          ? `房间新增了英雄：${addedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、')}${addedCount > 3 ? '等' : ''}`
-          : `房间新增了${addedCount}个英雄`;
+        message = addedCount <= 3
+          ? t('ui.components.heroChangeToast.addedWithNames', {
+              names: addedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、'),
+              hasMore: addedCount > 3
+            })
+          : t('ui.components.heroChangeToast.addedWithCount', { count: addedCount });
       } else if (removedCount > 0 && addedCount === 0) {
-        message = removedCount <= 3 
-          ? `房间取消了英雄：${removedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、')}${removedCount > 3 ? '等' : ''}`
-          : `房间取消了${removedCount}个英雄`;
+        message = removedCount <= 3
+          ? t('ui.components.heroChangeToast.removedWithNames', {
+              names: removedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、'),
+              hasMore: removedCount > 3
+            })
+          : t('ui.components.heroChangeToast.removedWithCount', { count: removedCount });
       } else if (addedCount > 0 && removedCount > 0) {
         const addedNames = addedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、');
         const removedNames = removedHeroes.slice(0, 3).map(heroId => getHeroById(heroId)?.cnName).join('、');
-        message = `房间英雄变化：新增${addedNames}${addedCount > 3 ? '等' : ''}，取消${removedNames}${removedCount > 3 ? '等' : ''}`;
+        message = t('ui.components.heroChangeToast.changed', {
+          addedNames: addedNames,
+          removedNames: removedNames,
+          hasMoreAdded: addedCount > 3,
+          hasMoreRemoved: removedCount > 3
+        });
       }
       
       // 创建diff标识

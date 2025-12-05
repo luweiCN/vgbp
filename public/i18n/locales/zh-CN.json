@@ -318,6 +318,165 @@
           "errors": {
             "signOutFailed": "退出登录失败"
           }
+        },
+        "roomPage": {
+          "title": {
+            "localMode": "本地模式",
+            "onlineMode": "房间 {{roomId}}",
+            "browserTitle": "{{roomName}} - Vainglory BP",
+            "tacticalTool": "Tactical Draft Tool"
+          },
+          "search": {
+            "placeholder": "Search / 搜索...",
+            "clearTitle": "Clear search",
+            "noHeroesFound": "No heroes found matching \"{{searchTerm}}\""
+          },
+          "progress": {
+            "desktop": "已选 {{selected}} 个英雄，剩余 {{remaining}} 个英雄",
+            "mobile": "已选 {{selected}}/{{total}}",
+            "selectedLabel": "已选",
+            "remainingLabel": "剩余",
+            "unit": "个英雄",
+            "unitShort": "个",
+            "percentage": "%"
+          },
+          "controls": {
+            "resetBP": "重置BP",
+            "editRoom": "编辑房间",
+            "hideSelected": "隐藏已选",
+            "showSelected": "显示已选英雄",
+            "hideSelectedShort": "隐藏已选",
+            "currentPosition": "当前位置:",
+            "noHeroesSelected": "还没有选择英雄",
+            "viewSelected": "查看已选英雄"
+          },
+          "sections": {
+            "captain": "辅助",
+            "jungle": "打野",
+            "carry": "对线",
+            "captainStat": "已选 {{count}} 个，剩余 {{remaining}} 个",
+            "jungleStat": "已选 {{count}} 个，剩余 {{remaining}} 个",
+            "carryStat": "已选 {{count}} 个，剩余 {{remaining}} 个"
+          },
+          "selectedHeroesButton": "已选英雄 ({{count}})",
+          "status": {
+            "syncing": "同步中...",
+            "syncFailed": "同步失败: {{error}}",
+            "syncFailedPrefix": "同步失败"
+          }
+        },
+        "selectedHeroesModal": {
+          "title": "已选英雄",
+          "subtitle": "共选择了 {{count}} 个英雄",
+          "emptyTitle": "还没有选择任何英雄",
+          "emptyDescription": "点击英雄卡片来选择英雄",
+          "categories": {
+            "captain": "辅助",
+            "jungle": "打野",
+            "carry": "对线"
+          },
+          "heroCount": "{{count}} 个英雄",
+          "reset": "重置BP",
+          "close": "关闭"
+        },
+        "resetConfirmModal": {
+          "title": "确认重置BP",
+          "message": "确定要清空已选择的 {{count}} 个英雄吗？此操作不可撤销。",
+          "cancel": "取消",
+          "confirm": "确认重置"
+        },
+        "classificationInfoModal": {
+          "title": "英雄分类说明",
+          "official": {
+            "title": "官方分类",
+            "description": "基于游戏内的官方角色分类。"
+          },
+          "common": {
+            "title": "常用分类",
+            "description": "常见分类是我们最常使用这个英雄打的位置，比如官方分类中把牛头放在了对线英雄，但是我们最常见的是牛头去打辅助位置。"
+          },
+          "flex": {
+            "title": "灵活分类",
+            "description": "灵活分类包含英雄可以胜任的所有位置。以盲豹格雷为例，在官方分类中他属于打野英雄，而在常见分类中属于对线英雄。实际上这个英雄既能物理出装打对线，也能法术肉装去打野，甚至还能打辅助位置。灵活分类标明了某个英雄在实战中可以胜任的所有常见位置。"
+          }
+        },
+        "classificationToggle": {
+          "official": "官方定位",
+          "common": "常见位置",
+          "flex": "灵活位置",
+          "infoTitle": "分类说明",
+          "heroClassification": "英雄分类:",
+          "officialDesc": "按官方定位分类",
+          "commonDesc": "按玩家常见位置分类",
+          "flexDesc": "按理论上可以打的位置分类",
+          "officialShort": "官方",
+          "commonShort": "常见",
+          "flexShort": "灵活"
+        },
+        "realtimeStatus": {
+          "connection": {
+            "realtime": "实时",
+            "polling": "轮询",
+            "offline": "离线"
+          },
+          "status": {
+            "connected": "连接正常",
+            "syncing": "同步中",
+            "polling": "轮询中",
+            "disconnected": "连接断开",
+            "pollingDisconnected": "轮询断开",
+            "offline": "已断开"
+          },
+          "time": {
+            "never": "从未同步",
+            "justNow": "刚刚",
+            "secondsAgo": "{{count}}秒前",
+            "minutesAgo": "{{count}}分钟前",
+            "lastActivity": "最后活动",
+            "lastSend": "发送"
+          }
+        },
+        "permissionIndicator": {
+          "owner": {
+            "text": "房主",
+            "description": "拥有所有权限，可以管理房间和编辑英雄选择"
+          },
+          "participant": {
+            "text": "参与者",
+            "description": "可以查看房间状态，邀请其他用户"
+          },
+          "viewer": {
+            "text": "查看模式",
+            "description": "只能查看房间状态，不能编辑"
+          },
+          "unknown": {
+            "text": "未知",
+            "description": "权限状态未知"
+          },
+          "editable": "（可编辑）"
+        },
+        "layoutToggle": {
+          "title": "点击切换布局模式",
+          "auto": "自动",
+          "three": "3栏",
+          "four": "4栏",
+          "five": "5栏"
+        },
+        "heroSelectionToast": {
+          "added": "新增",
+          "removed": "移除",
+          "close": "关闭",
+          "closing": "正在关闭"
+        },
+        "heroChangeToast": {
+          "addedWithNames": "房间新增了英雄：{{names}}{{hasMore ? '等' : ''}}",
+          "addedWithCount": "房间新增了{{count}}个英雄",
+          "removedWithNames": "房间取消了英雄：{{names}}{{hasMore ? '等' : ''}}",
+          "removedWithCount": "房间取消了{{count}}个英雄",
+          "changed": "房间英雄变化：新增{{addedNames}}{{hasMoreAdded ? '等' : ''}}，取消{{removedNames}}{{hasMoreRemoved ? '等' : ''}}"
+        },
+        "heroAvatar": {
+          "alt": "英雄头像"
         }
       }
     }
