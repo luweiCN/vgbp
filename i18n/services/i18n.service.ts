@@ -7,6 +7,9 @@ import {
   I18nServiceInterface
 } from '../types';
 
+// 直接导入中文翻译文件作为 fallback
+import zhCNTranslations from '../../public/i18n/locales/zh-CN.json';
+
 // 支持的语言配置
 const SUPPORTED_LANGUAGES: Record<Language, LanguageConfig> = {
   'zh-CN': {
@@ -190,21 +193,26 @@ class I18nService implements I18nServiceInterface {
    * 翻译文本
    */
   translate(key: string, params?: Record<string, any>): string | React.ReactNode {
+    let translation = null;
+
+    // 1. 首先尝试从已加载的语言包获取翻译
     const pack = this.memoryCache[this.currentLanguage];
-    if (!pack) {
-      console.warn(`Language pack not loaded for ${this.currentLanguage}`);
-      return key;
+    if (pack) {
+      translation = this.getNestedValue(pack.translations, key);
     }
 
-    let translation = this.getNestedValue(pack.translations, key);
-
-    // 如果在当前语言中找不到，尝试回退语言
+    // 2. 如果在当前语言中找不到，尝试从内存中的回退语言获取
     if (!translation && this.currentLanguage !== this.fallbackLanguage) {
       const fallbackPack = this.memoryCache[this.fallbackLanguage];
       translation = fallbackPack ? this.getNestedValue(fallbackPack.translations, key) : null;
     }
 
-    // 如果仍然找不到，返回key本身
+    // 3. 如果仍然找不到，使用内联的中文翻译作为最终 fallback
+    if (!translation) {
+      translation = this.getNestedValue(zhCNTranslations.translations, key);
+    }
+
+    // 4. 如果最终还是找不到，返回 key 本身
     if (!translation) {
       console.warn(`Translation not found for key: ${key}`);
       return key;
