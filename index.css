@@ -2,8 +2,33 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background-color: #0f172a; /* Slate 900 */
+  background-color: #0f172a; /* 恢复原来的深蓝色 */
   color: #e2e8f0; /* Slate 200 */
+}
+
+/* 安全区域样式 */
+.safe-area-padding-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* 为不同页面设置不同的安全区域背景色 */
+body.safe-area-black {
+  background-color: #000000 !important; /* 首页使用纯黑色 */
+}
+
+body.safe-area-zinc {
+  background-color: rgba(24, 24, 27, 0.95) !important; /* 房间页面使用 zinc-900/95 */
+}
+
+body.safe-area-blue {
+  background-color: #0f172a !important; /* 房间列表页面使用深蓝色 */
+}
+
+
+/* 确保根容器覆盖整个屏幕 */
+html, body {
+  height: 100%;
+  overflow-x: hidden;
 }
 
 /* Custom scrollbar for webkit */
