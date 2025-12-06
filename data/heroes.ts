@@ -652,8 +652,8 @@ export const getHeroesByRole = (
   }
 };
 
-// Vercel Blob URL（生产环境使用）
-const VERCEL_BLOB_BASE_URL = 'https://nksf7fmzcvduehht.public.blob.vercel-storage.com/heroes';
+// Hero Avatar CDN URL（生产环境使用）
+const HERO_AVATAR_BASE_URL = 'https://vgbp.luwei.host/heroes';
 
 // OSS URL（开发环境使用）
 const OSS_BASE_URL = 'https://www.luwei.space:4014/default/vainglory/heroes';
@@ -680,14 +680,14 @@ export const getHeroAvatarUrl = (hero: Hero, ossBaseUrl?: string): string => {
   else if (ossBaseUrl) {
     url = `${ossBaseUrl}/${hero.id}.jpg`;
   }
-  // 根据环境选择使用 OSS 或 Vercel Blob
+  // 根据环境选择使用 OSS 或 Hero Avatar CDN
   else {
-    // 开发环境使用 OSS，生产环境使用 Vercel Blob
+    // 开发环境使用 OSS，生产环境使用 Hero Avatar CDN
     const isDev = import.meta.env.DEV;
     if (isDev) {
       url = `${OSS_BASE_URL}/${hero.id}.jpg`;
     } else {
-      url = `${VERCEL_BLOB_BASE_URL}/${hero.id}.jpg`;
+      url = `${HERO_AVATAR_BASE_URL}/${hero.id}.jpg`;
     }
   }
 
