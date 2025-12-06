@@ -5,6 +5,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useI18n } from '@/i18n/hooks/useI18n';
+import { Search, X } from 'lucide-react';
+import { Icon } from './ui/Icon';
 
 export interface RoomSearchBoxProps {
   value: string;
@@ -86,19 +88,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
         `}>
           {/* Search Icon */}
           {!loading ? (
-            <svg
-              className="h-4 w-4 text-zinc-400 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+            <Icon icon={Search} preset="sm" className="text-zinc-400" />
           ) : (
             // Loading Spinner
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-600 border-t-blue-500 flex-shrink-0" />
@@ -137,19 +127,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
               className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
               title={t('ui.components.roomSearchBox.clearButtonTitle')}
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <Icon icon={X} preset="sm" />
             </button>
           )}
         </div>
@@ -166,19 +144,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
         `}>
           {/* Search Icon */}
           {!loading ? (
-            <svg
-              className="h-4 w-4 text-zinc-400 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+            <Icon icon={Search} preset="sm" className="text-zinc-400" />
           ) : (
             // Loading Spinner
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-600 border-t-blue-500 flex-shrink-0" />
@@ -217,19 +183,7 @@ export const RoomSearchBox: React.FC<RoomSearchBoxProps> = ({
               className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
               title={t('ui.components.roomSearchBox.clearButtonTitle')}
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <Icon icon={X} preset="sm" />
             </button>
           )}
         </div>
