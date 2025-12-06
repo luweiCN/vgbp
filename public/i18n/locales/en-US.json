@@ -7,7 +7,11 @@
   "translations": {
     "ui": {
       "common": {
-        "switchLanguage": "Switch Language"
+        "switchLanguage": "Switch Language",
+        "close": "Close",
+        "later": "Later",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
       },
       "components": {
         "entryPage": {
@@ -115,6 +119,33 @@
         "toast": {
           "close": "Close",
           "heroAvatar": "Hero Avatar"
+        },
+        "pwa": {
+          "installPrompt": {
+            "title": "Install App",
+            "description": "Install Vainglory Tactics on your device for faster startup and offline access.",
+            "install": "Install",
+            "features": {
+              "offline": "Offline Access - Use even without internet",
+              "fast": "Fast Startup - As quick as a native app",
+              "native": "Native Experience - Fullscreen display without browser interruption"
+            }
+          },
+          "installGuide": {
+            "safari": "To install this app, tap the share button and then select \"Add to Home Screen\".",
+            "chrome": "To install this app, click the install icon in the address bar.",
+            "firefox": "To install this app, click the menu button and select \"Install this site as an app\".",
+            "default": "Please look for the \"Install\" or \"Add to Home Screen\" option in your browser menu."
+          },
+          "offline": {
+            "title": "Offline Mode",
+            "description": "Currently offline, showing cached content."
+          },
+          "update": {
+            "title": "App Update",
+            "description": "A new version is available. Please refresh to get the latest features.",
+            "refresh": "Refresh"
+          }
         },
         "authForm": {
           "title": {

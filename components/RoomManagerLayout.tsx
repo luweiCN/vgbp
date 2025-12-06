@@ -98,7 +98,7 @@ export const RoomManagerLayout: React.FC<RoomManagerLayoutProps> = ({
   }, []);
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen safe-area-padding-top">
       {/* 全屏背景填充 */}
       <div className="fixed inset-0 bg-slate-800/40 z-0"></div>
 

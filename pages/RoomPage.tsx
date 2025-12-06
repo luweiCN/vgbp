@@ -39,6 +39,14 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
   // 判断是本地模式还是在线模式
   const isLocalMode = roomId === 'local';
 
+  // 设置安全区域为 zinc 色
+  useEffect(() => {
+    document.body.className = 'safe-area-zinc';
+    return () => {
+      // 组件卸载时不做处理，让下一个页面自己设置
+    };
+  }, []);
+
   const { showSuccess, showInfo, toasts, removeToast } = useToast();
   const { user } = useAuth();
   const { t, language, isLanguageReady } = useI18n();
@@ -411,7 +419,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
         onRemove={removeToast}
       />
       
-      <div className="min-h-screen bg-zinc-950 text-white pb-20 font-sans">
+      <div className="min-h-screen bg-black text-white pb-20 font-sans safe-area-padding-top">
       {/* Header - 恢复原来的设计 */}
       <header className="sticky top-0 z-40 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 shadow-xl px-4">
         <div className="max-w-[1400px] mx-auto pt-3">
