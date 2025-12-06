@@ -2,6 +2,8 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HEROES } from '@/constants';
 import { searchHeroes, ClassificationMode } from '@/data/heroes';
+import { ChevronLeft, Edit, Search, X, Info, Eye } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 import HeroCard from '@/components/HeroCard';
 import OnlineModeIndicator from '@/components/OnlineModeIndicator';
 import SelectedHeroesModal from '@/components/SelectedHeroesModal';
@@ -423,9 +425,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                     onClick={handleBack}
                     className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors flex-shrink-0"
                   >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
+                    <Icon icon={ChevronLeft} />
                   </button>
                 )}
                 <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -454,9 +454,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                               className="p-0.5 text-zinc-400 hover:text-blue-400 hover:bg-blue-600/20 rounded transition-colors flex-shrink-0"
                               title={t('ui.components.roomPage.controls.editRoom')}
                             >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
+                              <Icon icon={Edit} preset="xs" />
                             </button>
                           )}
                         </>
@@ -476,9 +474,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                               className="p-0.5 text-zinc-400 hover:text-blue-400 hover:bg-blue-600/20 rounded transition-colors flex-shrink-0"
                               title={t('ui.components.roomPage.controls.editRoom')}
                             >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
+                              <Icon icon={Edit} preset="xs" />
                             </button>
                           )}
                         </>
@@ -499,19 +495,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
               <div className="hidden md:flex justify-center w-56 flex-shrink-0">
                 <div className="flex items-center w-full h-[38px] bg-zinc-800/50 border border-zinc-800 rounded-lg px-3 gap-2">
                   {/* Search Icon */}
-                  <svg
-                    className="h-4 w-4 text-zinc-400 flex-shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+                  <Icon icon={Search} preset="sm" className="text-zinc-400" />
                   {/* Input Field */}
                   <input
                     type="text"
@@ -527,19 +511,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                       className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
                       title={t('ui.components.roomPage.search.clearTitle')}
                     >
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
+                      <Icon icon={X} preset="sm" />
                     </button>
                   )}
                 </div>
@@ -583,19 +555,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
             <div className="md:hidden">
               <div className="flex items-center w-full bg-zinc-800/50 border border-zinc-800 rounded-lg px-3 py-1.5 mt-3 gap-2">
                 {/* Search Icon */}
-                <svg
-                  className="h-4 w-4 text-zinc-400 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+                <Icon icon={Search} preset="sm" className="text-zinc-400" />
                 {/* Input Field */}
                 <input
                   type="text"
@@ -611,19 +571,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                     className="h-4 w-4 text-zinc-400 hover:text-zinc-200 transition-colors flex-shrink-0"
                     title="Clear search"
                   >
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
+                    <Icon icon={X} preset="sm" />
                   </button>
                 )}
               </div>
@@ -950,9 +898,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
       {bpError && (
         <div className="fixed top-20 right-4 z-50 bg-red-900/90 border border-red-700 text-red-200 px-4 py-2 rounded-lg shadow-lg">
           <div className="flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <Icon icon={Info} preset="sm" />
             <span className="text-sm">{t('ui.components.roomPage.status.syncFailed', { error: bpError })}</span>
           </div>
         </div>
@@ -1017,25 +963,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
         disabled={selectedHeroes.size === 0}
         title={selectedHeroes.size === 0 ? t('ui.components.roomPage.controls.noHeroesSelected') : t('ui.components.roomPage.controls.viewSelected')}
       >
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-          />
-        </svg>
+        <Icon icon={Eye} />
         {t('ui.components.roomPage.selectedHeroesButton', { count: selectedHeroes.size })}
       </button>
 

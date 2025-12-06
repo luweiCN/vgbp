@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/i18n/hooks/useI18n';
 import { RoomSearchBox } from './RoomSearchBox';
 import RoomSortToggle from './RoomSortToggle';

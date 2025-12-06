@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getHeroAvatarUrl, getHeroById } from '../data/heroes';
-import { useSafeI18n } from '../i18n/components/useSafeI18n';
+import { getHeroAvatarUrl, getHeroById } from '@/data/heroes';
+import { useSafeI18n } from '@/i18n/components/useSafeI18n';
+import { X, AlertCircle, CheckCircle, AlertTriangle, Info } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 
 interface ToastProps {
   message: string;
@@ -47,28 +49,22 @@ const Toast: React.FC<ToastProps> = ({
     const baseStyles = "fixed top-4 right-4 max-w-sm p-4 rounded-lg shadow-xl border backdrop-blur-sm transform transition-all duration-300 ease-in-out";
 
     let typeStyles = "";
-    let icon = "";
 
     switch (type) {
       case 'error':
         typeStyles = "bg-red-900/90 border-red-700 text-red-100";
-        icon = "❌";
         break;
       case 'success':
         typeStyles = "bg-emerald-600/95 border-emerald-500 text-white shadow-2xl";
-        icon = "✅";
         break;
       case 'warning':
         typeStyles = "bg-yellow-900/90 border-yellow-700 text-yellow-100";
-        icon = "⚠️";
         break;
       case 'info':
         typeStyles = "bg-blue-900/90 border-blue-700 text-blue-100";
-        icon = "ℹ️";
         break;
       default:
         typeStyles = "bg-zinc-900/90 border-zinc-700 text-zinc-100";
-        icon = "ℹ️";
     }
 
     const animationStyles = isVisible
@@ -92,11 +88,11 @@ const Toast: React.FC<ToastProps> = ({
     return (
       <div className={getToastStyles()} style={{ zIndex: 999999 }}>
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 text-xl">
-          {type === 'error' && '❌'}
-          {type === 'success' && '✅'}
-          {type === 'warning' && '⚠️'}
-          {type === 'info' && 'ℹ️'}
+        <div className="flex-shrink-0">
+          {type === 'error' && <Icon icon={AlertCircle} className="text-red-400" />}
+          {type === 'success' && <Icon icon={CheckCircle} className="text-emerald-400" />}
+          {type === 'warning' && <Icon icon={AlertTriangle} className="text-yellow-400" />}
+          {type === 'info' && <Icon icon={Info} className="text-blue-400" />}
         </div>
 
         {/* 英雄头像 */}
@@ -166,9 +162,7 @@ const Toast: React.FC<ToastProps> = ({
           className="flex-shrink-0 ml-2 text-zinc-400 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10"
           aria-label={t('ui.components.toast.close')}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <Icon icon={X} preset="sm" />
         </button>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import React from 'react';
+import { X } from 'lucide-react';
 import { useI18n } from '@/i18n/hooks/useI18n';
+import { Icon } from './ui/Icon';
 
 interface JoinRoomModalProps {
   isOpen: boolean;
@@ -65,19 +67,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({
                   onClick={() => onRoomIdChange("")}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-white hover:bg-zinc-600 rounded-full p-1 transition-all duration-200"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <Icon icon={X} preset="xs" />
                 </button>
               )}
             </div>

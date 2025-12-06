@@ -1,5 +1,7 @@
 import React from 'react';
-import { useI18n } from '../i18n/hooks/useI18n';
+import { Clock } from 'lucide-react';
+import { useI18n } from '@/i18n/hooks/useI18n';
+import { Icon } from '@/components/ui/Icon';
 
 interface RealtimeStatusProps {
   isConnected: boolean;
@@ -116,17 +118,11 @@ const RealtimeStatus: React.FC<RealtimeStatusProps> = ({
 
       {/* 最后同步时间 - 桌面端显示完整文字，移动端只显示时间 */}
       <div className="flex items-center gap-1">
-        <svg
-          className="w-3 h-3"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+        <Icon
+          icon={Clock}
+          preset="xs"
           title={`${t('ui.components.realtimeStatus.time.lastActivity')}: ${formatSyncTime(getLastActivityTime())}`}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
+        />
         <span className="hidden sm:inline">{t('ui.components.realtimeStatus.time.lastActivity')}: {formatSyncTime(getLastActivityTime())}</span>
         <span className="sm:hidden">{formatSyncTime(getLastActivityTime())}</span>
       </div>

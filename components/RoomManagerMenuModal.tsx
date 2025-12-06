@@ -1,6 +1,8 @@
 import React from 'react';
+import { X, User, Edit, LogOut, LogIn, ArrowUpRight, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/i18n/hooks/useI18n';
+import { Icon } from '@/components/ui/Icon';
 
 interface RoomManagerMenuModalProps {
   isOpen: boolean;
@@ -42,19 +44,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
               onClick={onClose}
               className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <Icon icon={X} preset="sm" />
             </button>
           </div>
 
@@ -80,19 +70,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                 ) : (
                   <>
                     <div className="w-12 h-12 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
+                      <Icon icon={User} preset="md" className="text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-white font-medium truncate">
@@ -122,19 +100,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                     className="w-full px-4 py-3 text-left text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 border border-zinc-700/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                   >
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                        />
-                      </svg>
+                      <Icon icon={Edit} preset="xs" className="text-white" />
                     </div>
                     <div>
                       <div className="text-white">{t('ui.components.roomManagerMenu.userSettings.settings')}</div>
@@ -156,19 +122,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                     className="w-full px-4 py-3 text-left text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 border border-zinc-700/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                   >
                     <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                        />
-                      </svg>
+                      <Icon icon={LogOut} preset="xs" className="text-white" />
                     </div>
                     <div>
                       <div className="text-white">{t('ui.components.roomManagerMenu.userSettings.signOut')}</div>
@@ -187,19 +141,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                   className="w-full px-4 py-3 text-left text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-0 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/20 flex items-center gap-3"
                 >
                   <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                      />
-                    </svg>
+                    <Icon icon={LogIn} preset="xs" className="text-white" />
                   </div>
                   <div>
                     <div>{t('ui.components.roomManagerMenu.auth.loginOrRegister')}</div>
@@ -225,19 +167,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                 className="w-full px-4 py-3 text-left text-sm font-medium text-white bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-0 rounded-lg transition-all duration-200 shadow-lg hover:shadow-purple-500/20 flex items-center gap-3"
               >
                 <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
-                  </svg>
+                  <Icon icon={ArrowUpRight} preset="sm" className="text-white" />
                 </div>
                 <div>
                   <div>{t('ui.components.roomManagerMenu.roomActions.join')}</div>
@@ -255,19 +185,7 @@ export const RoomManagerMenuModal: React.FC<RoomManagerMenuModalProps> = ({
                 className="w-full px-4 py-3 text-left text-sm font-medium text-white bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-0 rounded-lg transition-all duration-200 shadow-lg hover:shadow-green-500/20 flex items-center gap-3"
               >
                 <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
+                  <Icon icon={Plus} preset="xs" className="text-white" />
                 </div>
                 <div>
                   <div>{t('ui.components.roomManagerMenu.roomActions.create')}</div>
