@@ -30,6 +30,15 @@ export const RoomManager: React.FC<RoomManagerProps> = ({
   onBack,
 }) => {
   const { t } = useI18n();
+
+  // 设置安全区域为深蓝色
+  useEffect(() => {
+    document.body.className = 'safe-area-blue';
+    return () => {
+      // 组件卸载时不做处理，让下一个页面自己设置
+    };
+  }, []);
+
   // 保持所有原有状态
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);

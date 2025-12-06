@@ -191,6 +191,40 @@ npm run preview  # 本地预览生产构建
 ### 环境变量
 构建时会注入 `GEMINI_API_KEY`，确保在部署环境中正确配置。
 
+## PWA 支持
+
+### PWA 功能概述
+应用已实现 Progressive Web App (PWA) 支持，提供接近原生应用的体验：
+- 可安装到设备主屏幕
+- 支持离线访问缓存的内容
+- 快速启动和全屏显示模式
+- 后台自动更新机制
+
+### PWA 配置文件
+- `vite.config.ts` - Vite PWA 插件配置，包含 manifest 和 service worker 设置
+- `index.html` - PWA meta 标签和 manifest 链接
+- `public/pwa-icon.svg` - PWA 应用图标
+
+### 关键组件
+- `components/PWAInstallPrompt.tsx` - PWA 安装提示组件
+- `components/OfflineIndicator.tsx` - 离线状态指示器
+
+### PWA 开发注意事项
+1. **Service Worker**：
+   - 使用 `vite-plugin-pwa` 自动生成
+   - 预缓存静态资源（js、css、html）
+   - 支持自动更新策略
+
+2. **Manifest 配置**：
+   - 支持中英文应用名称和描述
+   - 适配 GitHub Pages 和 Vercel 部署路径
+   - 主题色与应用 UI 保持一致
+
+3. **缓存策略**：
+   - 静态资源使用 Cache First
+   - API 请求使用 Network First
+   - 动态内容需要谨慎处理
+
 ## 多语言开发规范 (重要)
 
 ### 项目国际化状态

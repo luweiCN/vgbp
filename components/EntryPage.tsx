@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Home, Wifi } from "lucide-react";
 import { Icon } from "./ui/Icon";
 import { ToastContainer } from "./Toast";
@@ -15,8 +15,16 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
   const { toasts, removeToast } = useToast();
   const { translate: t } = useSafeI18n();
 
+  // 设置安全区域为黑色
+  useEffect(() => {
+    document.body.className = 'safe-area-black';
+    return () => {
+      // 组件卸载时不做处理，让下一个页面自己设置
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-white p-4 pt-4">
+    <div className="min-h-screen bg-black text-white p-4 pt-4 safe-area-padding-top">
       <div className="max-w-4xl w-full mx-auto">
         {/* Language Selector */}
         <div className="flex justify-end mb-16">
