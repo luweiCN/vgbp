@@ -1,4 +1,6 @@
 import React from "react";
+import { Home, Wifi } from "lucide-react";
+import { Icon } from "./ui/Icon";
 import { ToastContainer } from "./Toast";
 import { useToast } from "../hooks/useToast";
 import { useSafeI18n } from "../i18n/components/useSafeI18n";
@@ -48,19 +50,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
           >
             <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-500 transition-colors">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                  />
-                </svg>
+                <Icon icon={Home} className="text-white" />
               </div>
               <h2 className="text-xl font-bold text-green-400 mb-2">
                 {t("ui.components.entryPage.modes.local")}
@@ -81,19 +71,7 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
           >
             <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 transition-colors">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                  />
-                </svg>
+                <Icon icon={Wifi} className="text-white" />
               </div>
               <h2 className="text-xl font-bold text-blue-400 mb-2">
                 {t("ui.components.entryPage.modes.online")}

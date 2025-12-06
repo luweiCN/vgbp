@@ -1,6 +1,8 @@
 import React from 'react';
-import { usePermissionCheck } from '../hooks/usePermissions';
-import { useI18n } from '../i18n/hooks/useI18n';
+import { Crown, Eye, User } from 'lucide-react';
+import { usePermissionCheck } from '@/hooks/usePermissions';
+import { useI18n } from '@/i18n/hooks/useI18n';
+import { Icon } from '@/components/ui/Icon';
 
 interface PermissionIndicatorProps {
   roomId?: string;
@@ -19,26 +21,26 @@ const PermissionIndicator: React.FC<PermissionIndicatorProps> = ({
       case 'owner':
         return {
           text: t('ui.components.permissionIndicator.owner.text'),
-          color: 'bg-green-600',
-          textColor: 'text-green-400',
-          icon: '👑',
+          color: 'bg-orange-600',
+          textColor: 'text-orange-400',
+          iconComponent: Crown,
           description: t('ui.components.permissionIndicator.owner.description')
         };
       case 'anonymous':
         // 将匿名用户显示为"查看模式"
         return {
           text: t('ui.components.permissionIndicator.viewer.text'),
-          color: 'bg-orange-600',
-          textColor: 'text-orange-400',
-          icon: '👁️',
+          color: 'bg-amber-600',
+          textColor: 'text-amber-400',
+          iconComponent: Eye,
           description: t('ui.components.permissionIndicator.viewer.description')
         };
       default:
         return {
           text: t('ui.components.permissionIndicator.participant.text'),
-          color: 'bg-blue-600',
-          textColor: 'text-blue-400',
-          icon: '👤',
+          color: 'bg-yellow-600',
+          textColor: 'text-yellow-400',
+          iconComponent: User,
           description: t('ui.components.permissionIndicator.participant.description')
         };
     }
@@ -54,7 +56,7 @@ const PermissionIndicator: React.FC<PermissionIndicatorProps> = ({
     <div className="flex items-center gap-2">
       {/* 基础权限指示器 */}
       <div className={`flex items-center gap-2 px-2 sm:px-3 py-1 rounded-full ${roleInfo.color} bg-opacity-20 border ${roleInfo.color} border-opacity-50 whitespace-nowrap`}>
-        <span className="text-sm">{roleInfo.icon}</span>
+        <Icon icon={roleInfo.iconComponent} preset="sm" className={roleInfo.textColor} />
         <span className={`text-sm font-medium ${roleInfo.textColor}`}>
           {roleInfo.text}
         </span>

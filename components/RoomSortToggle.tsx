@@ -4,8 +4,10 @@
  */
 
 import React from 'react';
-import { SortOption, SORT_OPTIONS } from '../types/roomFilters';
+import { SortOption, SORT_OPTIONS } from '@/types/roomFilters';
 import { useI18n } from '@/i18n/hooks/useI18n';
+import { Calendar, Clock, ArrowUpNarrowWide, ArrowDownNarrowWide } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 
 export interface RoomSortToggleProps {
   sortBy: string;
@@ -53,14 +55,7 @@ const RoomSortToggle: React.FC<RoomSortToggleProps> = ({
               }`}
               title={option.label}
             >
-              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d={option.icon}
-                />
-              </svg>
+              <Icon icon={option.value === 'created' ? Calendar : Clock} preset="sm" className={option.value === 'created' ? "text-blue-400" : "text-green-400"} />
               <span
                 className="overflow-hidden text-ellipsis whitespace-nowrap min-w-0"
               >
@@ -80,13 +75,7 @@ const RoomSortToggle: React.FC<RoomSortToggleProps> = ({
         className="p-2 w-8 h-8 text-zinc-400 hover:text-zinc-200 transition-colors rounded flex-shrink-0"
         title={t('ui.components.roomSortToggle.sortDirectionTitle') + (sortOrder === 'desc' ? t('ui.components.roomSortToggle.descOrder') : t('ui.components.roomSortToggle.ascOrder'))}
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          {sortOrder === 'desc' ? (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5 0v12m0 0l-4-4m4 4l4-4" />
-          )}
-        </svg>
+        <Icon icon={sortOrder === 'desc' ? ArrowDownNarrowWide : ArrowUpNarrowWide} preset="sm" />
       </button>
     </div>
   );

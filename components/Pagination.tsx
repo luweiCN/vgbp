@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
-import { useSafeI18n } from '../i18n/components/useSafeI18n';
+import { useSafeI18n } from '@/i18n/components/useSafeI18n';
+import { RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 
 interface PaginationProps {
   totalItems: number;
@@ -188,9 +190,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         className="flex items-center gap-2 h-10 px-3 text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-200 whitespace-nowrap sm:hidden"
       >
         {/* 切换图标 */}
-        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
+        <Icon icon={RefreshCw} preset="sm" />
         <span>{state.pageSize}</span>
       </button>
 
@@ -202,9 +202,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         className="flex items-center gap-2 h-10 px-4 text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
       >
         {/* 上一页图标 */}
-        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
+        <Icon icon={ChevronLeft} />
         <span className="hidden sm:inline">{t("ui.components.pagination.previousPage")}</span>
       </button>
 
@@ -226,9 +224,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       >
         <span className="hidden sm:inline">{t("ui.components.pagination.nextPage")}</span>
         {/* 下一页图标 */}
-        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+        <Icon icon={ChevronRight} />
       </button>
     </div>
   );

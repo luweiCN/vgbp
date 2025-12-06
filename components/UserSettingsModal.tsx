@@ -1,5 +1,7 @@
 import React from 'react';
+import { User, Info } from 'lucide-react';
 import { useI18n } from '@/i18n/hooks/useI18n';
+import { Icon } from './ui/Icon';
 
 interface UserSettingsModalProps {
   isOpen: boolean;
@@ -49,19 +51,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg
-                  className="h-5 w-5 text-zinc-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
+                <Icon icon={User} preset="sm" className="text-zinc-500" />
               </div>
               <input
                 type="text"
@@ -82,19 +72,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
           {error && (
             <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 text-red-400 text-sm">
               <div className="flex items-center gap-3">
-                <svg
-                  className="w-5 h-5 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                <Icon icon={Info} preset="sm" className="text-red-400 shrink-0" />
                 <span>{error}</span>
               </div>
             </div>
