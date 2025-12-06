@@ -1,8 +1,10 @@
 import React from 'react';
+import { X } from 'lucide-react';
 import { HeroRole } from '@/constants';
 import { Hero } from '@/types';
 import { getHeroAvatarUrl } from '@/data/heroes';
 import { useI18n } from '@/i18n/hooks/useI18n';
+import { Icon } from './ui/Icon';
 
 interface SelectedHeroesModalProps {
   selectedHeroes: Set<string>;
@@ -87,9 +89,7 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                                onClick={() => onToggleHero(hero.id)}
                                className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
                              >
-                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                               </svg>
+                               <Icon icon={X} preset="xs" />
                              </button>
                            )}
                          </div>
@@ -138,9 +138,7 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                                onClick={() => onToggleHero(hero.id)}
                                className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
                              >
-                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                               </svg>
+                               <Icon icon={X} preset="xs" />
                              </button>
                            )}
                          </div>
@@ -189,9 +187,7 @@ const SelectedHeroesModal: React.FC<SelectedHeroesModalProps> = ({
                                onClick={() => onToggleHero(hero.id)}
                                className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
                              >
-                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                               </svg>
+                               <Icon icon={X} preset="xs" />
                              </button>
                            )}
                         </div>

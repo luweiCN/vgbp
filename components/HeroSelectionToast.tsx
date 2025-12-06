@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getHeroAvatarUrl, getHeroById } from '../data/heroes';
-import { useI18n } from '../i18n/hooks/useI18n';
+import { User, Zap, ChevronRight, X } from 'lucide-react';
+import { getHeroAvatarUrl, getHeroById } from '@/data/heroes';
+import { useI18n } from '@/i18n/hooks/useI18n';
+import { Icon } from '@/components/ui/Icon';
 
 interface HeroAvatarProps {
   heroId: string;
@@ -20,9 +22,7 @@ const HeroAvatar: React.FC<HeroAvatarProps> = ({ heroId, borderColor, opacity = 
       style={{ ...style, opacity }}
     >
       {imageError ? (
-        <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
+        <Icon icon={User} preset="xs" className="text-slate-400" />
       ) : (
         <img
           src={getHeroAvatarUrl(hero || { id: heroId })}
@@ -107,9 +107,7 @@ const HeroSelectionToast: React.FC<HeroSelectionToastProps> = ({
           {/* 左侧图标区域 */}
           <div className="flex-shrink-0">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              <Icon icon={Zap} preset="sm" className="text-white" />
             </div>
           </div>
 
@@ -151,9 +149,7 @@ const HeroSelectionToast: React.FC<HeroSelectionToastProps> = ({
                 {/* 分隔箭头 */}
                 {addedHeroIds && addedHeroIds.length > 0 && removedHeroIds && removedHeroIds.length > 0 && (
                   <div className="text-slate-500">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
+                    <Icon icon={ChevronRight} preset="xs" />
                   </div>
                 )}
 
@@ -195,9 +191,7 @@ const HeroSelectionToast: React.FC<HeroSelectionToastProps> = ({
             type="button"
             disabled={isLeaving} // 防止动画期间重复点击
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <Icon icon={X} preset="xs" />
           </button>
         </div>
 

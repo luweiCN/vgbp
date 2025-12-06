@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { RealtimeDiagnostic } from '../utils/realtimeDiagnostic';
-import { useToast } from '../hooks/useToast';
+import { RealtimeDiagnostic } from '@/utils/realtimeDiagnostic';
+import { useToast } from '@/hooks/useToast';
 
 interface DiagnosticResult {
   connection: { success: boolean; message: string };
