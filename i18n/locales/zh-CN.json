@@ -622,6 +622,19 @@
             }
           }
         }
+      },
+      "version": {
+        "label": {
+          "version": "版本",
+          "buildTime": "构建时间",
+          "environment": "环境",
+          "commit": "提交"
+        },
+        "environment": {
+          "production": "生产环境",
+          "development": "开发环境",
+          "staging": "预发布环境"
+        }
       }
     }
   }

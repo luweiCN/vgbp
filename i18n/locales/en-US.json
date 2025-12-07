@@ -622,6 +622,19 @@
             }
           }
         }
+      },
+      "version": {
+        "label": {
+          "version": "Version",
+          "buildTime": "Build Time",
+          "environment": "Environment",
+          "commit": "Commit"
+        },
+        "environment": {
+          "production": "Production",
+          "development": "Development",
+          "staging": "Staging"
+        }
       }
     }
   }
