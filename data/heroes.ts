@@ -658,12 +658,16 @@ const HERO_AVATAR_BASE_URL = 'https://vgbp.luwei.host/heroes';
 // OSS URL（开发环境使用）
 const OSS_BASE_URL = 'https://www.luwei.space:4014/default/vainglory/heroes';
 
+// 图片版本号 - 只有更新图片时才需要增加这个值
+// 这样可以让相同的图片在客户端缓存，减少 CDN 带宽消耗
+const HERO_IMAGES_VERSION = '1.0.0';
+
 // 图片URL缓存
 const avatarUrlCache = new Map<string, string>();
 
 // 获取英雄头像URL的函数 - 带缓存优化
 export const getHeroAvatarUrl = (hero: Hero, ossBaseUrl?: string): string => {
-  const cacheKey = `${hero.id}-${ossBaseUrl || 'default'}`;
+  const cacheKey = `${hero.id}-${ossBaseUrl || 'default'}-${HERO_IMAGES_VERSION}`;
 
   // 检查缓存
   if (avatarUrlCache.has(cacheKey)) {
@@ -672,22 +676,24 @@ export const getHeroAvatarUrl = (hero: Hero, ossBaseUrl?: string): string => {
 
   // 生成URL
   let url: string;
-  // 优先使用英雄自定义头像
+  // 优先使用英雄自定义头像（不添加版本参数，因为是外部链接）
   if (hero.avatar) {
     url = hero.avatar;
   }
   // 如果提供了自定义 OSS URL（向后兼容）
   else if (ossBaseUrl) {
-    url = `${ossBaseUrl}/${hero.id}.jpg`;
+    url = `${ossBaseUrl}/${hero.id}.jpg?v=${HERO_IMAGES_VERSION}`;
   }
   // 根据环境选择使用 OSS 或 Hero Avatar CDN
   else {
     // 开发环境使用 OSS，生产环境使用 Hero Avatar CDN
     const isDev = import.meta.env.DEV;
     if (isDev) {
-      url = `${OSS_BASE_URL}/${hero.id}.jpg`;
+      // 开发环境使用时间戳，确保每次刷新都获取最新
+      url = `${OSS_BASE_URL}/${hero.id}.jpg?t=${Date.now()}`;
     } else {
-      url = `${HERO_AVATAR_BASE_URL}/${hero.id}.jpg`;
+      // 生产环境使用固定的图片版本号
+      url = `${HERO_AVATAR_BASE_URL}/${hero.id}.jpg?v=${HERO_IMAGES_VERSION}`;
     }
   }
 

@@ -123,7 +123,7 @@
         "pwa": {
           "installPrompt": {
             "title": "Install App",
-            "description": "Install Vainglory Tactics on your device for faster startup and offline access.",
+            "description": "Install Vainglory BP on your device for faster startup and offline access.",
             "install": "Install",
             "features": {
               "offline": "Offline Access - Use even without internet",
