@@ -146,39 +146,33 @@ jobs:
           echo ""
           echo "3. Promotion 到生产环境..."
 
-          # 创建 Vercel 配置文件
-          echo "Creating Vercel project config..."
-          mkdir -p .vercel
-          cat > .vercel/project.json << EOF
-            {
-              "projectId": "$VERCEL_PROJECT_ID",
-              "orgId": "$VERCEL_ORG_ID"
-            }
-        EOF
+          # 使用 API 直接进行 promotion
+          echo "Using Vercel API to promote..."
+          PROMOTE_RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID/promote?teamId=$VERCEL_ORG_ID")
 
-          # 使用 Vercel CLI 进行 promotion
-          echo "Using Vercel CLI to promote..."
-          if npx vercel@latest promote $DEPLOYMENT_ID --scope=$VERCEL_ORG_ID --yes; then
+          echo "Promotion Response: $PROMOTE_RESPONSE"
+
+          if echo "$PROMOTE_RESPONSE" | jq -e '.ready' | grep -q "true"; then
             echo ""
             echo "✅ Promotion 完成！"
             echo "🌐 Production URL: https://vgbp.luwei.host"
           else
             echo ""
-            echo "❌ CLI Promotion 失败"
-            echo "尝试使用备用方法..."
+            echo "❌ API Promotion 失败，尝试更新 target..."
 
-            # 备用：更新部署的 target 字段
-            curl -s -X PATCH \
+            # 备用方法：更新部署的 target 字段
+            PATCH_RESPONSE=$(curl -s -X PATCH \
               -H "Authorization: Bearer $VERCEL_TOKEN" \
               -H "Content-Type: application/json" \
               -d '{"target": "production"}' \
-              "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID"
+              "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID")
 
-            echo "✅ 已通过 API 设置 target"
+            echo "Patch Response: $PATCH_RESPONSE"
+            echo "✅ 已尝试通过 API 设置 target 为 production"
           fi
-
-          # 清理临时配置文件
-          rm -rf .vercel
         else
           echo ""
           echo "❌ 无法找到对应的部署"
@@ -198,7 +192,7 @@ jobs:
         draft: false
         prerelease: false
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT }}
 
     - name: Summary
       run: |
