@@ -4,24 +4,24 @@
   "description": "Vainglory 战术选角助手",
   "icons": [
     {
-      "src": "/web-app-manifest-192x192.png",
+      "src": "/web-app-manifest-192x192.png?v=0.0.7",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/web-app-manifest-512x512.png",
+      "src": "/web-app-manifest-512x512.png?v=0.0.7",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/favicon-96x96.png",
+      "src": "/favicon-96x96.png?v=0.0.7",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "/apple-touch-icon.png",
+      "src": "/apple-touch-icon.png?v=0.0.7",
       "sizes": "180x180",
       "type": "image/png"
     }
@@ -32,7 +32,6 @@
   "start_url": "/",
   "orientation": "portrait",
   "lang": "zh-CN",
-  "last_updated": "2025-12-07T07:40:55.345Z",
-  "version": "0.0.7",
-  "build_time": "2025-12-07T07:55:42.614Z"
+  "last_updated": "2025-12-07T07:59:34.007Z",
+  "version": "0.0.7"
 }
