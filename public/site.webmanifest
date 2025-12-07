@@ -4,24 +4,24 @@
   "description": "Vainglory 战术选角助手",
   "icons": [
     {
-      "src": "/web-app-manifest-192x192.png?v=0.0.37",
+      "src": "/web-app-manifest-192x192.png?v=0.0.39",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/web-app-manifest-512x512.png?v=0.0.37",
+      "src": "/web-app-manifest-512x512.png?v=0.0.39",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/favicon-96x96.png?v=0.0.37",
+      "src": "/favicon-96x96.png?v=0.0.39",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "/apple-touch-icon.png?v=0.0.37",
+      "src": "/apple-touch-icon.png?v=0.0.39",
       "sizes": "180x180",
       "type": "image/png"
     }
@@ -32,11 +32,11 @@
   "start_url": "/",
   "orientation": "portrait",
   "lang": "zh-CN",
-  "last_updated": "2025-12-07T12:05:27.338Z",
-  "version": "0.0.37",
-  "build_time": "2025-12-07T12:05:27.306Z",
+  "last_updated": "2025-12-07T12:16:45.043Z",
+  "version": "0.0.39",
+  "build_time": "2025-12-07T12:16:45.013Z",
   "build_info": {
     "environment": "development",
-    "commit": "99cd25a"
+    "commit": "a11fb9d"
   }
 }
