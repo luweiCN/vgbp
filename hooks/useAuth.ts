@@ -154,6 +154,12 @@ export const useAuth = () => {
 
   // 使用 ref 来跟踪初始化状态，避免依赖 authState
   const initializedRef = useRef(false);
+  // 跟踪重试次数，防止无限循环
+  const retryCountRef = useRef(0);
+  // 跟踪是否正在重试，避免并发重试
+  const isRetryingRef = useRef(false);
+  // 最大重试次数
+  const MAX_RETRY_COUNT = 3;
 
   useEffect(() => {
     // 检查 Supabase 是否配置
@@ -257,29 +263,59 @@ export const useAuth = () => {
     // 添加超时保护，防止永远加载
     const loadingTimeout = setTimeout(async () => {
       setAuthState(prev => {
-        if (prev.loading) {
-          console.log('⚠️ [Auth Timeout] 认证加载超时，尝试重试获取会话...');
+        if (prev.loading && !isRetryingRef.current && retryCountRef.current < MAX_RETRY_COUNT) {
+          console.log(`⚠️ [Auth Timeout] 认证加载超时，开始第 ${retryCountRef.current + 1}/${MAX_RETRY_COUNT} 次重试...`);
+
+          // 设置重试状态
+          isRetryingRef.current = true;
+          retryCountRef.current++;
 
           // 超时后使用重试机制
           const retrySession = async () => {
-            console.log('🔄 [Auth Timeout] 开始重试获取会话...');
-            const { session, error } = await getSessionWithRetry();
+            try {
+              const { session, error } = await getSessionWithRetry();
 
-            if (error) {
-              console.error('❌ [Auth Timeout] 重试失败，设置未认证状态:', error);
+              if (error) {
+                console.error(`❌ [Auth Timeout] 第 ${retryCountRef.current} 次重试失败:`, error);
+
+                if (retryCountRef.current >= MAX_RETRY_COUNT) {
+                  console.error(`❌ [Auth Timeout] 已达到最大重试次数 ${MAX_RETRY_COUNT}，停止重试`);
+                  setAuthState({
+                    user: null,
+                    session: null,
+                    loading: false,
+                    isOnlineMode: false
+                  });
+                } else {
+                  // 继续重试
+                  isRetryingRef.current = false;
+                }
+              } else {
+                console.log(`✅ [Auth Timeout] 第 ${retryCountRef.current} 次重试成功`);
+                await handleSession(session, 'timeout', setAuthState);
+              }
+            } catch (err) {
+              console.error(`❌ [Auth Timeout] 第 ${retryCountRef.current} 次重试异常:`, err);
               setAuthState({
                 user: null,
                 session: null,
                 loading: false,
                 isOnlineMode: false
               });
-            } else {
-              console.log('✅ [Auth Timeout] 重试成功');
-              await handleSession(session, 'timeout', setAuthState);
+            } finally {
+              isRetryingRef.current = false;
             }
           };
 
           retrySession();
+        } else if (prev.loading && retryCountRef.current >= MAX_RETRY_COUNT) {
+          console.error(`❌ [Auth Timeout] 已达到最大重试次数，停止加载`);
+          setAuthState({
+            user: null,
+            session: null,
+            loading: false,
+            isOnlineMode: false
+          });
         }
         return prev;
       });
