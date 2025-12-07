@@ -54,7 +54,7 @@ export default defineConfig(({ mode }) => {
         VitePWA({
           registerType: 'autoUpdate',
           strategies: 'generateSW',
-          includeAssets: ['pwa-icon-192.png', 'pwa-icon-512.png', 'favicon-96x96.png', 'apple-touch-icon.png'],
+          includeAssets: ['web-app-manifest-192x192.png', 'web-app-manifest-512x512.png', 'favicon-96x96.png', 'apple-touch-icon.png'],
           devOptions: {
             enabled: true,
             type: 'module'
