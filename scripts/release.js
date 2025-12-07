@@ -14,17 +14,13 @@ const isCI = process.env.CI || process.env.GITHUB_ACTIONS;
 console.log('🚀 开始发布流程...\n');
 
 try {
-  // 1. 更新版本号
-  console.log('1️⃣ 更新版本号...');
-  execSync(`node ${path.join(__dirname, 'update-version.js')}`, { stdio: 'inherit' });
-
-  // 2. 生成发布文案
-  console.log('\n2️⃣ 生成发布文案...');
+  // 1. 生成发布文案
+  console.log('1️⃣ 生成发布文案...');
   execSync(`node ${path.join(__dirname, 'generate-release-notes.mjs')}`, { stdio: 'inherit' });
 
-  // 3. 如果不是 CI 环境，运行构建测试
+  // 2. 如果不是 CI 环境，运行构建测试
   if (!isCI) {
-    console.log('\n3️⃣ 本地构建测试...');
+    console.log('\n2️⃣ 本地构建测试...');
     execSync('npm run build:vercel', { stdio: 'inherit' });
   }
 
