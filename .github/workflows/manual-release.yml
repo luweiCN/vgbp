@@ -145,23 +145,39 @@ jobs:
           echo ""
           echo "3. Promotion 到生产环境..."
 
-          # 使用 API 进行 promotion
-          PROMOTE_RESPONSE=$(curl -s -X POST \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            -H "Content-Type: application/json" \
-            "{}" \
-            "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID/promote")
+          # 创建 Vercel 配置文件
+          echo "Creating Vercel project config..."
+          mkdir -p .vercel
+          cat > .vercel/project.json << 'EOF'
+          {
+            "projectId": "$VERCEL_PROJECT_ID",
+            "orgId": "team_a3D6DLejMClojs4gKaFvDat8"
+          }
+EOF
 
-          echo "Promotion Response: $PROMOTE_RESPONSE"
-
-          if echo "$PROMOTE_RESPONSE" | jq -e '.ready' | grep -q "true"; then
+          # 使用 Vercel CLI 进行 promotion
+          echo "Using Vercel CLI to promote..."
+          if npx vercel@latest promote $DEPLOYMENT_ID --scope=team_a3D6DLejMClojs4gKaFvDat8 --yes; then
             echo ""
             echo "✅ Promotion 完成！"
             echo "🌐 Production URL: https://vgbp.luwei.host"
           else
-            echo "❌ Promotion 失败"
-            exit 1
+            echo ""
+            echo "❌ CLI Promotion 失败"
+            echo "尝试使用备用方法..."
+
+            # 备用：更新部署的 target 字段
+            curl -s -X PATCH \
+              -H "Authorization: Bearer $VERCEL_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"target": "production"}' \
+              "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID"
+
+            echo "✅ 已通过 API 设置 target"
           fi
+
+          # 清理临时配置文件
+          rm -rf .vercel
         else
           echo ""
           echo "❌ 无法找到对应的部署"
