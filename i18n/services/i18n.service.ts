@@ -303,6 +303,14 @@ class I18nService implements I18nServiceInterface {
 
     this.isLoading[language] = true;
 
+    // 特殊处理：如果是 fallback 语言（zh-CN），直接使用内联翻译
+    if (language === this.fallbackLanguage) {
+      console.log(`Using inline fallback language pack for ${language}`);
+      this.memoryCache[language] = zhCNTranslations;
+      this.isLoading[language] = false;
+      return zhCNTranslations;
+    }
+
     try {
       // 3. 从网络加载（如果是首次）或使用缓存
       console.log(`Loading language pack for ${language}...`);
@@ -332,11 +340,6 @@ class I18nService implements I18nServiceInterface {
       return pack;
     } catch (error) {
       this.isLoading[language] = false;
-
-      // 如果是fallback语言，抛出错误
-      if (language === this.fallbackLanguage) {
-        throw error;
-      }
 
       // 尝试加载fallback语言
       console.warn(`Failed to load ${language}, falling back to ${this.fallbackLanguage}`);
