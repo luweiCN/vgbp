@@ -1,12 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useI18n } from '@/i18n/hooks/useI18n';
+import { BuildInfo } from '@/types/version';
 
-interface VersionInfo {
-  version: string;
-  buildTime: string;
-  environment: string;
-  gitCommit?: string;
-}
+const buildInfo: BuildInfo = __BUILD_INFO__;
 
 interface VersionDisplayProps {
   showDetails: boolean;
@@ -18,50 +14,22 @@ export const VersionDisplay: React.FC<VersionDisplayProps> = ({
   onShowDetailsChange
 }) => {
   const { t } = useI18n();
-  const [version, setVersion] = useState<VersionInfo | null>(null);
-
-  useEffect(() => {
-    // 从 /version.json 获取版本信息
-    fetch('/version.json')
-      .then(res => {
-        if (!res.ok) {
-          return {
-            version: '0.0.0',
-            buildTime: new Date().toISOString(),
-            environment: import.meta.env.MODE,
-            gitCommit: undefined
-          };
-        }
-        return res.json();
-      })
-      .then(data => setVersion(data))
-      .catch(() => {
-        setVersion({
-          version: '0.0.0',
-          buildTime: new Date().toISOString(),
-          environment: import.meta.env.MODE,
-          gitCommit: undefined
-        });
-      });
-  }, []);
-
-  if (!version) return null;
 
   // 获取环境显示文本
   const getEnvironmentText = () => {
-    switch (version.environment) {
+    switch (buildInfo.environment) {
       case 'production':
         return '';
       case 'development':
-        return t('ui.version.environment.development');
+        return t('ui.buildInfo.environment.development');
       default:
-        return version.environment;
+        return buildInfo.environment;
     }
   };
 
   // 获取环境颜色
   const getEnvironmentColor = () => {
-    switch (version.environment) {
+    switch (buildInfo.environment) {
       case 'production':
         return '';
       case 'development':
@@ -81,7 +49,7 @@ export const VersionDisplay: React.FC<VersionDisplayProps> = ({
             data-version-button
             onClick={() => onShowDetailsChange(!showDetails)}
           >
-            <span>v{version.version}</span>
+            <span>v{buildInfo.version}</span>
             {envText && (
               <span className={`ml-1 ${getEnvironmentColor()}`}>({envText})</span>
             )}
@@ -98,13 +66,13 @@ export const VersionDisplay: React.FC<VersionDisplayProps> = ({
         >
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="font-medium text-white">{t('ui.version.label.version')}</span>
-              <span className="text-zinc-300">{version.version}</span>
+              <span className="font-medium text-white">{t('ui.buildInfo.label.version')}</span>
+              <span className="text-zinc-300">{buildInfo.version}</span>
             </div>
             <div className="flex justify-between items-start">
-              <span className="font-medium text-white">{t('ui.version.label.buildTime')}</span>
+              <span className="font-medium text-white">{t('ui.buildInfo.label.buildTime')}</span>
               <span className="text-zinc-300 text-right">
-                {new Date(version.buildTime).toLocaleString('zh-CN', {
+                {new Date(buildInfo.buildTime).toLocaleString('zh-CN', {
                   year: 'numeric',
                   month: '2-digit',
                   day: '2-digit',
@@ -115,15 +83,15 @@ export const VersionDisplay: React.FC<VersionDisplayProps> = ({
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="font-medium text-white">{t('ui.version.label.environment')}</span>
+              <span className="font-medium text-white">{t('ui.buildInfo.label.environment')}</span>
               <span className={getEnvironmentColor()}>
-                {version.environment === 'production' ? t('ui.version.environment.production') : getEnvironmentText()}
+                {buildInfo.environment === 'production' ? t('ui.buildInfo.environment.production') : getEnvironmentText()}
               </span>
             </div>
-            {version.gitCommit && (
+            {buildInfo.gitCommit && (
               <div className="flex justify-between items-center">
-                <span className="font-medium text-white">{t('ui.version.label.commit')}</span>
-                <span className="font-mono text-zinc-300 text-right">{version.gitCommit}</span>
+                <span className="font-medium text-white">{t('ui.buildInfo.label.commit')}</span>
+                <span className="font-mono text-zinc-300 text-right">{buildInfo.gitCommit}</span>
               </div>
             )}
           </div>

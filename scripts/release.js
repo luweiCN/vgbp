@@ -18,17 +18,13 @@ try {
   console.log('1️⃣ 更新版本号...');
   execSync(`node ${path.join(__dirname, 'update-version.js')}`, { stdio: 'inherit' });
 
-  // 2. 更新 PWA manifest 和图标（版本文件将在构建时生成）
-  console.log('\n2️⃣ 更新 PWA manifest...');
-  execSync(`node ${path.join(__dirname, 'build-version-info.mjs')}`, { stdio: 'inherit' });
-
-  // 3. 生成发布文案
-  console.log('\n3️⃣ 生成发布文案...');
+  // 2. 生成发布文案
+  console.log('\n2️⃣ 生成发布文案...');
   execSync(`node ${path.join(__dirname, 'generate-release-notes.mjs')}`, { stdio: 'inherit' });
 
-  // 4. 如果不是 CI 环境，运行构建测试
+  // 3. 如果不是 CI 环境，运行构建测试
   if (!isCI) {
-    console.log('\n4️⃣ 本地构建测试...');
+    console.log('\n3️⃣ 本地构建测试...');
     execSync('npm run build:vercel', { stdio: 'inherit' });
   }
 

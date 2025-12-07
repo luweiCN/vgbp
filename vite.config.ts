@@ -1,7 +1,9 @@
 import path from 'path';
+import fs from 'fs';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { execSync } from 'child_process';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
@@ -10,6 +12,34 @@ export default defineConfig(({ mode }) => {
     // build:github-pages 会设置 NPM_SCRIPT=github-pages
     const npmScript = process.env.npm_config_script || process.env.npm_lifecycle_event;
     const isGitHubPages = npmScript === 'build:github-pages';
+
+    // 生成构建信息
+    const getEnvironment = () => {
+        if (mode) return mode;
+        if (process.env.NODE_ENV) return process.env.NODE_ENV;
+        if (npmScript && npmScript.includes('build')) return 'production';
+        return 'development';
+    };
+
+    const getCurrentGitCommit = () => {
+        try {
+            return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim().substring(0, 7);
+        } catch (error) {
+            return 'unknown';
+        }
+    };
+
+    // 读取package.json版本
+    const packageJsonPath = path.resolve(__dirname, 'package.json');
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    const version = packageJson.version;
+
+    const buildInfo = {
+        version,
+        buildTime: new Date().toISOString(),
+        environment: getEnvironment(),
+        gitCommit: getCurrentGitCommit()
+    };
 
     return {
       // 双平台部署配置
@@ -86,7 +116,9 @@ export default defineConfig(({ mode }) => {
         // 关键：添加 import.meta.env 支持，确保与代码使用方式一致
         'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
         'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-        'import.meta.env.IS_GITHUB_PAGES': JSON.stringify(isGitHubPages)
+        'import.meta.env.IS_GITHUB_PAGES': JSON.stringify(isGitHubPages),
+        // 注入构建信息
+        '__BUILD_INFO__': JSON.stringify(buildInfo)
       },
       resolve: {
         alias: {
