@@ -18,20 +18,25 @@ try {
   console.log('1️⃣ 更新版本号...');
   execSync(`node ${path.join(__dirname, 'update-version.js')}`, { stdio: 'inherit' });
 
-  // 2. 生成版本信息和 PWA manifest 更新
-  console.log('\n2️⃣ 生成版本信息...');
+  // 2. 生成版本文件（获取最新的 git commit）
+  console.log('\n2️⃣ 生成版本文件...');
+  execSync(`node ${path.join(__dirname, 'generate-version-files.mjs')} --mode production`, { stdio: 'inherit' });
+
+  // 3. 更新 PWA manifest 和图标
+  console.log('\n3️⃣ 更新 PWA manifest...');
   execSync(`node ${path.join(__dirname, 'build-version-info.mjs')}`, { stdio: 'inherit' });
 
-  // 3. 生成发布文案
-  console.log('\n3️⃣ 生成发布文案...');
+  // 4. 生成发布文案
+  console.log('\n4️⃣ 生成发布文案...');
   execSync(`node ${path.join(__dirname, 'generate-release-notes.mjs')}`, { stdio: 'inherit' });
 
-  // 4. 如果不是 CI 环境，运行构建测试
+  // 5. 如果不是 CI 环境，运行构建测试
   if (!isCI) {
-    console.log('\n4️⃣ 本地构建测试...');
+    console.log('\n5️⃣ 本地构建测试...');
     execSync('npm run build:vercel', { stdio: 'inherit' });
   }
 
+  
   // 读取新版本号和发布文案
   const packageJson = JSON.parse(execSync('cat package.json', { encoding: 'utf8' }));
   const newVersion = packageJson.version;

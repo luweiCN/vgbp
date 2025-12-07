@@ -23,22 +23,5 @@ const newVersion = `${major}.${minor}.${patch + 1}`;
 packageJson.version = newVersion;
 fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
 
-// 读取并更新 site.webmanifest
-const manifestPath = path.join(rootDir, 'public/site.webmanifest');
-if (fs.existsSync(manifestPath)) {
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-
-  // 添加或更新版本号
-  manifest.version = newVersion;
-
-  // 添加构建时间戳用于缓存更新
-  manifest.build_time = new Date().toISOString();
-
-  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-
-  console.log(`✅ 版本已更新: ${currentVersion} → ${newVersion}`);
-  console.log(`📦 package.json 和 site.webmanifest 已更新`);
-} else {
-  console.log(`✅ 版本已更新: ${currentVersion} → ${newVersion}`);
-  console.log(`📦 package.json 已更新（site.webmanifest 不存在）`);
-}
+console.log(`✅ 版本已更新: ${currentVersion} → ${newVersion}`);
+console.log(`📦 package.json 已更新`);

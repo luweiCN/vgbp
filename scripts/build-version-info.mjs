@@ -8,61 +8,12 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// 获取环境参数，优先使用命令行参数
-const getEnvironment = () => {
-  // 从命令行参数获取环境
-  const args = process.argv.slice(2);
-  const modeIndex = args.indexOf('--mode');
-
-  if (modeIndex !== -1 && args[modeIndex + 1]) {
-    const mode = args[modeIndex + 1];
-    return mode;
-  }
-
-  // 从环境变量获取
-  if (process.env.NODE_ENV) {
-    return process.env.NODE_ENV;
-  }
-
-  // 默认根据脚本名判断
-  const npmScript = process.env.npm_config_script || process.env.npm_lifecycle_event;
-  if (npmScript && npmScript.includes('build')) {
-    return 'production';
-  }
-
-  return 'development';
-};
-
 // 读取版本信息
 const packageJsonPath = path.join(__dirname, '../package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 const version = packageJson.version;
 
-// 创建统一的版本信息对象
-const versionInfo = {
-  version,
-  buildTime: new Date().toISOString(),
-  environment: getEnvironment(),
-  gitCommit: process.env.GITHUB_SHA ? process.env.GITHUB_SHA.substring(0, 7) : 'unknown'
-};
-
-// 1. 写入到 src 目录（Vite 会在构建时处理）
-const srcDir = path.join(__dirname, '../src');
-if (!fs.existsSync(srcDir)) {
-  fs.mkdirSync(srcDir, { recursive: true });
-}
-fs.writeFileSync(
-  path.join(srcDir, 'version.generated.json'),
-  JSON.stringify(versionInfo, null, 2)
-);
-
-// 2. 写入到 public 目录（作为 API 端点）
-fs.writeFileSync(
-  path.join(__dirname, '../public/version.json'),
-  JSON.stringify(versionInfo, null, 2)
-);
-
-// 3. 更新 PWA manifest
+// 更新 PWA manifest
 const manifestPath = path.join(__dirname, '../public/site.webmanifest');
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
@@ -70,11 +21,11 @@ const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const updatedManifest = {
   ...manifest,
   version,
-  last_updated: versionInfo.buildTime,
+  last_updated: new Date().toISOString(),
   // 添加构建信息到 manifest
   build_info: {
-    environment: versionInfo.environment,
-    commit: versionInfo.gitCommit
+    environment: 'production', // PWA manifest 总是用于生产环境
+    commit: 'production' // 在构建时会设置为实际的 commit
   },
   // 更新PWA图标缓存破坏参数
   icons: manifest.icons.map(icon => ({
@@ -87,11 +38,5 @@ const updatedManifest = {
 
 fs.writeFileSync(manifestPath, JSON.stringify(updatedManifest, null, 2));
 
-console.log(`✅ Version info generated: v${version}`);
-console.log(`📦 Environment: ${versionInfo.environment}`);
-console.log(`🔧 Git commit: ${versionInfo.gitCommit}`);
-console.log(`📄 Created version files:`);
-console.log(`   - src/version.generated.json (for build)`);
-console.log(`   - public/version.json (for runtime)`);
-console.log(`   - public/site.webmanifest (for PWA)`);
+console.log(`✅ PWA manifest updated: v${version}`);
 console.log(`🖼️ PWA icons updated with cache-busting parameters`);
