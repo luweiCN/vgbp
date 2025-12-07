@@ -57,31 +57,53 @@ const supabaseProxy = new Proxy(rawSupabase, {
     // 如果是函数，返回包装后的函数
     if (typeof value === 'function') {
       return function(...args: any[]) {
+        // 添加调用日志
+        const isAuthCall = prop === 'auth' || (prop === 'from' && args.length > 0);
+        if (isAuthCall) {
+          console.log(`🔗 [Supabase Proxy] 调用方法: ${prop}`, args.length > 0 ? args[0] : '');
+        }
+
         try {
+          const startTime = Date.now();
           const result = value.apply(target, args);
 
-          // 处理返回 Promise 的情况
-          if (result && typeof result.then === 'function') {
-            return result.catch((error: any) => {
-              if (SupabaseErrorTranslator.isSupabaseError(error)) {
-                const currentLang = i18nService.getCurrentLanguage();
-                const translatedMessage = SupabaseErrorTranslator.translate(error, currentLang);
-                const translatedError = new Error(translatedMessage);
-                // 保留原始错误信息
-                Object.assign(translatedError, {
-                  originalError: error,
-                  code: error.code,
-                  status: error.status
-                });
-                throw translatedError;
-              }
-              throw error;
-            });
+          // 如果是同步返回结果
+          if (!result || typeof result.then !== 'function') {
+            if (isAuthCall) {
+              console.log(`✅ [Supabase Proxy] ${prop} 同步调用完成 (${Date.now() - startTime}ms)`);
+            }
+            return result;
           }
 
-          return result;
+          // 如果是 Promise，添加日志
+          return result.then((data: any) => {
+            if (isAuthCall) {
+              console.log(`✅ [Supabase Proxy] ${prop} Promise 成功 (${Date.now() - startTime}ms)`);
+            }
+            return data;
+          }).catch((error: any) => {
+            if (isAuthCall) {
+              console.error(`❌ [Supabase Proxy] ${prop} Promise 失败 (${Date.now() - startTime}ms):`, error);
+            }
+            if (SupabaseErrorTranslator.isSupabaseError(error)) {
+              const currentLang = i18nService.getCurrentLanguage();
+              const translatedMessage = SupabaseErrorTranslator.translate(error, currentLang);
+              const translatedError = new Error(translatedMessage);
+              // 保留原始错误信息
+              Object.assign(translatedError, {
+                originalError: error,
+                code: error.code,
+                status: error.status
+              });
+              throw translatedError;
+            }
+            throw error;
+          });
         } catch (error) {
           // 同步错误处理
+          if (isAuthCall) {
+            console.error(`❌ [Supabase Proxy] ${prop} 同步调用失败:`, error);
+          }
           if (SupabaseErrorTranslator.isSupabaseError(error)) {
             const currentLang = i18nService.getCurrentLanguage();
             const translatedError = new Error(SupabaseErrorTranslator.translate(error, currentLang));
