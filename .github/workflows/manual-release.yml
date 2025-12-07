@@ -85,6 +85,7 @@ jobs:
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         COMMIT_SHA: ${{ steps.version.outputs.commit_sha }}
       run: |
         echo "🔄 开始自动 promotion 流程..."
@@ -151,13 +152,13 @@ jobs:
           cat > .vercel/project.json << EOF
             {
               "projectId": "$VERCEL_PROJECT_ID",
-              "orgId": "team_a3D6DLejMClojs4gKaFvDat8"
+              "orgId": "$VERCEL_ORG_ID"
             }
         EOF
 
           # 使用 Vercel CLI 进行 promotion
           echo "Using Vercel CLI to promote..."
-          if npx vercel@latest promote $DEPLOYMENT_ID --scope=team_a3D6DLejMClojs4gKaFvDat8 --yes; then
+          if npx vercel@latest promote $DEPLOYMENT_ID --scope=$VERCEL_ORG_ID --yes; then
             echo ""
             echo "✅ Promotion 完成！"
             echo "🌐 Production URL: https://vgbp.luwei.host"
