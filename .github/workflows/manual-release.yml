@@ -73,17 +73,55 @@ jobs:
         git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
         git push origin "v${{ steps.version.outputs.version }}"
 
-    - name: Build for deployment
-      run: npm run build:vercel
+    - name: Trigger Vercel Build
+      run: |
+        # 推送代码触发 Vercel 构建
+        git push origin main
+        echo "✅ 代码已推送，等待 Vercel 完成构建..."
+        echo "等待 30 秒让 Vercel 开始构建..."
+        sleep 30
 
-    - name: Deploy to Vercel
-      uses: amondnet/vercel-action@v25
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        vercel-args: '--prod'
-        working-directory: ./
+    - name: Promote to Production
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      run: |
+        # 获取最新的部署 ID
+        DEPLOYMENT_ID=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+          "https://api.vercel.com/v9/projects" | \
+          jq -r '.projects[] | select(.name=="vgbp") | .latestDeployments[0]')
+
+        if [ -n "$DEPLOYMENT_ID" ]; then
+          # 等待部署完成
+          echo "等待部署完成..."
+          for i in {1..30}; do
+            STATUS=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+              "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID" | \
+              jq -r '.ready')
+            if [ "$STATUS" = "true" ]; then
+              echo "✅ 部署完成"
+              break
+            fi
+            echo "等待中... ($i/30)"
+            sleep 10
+          done
+
+          # Promotion 到生产环境
+          echo "正在 promotion 到生产环境..."
+          curl -X POST \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"deploymentId\": \"$DEPLOYMENT_ID\",
+              \"target\": \"production\"
+            }" \
+            "https://api.vercel.com/v12/deployments/$DEPLOYMENT_ID/promote"
+
+          echo "✅ 已 promotion 到生产环境"
+          echo "🌐 Production URL: https://vgbp.luwei.host"
+        else
+          echo "❌ 无法获取部署 ID"
+          exit 1
+        fi
 
     - name: Create GitHub Release
       if: ${{ github.event.inputs.create_github_release == 'true' }}
