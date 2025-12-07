@@ -1,7 +1,7 @@
 {
   "name": "vainglory-draft-assistant",
   "private": true,
-  "version": "0.0.35",
+  "version": "0.0.37",
   "type": "module",
   "scripts": {
     "dev": "node scripts/copy-i18n.mjs && node scripts/build-version-info.mjs && vite",
