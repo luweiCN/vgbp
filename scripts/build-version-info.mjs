@@ -49,7 +49,14 @@ const updatedManifest = {
   build_info: {
     environment: versionInfo.environment,
     commit: versionInfo.gitCommit
-  }
+  },
+  // 更新PWA图标缓存破坏参数
+  icons: manifest.icons.map(icon => ({
+    ...icon,
+    src: icon.src.includes('?')
+      ? icon.src.replace(/\?v=[\d.]+/, `?v=${version}`)
+      : `${icon.src}?v=${version}`
+  }))
 };
 
 fs.writeFileSync(manifestPath, JSON.stringify(updatedManifest, null, 2));
@@ -61,3 +68,4 @@ console.log(`📄 Created version files:`);
 console.log(`   - src/version.generated.json (for build)`);
 console.log(`   - public/version.json (for runtime)`);
 console.log(`   - public/site.webmanifest (for PWA)`);
+console.log(`🖼️ PWA icons updated with cache-busting parameters`);
