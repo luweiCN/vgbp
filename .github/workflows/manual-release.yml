@@ -139,10 +139,50 @@ jobs:
           # 5. 使用 CLI 进行 Promotion
           echo ""
           echo "5. 使用 Vercel CLI Promotion 到 Production..."
+
+          # 先获取原部署的 ID
+          ORIGINAL_DEPLOY_ID=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v6/deployments?limit=10&projectId=$VERCEL_PROJECT_ID" | \
+            jq -r ".deployments[] | select(.url | endswith(\"$DEPLOYMENT_URL\")) | .uid")
+
           if vercel promote $DEPLOYMENT_URL --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID --yes; then
             echo ""
-            echo "✅ Promotion 成功完成！"
-            echo "🌐 Production URL: https://vgbp.luwei.host"
+            echo "✅ Promotion 已启动！等待 Production Rebuild 完成..."
+            echo "原部署 ID: $ORIGINAL_DEPLOY_ID"
+
+            # 等待 Production Rebuild 部署完成
+            for i in {1..30}; do
+              echo "查找 Production Rebuild 部署... (尝试 $i/30)"
+
+              # 获取最新的 production 部署
+              PROD_DEPLOY=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+                "https://api.vercel.com/v6/deployments?limit=5&projectId=$VERCEL_PROJECT_ID&target=production" | \
+                jq -r '.deployments[0]')
+
+              # 检查 commit 是否匹配
+              PROD_COMMIT=$(echo "$PROD_DEPLOY" | jq -r '.meta.githubCommitSha // empty')
+              if [ "$PROD_COMMIT" = "${COMMIT_SHA:0:7}" ] || [ "$PROD_COMMIT" = "$COMMIT_SHA" ]; then
+                DEPLOY_STATUS=$(echo "$PROD_DEPLOY" | jq -r '.readyState')
+                PROD_DEPLOY_ID=$(echo "$PROD_DEPLOY" | jq -r '.uid')
+                echo "找到 Production Rebuild 部署: $PROD_DEPLOY_ID"
+                echo "状态: $DEPLOY_STATUS"
+
+                if [ "$DEPLOY_STATUS" = "READY" ]; then
+                  echo ""
+                  echo "✅ Production Rebuild 完成！"
+                  echo "🌐 Production URL: https://vgbp.luwei.host"
+                  break
+                fi
+
+                if [ "$DEPLOY_STATUS" = "ERROR" ]; then
+                  echo "❌ Production Rebuild 失败"
+                  exit 1
+                fi
+              fi
+
+              echo "等待中... ($i/30)"
+              sleep 10
+            done
           else
             echo ""
             echo "❌ CLI Promotion 失败"
