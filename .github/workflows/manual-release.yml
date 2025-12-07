@@ -56,27 +56,27 @@ jobs:
       run: npm run release
       id: release
 
-    - name: Get version
+    - name: Get version and commit hash
       id: version
-      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        COMMIT_SHA=$(git rev-parse HEAD)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
 
     - name: Commit changes
       run: |
         git add .
         git commit -m "release: v${{ steps.version.outputs.version }} [skip ci]"
 
-    - name: Push changes
-      run: git push origin main
-
-    - name: Create tag
+    - name: Push changes and tag
       run: |
+        git push origin main
         git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
         git push origin "v${{ steps.version.outputs.version }}"
 
-    - name: Trigger Vercel Build
+    - name: Wait for Vercel build
       run: |
-        # 推送代码触发 Vercel 构建
-        git push origin main
         echo "✅ 代码已推送，等待 Vercel 完成构建..."
         echo "等待 30 秒让 Vercel 开始构建..."
         sleep 30
@@ -84,43 +84,89 @@ jobs:
     - name: Promote to Production
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        COMMIT_SHA: ${{ steps.version.outputs.commit_sha }}
       run: |
-        # 获取最新的部署 ID
-        DEPLOYMENT_ID=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
-          "https://api.vercel.com/v9/projects" | \
-          jq -r '.projects[] | select(.name=="vgbp") | .latestDeployments[0]')
+        echo "🔄 开始自动 promotion 流程..."
+        echo "Commit SHA: $COMMIT_SHA"
+        echo ""
 
-        if [ -n "$DEPLOYMENT_ID" ]; then
+        # 获取与当前 commit 对应的部署
+        echo "1. 查找对应 commit 的部署..."
+        # 使用 git commit SHA 的前 7 位
+        SHORT_SHA=${COMMIT_SHA:0:7}
+        echo "Looking for deployment with commit: $SHORT_SHA"
+
+        # 获取部署列表，查找匹配的 commit
+        for i in {1..10}; do
+          echo "尝试获取部署列表 (尝试 $i/10)..."
+
+          # 获取最近的部署
+          DEPLOYMENT_ID=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v6/deployments?limit=5&projectId=$VERCEL_PROJECT_ID" | \
+            jq -r ".deployments[] | select(.meta.githubCommitSha // contains(\"$SHORT_SHA\")) | .uid" | \
+            head -1)
+
+          if [ -n "$DEPLOYMENT_ID" ] && [ "$DEPLOYMENT_ID" != "null" ]; then
+            echo "✅ 找到部署 ID: $DEPLOYMENT_ID"
+            break
+          fi
+
+          echo "未找到对应部署，等待 10 秒后重试..."
+          sleep 10
+        done
+
+        if [ -n "$DEPLOYMENT_ID" ] && [ "$DEPLOYMENT_ID" != "null" ]; then
           # 等待部署完成
-          echo "等待部署完成..."
+          echo ""
+          echo "2. 等待部署完成..."
           for i in {1..30}; do
-            STATUS=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+            DEPLOY_STATUS=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
               "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID" | \
-              jq -r '.ready')
-            if [ "$STATUS" = "true" ]; then
+              jq -r '.readyState')
+
+            echo "部署状态: $DEPLOY_STATUS"
+
+            if [ "$DEPLOY_STATUS" = "READY" ]; then
               echo "✅ 部署完成"
               break
             fi
+
+            if [ "$DEPLOY_STATUS" = "ERROR" ]; then
+              echo "❌ 部署失败"
+              exit 1
+            fi
+
             echo "等待中... ($i/30)"
             sleep 10
           done
 
           # Promotion 到生产环境
-          echo "正在 promotion 到生产环境..."
-          curl -X POST \
+          echo ""
+          echo "3. Promotion 到生产环境..."
+
+          # 使用 API 进行 promotion
+          PROMOTE_RESPONSE=$(curl -s -X POST \
             -H "Authorization: Bearer $VERCEL_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"deploymentId\": \"$DEPLOYMENT_ID\",
-              \"target\": \"production\"
-            }" \
-            "https://api.vercel.com/v12/deployments/$DEPLOYMENT_ID/promote"
+            "{}" \
+            "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID/promote")
 
-          echo "✅ 已 promotion 到生产环境"
-          echo "🌐 Production URL: https://vgbp.luwei.host"
+          echo "Promotion Response: $PROMOTE_RESPONSE"
+
+          if echo "$PROMOTE_RESPONSE" | jq -e '.ready' | grep -q "true"; then
+            echo ""
+            echo "✅ Promotion 完成！"
+            echo "🌐 Production URL: https://vgbp.luwei.host"
+          else
+            echo "❌ Promotion 失败"
+            exit 1
+          fi
         else
-          echo "❌ 无法获取部署 ID"
-          exit 1
+          echo ""
+          echo "❌ 无法找到对应的部署"
+          echo "Commit SHA: $SHORT_SHA"
+          echo "请稍后在 Vercel 控制台手动 promotion"
         fi
 
     - name: Create GitHub Release
