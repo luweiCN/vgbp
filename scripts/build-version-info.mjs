@@ -24,19 +24,11 @@ const updatedManifest = {
   last_updated: new Date().toISOString(),
   // 添加构建信息到 manifest
   build_info: {
-    environment: 'production', // PWA manifest 总是用于生产环境
-    commit: 'production' // 在构建时会设置为实际的 commit
-  },
-  // 更新PWA图标缓存破坏参数
-  icons: manifest.icons.map(icon => ({
-    ...icon,
-    src: icon.src.includes('?')
-      ? icon.src.replace(/\?v=[\d.]+/, `?v=${version}`)
-      : `${icon.src}?v=${version}`
-  }))
+    environment: 'production',
+    commit: 'production'
+  }
 };
 
 fs.writeFileSync(manifestPath, JSON.stringify(updatedManifest, null, 2));
 
 console.log(`✅ PWA manifest updated: v${version}`);
-console.log(`🖼️ PWA icons updated with cache-busting parameters`);

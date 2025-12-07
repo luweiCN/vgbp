@@ -54,10 +54,26 @@ export default defineConfig(({ mode }) => {
         VitePWA({
           registerType: 'autoUpdate',
           strategies: 'generateSW',
-          includeAssets: ['web-app-manifest-192x192.png', 'web-app-manifest-512x512.png', 'favicon-96x96.png', 'apple-touch-icon.png'],
+          includeAssets: ['web-app-manifest-192x192.png', 'web-app-manifest-512x512.png', 'favicon-96x96.png', 'apple-touch-icon.png', 'favicon.svg'],
           devOptions: {
             enabled: true,
             type: 'module'
+          },
+          // 强制更新图标的缓存策略
+          workbox: {
+            runtimeCaching: [
+              {
+                urlPattern: /\.(?:png|jpg|jpeg|svg|ico)$/i,
+                handler: 'StaleWhileRevalidate',
+                options: {
+                  cacheName: 'icon-cache',
+                  expiration: {
+                    maxEntries: 10,
+                    maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+                  }
+                }
+              }
+            ]
           }
         })
       ],

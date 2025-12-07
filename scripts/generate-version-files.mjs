@@ -72,9 +72,29 @@ fs.writeFileSync(
   JSON.stringify(versionInfo, null, 2)
 );
 
+// 3. 更新 PWA manifest 图标版本号
+const manifestPath = path.join(__dirname, '../public/site.webmanifest');
+if (fs.existsSync(manifestPath)) {
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+  // 更新图标引用，添加版本参数
+  const updatedManifest = {
+    ...manifest,
+    icons: manifest.icons.map(icon => ({
+      ...icon,
+      src: icon.src.includes('?')
+        ? icon.src.replace(/\?v=[\d.]+/, `?v=${version}`)
+        : `${icon.src}?v=${version}`
+    }))
+  };
+
+  fs.writeFileSync(manifestPath, JSON.stringify(updatedManifest, null, 2));
+}
+
 console.log(`✅ Version files generated: v${version}`);
 console.log(`📦 Environment: ${versionInfo.environment}`);
 console.log(`🔧 Git commit: ${versionInfo.gitCommit}`);
 console.log(`📄 Created files:`);
 console.log(`   - src/version.generated.json (for build)`);
 console.log(`   - public/version.json (for runtime)`);
+console.log(`🖼️ PWA icons updated with cache-busting parameters`);
