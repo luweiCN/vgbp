@@ -66,11 +66,11 @@ export const VersionDisplay: React.FC<VersionDisplayProps> = ({
         >
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="font-medium text-white">{t('ui.buildInfo.label.version')}</span>
+              <span className="font-medium text-white">{t('ui.version.label.version')}</span>
               <span className="text-zinc-300">{buildInfo.version}</span>
             </div>
             <div className="flex justify-between items-start">
-              <span className="font-medium text-white">{t('ui.buildInfo.label.buildTime')}</span>
+              <span className="font-medium text-white">{t('ui.version.label.buildTime')}</span>
               <span className="text-zinc-300 text-right">
                 {new Date(buildInfo.buildTime).toLocaleString('zh-CN', {
                   year: 'numeric',
@@ -83,14 +83,14 @@ export const VersionDisplay: React.FC<VersionDisplayProps> = ({
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="font-medium text-white">{t('ui.buildInfo.label.environment')}</span>
+              <span className="font-medium text-white">{t('ui.version.label.environment')}</span>
               <span className={getEnvironmentColor()}>
-                {buildInfo.environment === 'production' ? t('ui.buildInfo.environment.production') : getEnvironmentText()}
+                {buildInfo.environment === 'production' ? t('ui.version.environment.production') : getEnvironmentText()}
               </span>
             </div>
             {buildInfo.gitCommit && (
               <div className="flex justify-between items-center">
-                <span className="font-medium text-white">{t('ui.buildInfo.label.commit')}</span>
+                <span className="font-medium text-white">{t('ui.version.label.commit')}</span>
                 <span className="font-mono text-zinc-300 text-right">{buildInfo.gitCommit}</span>
               </div>
             )}
