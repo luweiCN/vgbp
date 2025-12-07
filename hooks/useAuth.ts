@@ -18,6 +18,132 @@ export interface AuthState {
   isOnlineMode: boolean;
 }
 
+// 带重试机制的获取会话函数
+const getSessionWithRetry = async (
+  maxRetries: number = 3,
+  retryDelay: number = 1000
+): Promise<{ session: any | null; error: any | null }> => {
+  let lastError: any = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    console.log(`🔄 [Auth] 获取会话尝试 ${attempt}/${maxRetries}...`);
+
+    try {
+      // 使用 Promise.race 添加超时
+      const timeoutPromise = new Promise<{ session: null; error: Error }>((_, reject) => {
+        setTimeout(() => reject(new Error('Get session timeout')), 5000);
+      });
+
+      const sessionPromise = supabase.auth.getSession();
+
+      const result = await Promise.race([sessionPromise, timeoutPromise]) as any;
+
+      if (result.error) {
+        console.warn(`⚠️ [Auth] 尝试 ${attempt} 失败:`, result.error);
+        lastError = result.error;
+      } else {
+        console.log(`✅ [Auth] 尝试 ${attempt} 成功获取会话`);
+        return result;
+      }
+    } catch (err: any) {
+      console.warn(`⚠️ [Auth] 尝试 ${attempt} 异常:`, err.message);
+      lastError = err;
+    }
+
+    // 如果不是最后一次尝试，等待后重试
+    if (attempt < maxRetries) {
+      console.log(`⏳ [Auth] 等待 ${retryDelay}ms 后重试...`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      // 指数退避
+      retryDelay *= 2;
+    }
+  }
+
+  console.error(`❌ [Auth] 所有 ${maxRetries} 次尝试都失败了`);
+  return { session: null, error: lastError };
+};
+
+// 处理会话的通用函数
+const handleSession = async (
+  session: any | null,
+  source: 'initial' | 'timeout' | 'auth_change',
+  setAuthState: React.Dispatch<React.SetStateAction<AuthState>>
+) => {
+  console.log(`🔐 [Auth] 处理会话 - 来源: ${source}, 会话状态: ${session ? '有效' : '无'}`);
+
+  if (session?.user) {
+    // 先设置基本用户信息，避免长时间加载
+    const basicUserInfo = {
+      id: session.user.id,
+      email: session.user.email || '',
+      username: session.user.email?.split('@')[0] || '',
+      display_name: undefined
+    };
+
+    console.log(`👤 [Auth] 设置基本用户信息:`, basicUserInfo);
+
+    setAuthState({
+      user: basicUserInfo,
+      session,
+      loading: false,
+      isOnlineMode: true
+    });
+
+    // 异步获取详细profile信息
+    try {
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 2000);
+      });
+
+      const profilePromise = supabase
+        .from('profiles')
+        .select('username, display_name')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      let profile, profileError;
+      try {
+        console.log(`📋 [Auth] 获取用户详细信息...`);
+        const result = await Promise.race([profilePromise, timeoutPromise]) as any;
+        profile = result.data;
+        profileError = result.error;
+      } catch (raceError) {
+        console.warn(`⚠️ [Auth] 获取用户详细信息超时或失败:`, raceError);
+        profileError = raceError;
+      }
+
+      // maybeSingle() 不会在没有找到记录时报错，只会返回 null
+      // 只有在真正的查询错误时才抛出异常
+      if (profileError && profileError.code !== 'PGRST116') {
+        throw profileError;
+      }
+
+      // 更新用户信息为详细的profile数据（profile 可能为 null）
+      setAuthState(prev => ({
+        ...prev,
+        user: {
+          ...basicUserInfo,
+          username: profile?.username || basicUserInfo.username,
+          display_name: profile?.display_name || basicUserInfo.display_name,
+        }
+      }));
+
+      console.log(`✅ [Auth] 用户信息更新完成`);
+    } catch (error: any) {
+      console.error('❌ [Auth] 获取用户详细信息失败:', error);
+      // 即使profile获取失败，也不影响基本认证状态
+    }
+  } else {
+    console.log(`🚫 [Auth] 无有效会话，设置未认证状态`);
+    setAuthState({
+      user: null,
+      session,
+      loading: false,
+      isOnlineMode: false
+    });
+  }
+};
+
 export const useAuth = () => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -129,18 +255,35 @@ export const useAuth = () => {
     getInitialSession();
 
     // 添加超时保护，防止永远加载
-    const loadingTimeout = setTimeout(() => {
+    const loadingTimeout = setTimeout(async () => {
       setAuthState(prev => {
         if (prev.loading) {
-          console.log('⚠️ 认证加载超时，强制设置loading为false');
-          return {
-            ...prev,
-            loading: false
+          console.log('⚠️ [Auth Timeout] 认证加载超时，尝试重试获取会话...');
+
+          // 超时后使用重试机制
+          const retrySession = async () => {
+            console.log('🔄 [Auth Timeout] 开始重试获取会话...');
+            const { session, error } = await getSessionWithRetry();
+
+            if (error) {
+              console.error('❌ [Auth Timeout] 重试失败，设置未认证状态:', error);
+              setAuthState({
+                user: null,
+                session: null,
+                loading: false,
+                isOnlineMode: false
+              });
+            } else {
+              console.log('✅ [Auth Timeout] 重试成功');
+              await handleSession(session, 'timeout', setAuthState);
+            }
           };
+
+          retrySession();
         }
         return prev;
       });
-    }, 5000); // 5秒超时
+    }, 3000); // 3秒超时
 
     // 监听认证状态变化
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -148,79 +291,16 @@ export const useAuth = () => {
         // 对于INITIAL_SESSION事件，只有当loading为true时才处理（页面刷新的情况）
         if (event === 'INITIAL_SESSION') {
           if (authState.loading) {
-            if (process.env.NODE_ENV === 'development') {
-              console.log('🔄 处理INITIAL_SESSION事件 - 页面刷新场景');
-            }
-            if (session?.user) {
-              const basicUserInfo = {
-                id: session.user.id,
-                email: session.user.email || '',
-                username: session.user.email?.split('@')[0] || '',
-                display_name: undefined
-              };
-
-              setAuthState({
-                user: basicUserInfo,
-                session,
-                loading: false,
-                isOnlineMode: true
-              });
-            } else {
-              setAuthState({
-                user: null,
-                session,
-                loading: false,
-                isOnlineMode: false
-              });
-            }
+            console.log('🔄 [Auth] 处理INITIAL_SESSION事件 - 页面刷新场景');
+            await handleSession(session, 'auth_change', setAuthState);
           }
           return;
         }
 
         // 处理SIGNED_IN事件，确保登录后立即更新状态
         if (event === 'SIGNED_IN') {
-          console.log('🎉 处理SIGNED_IN事件，立即设置用户状态');
-
-          // 立即设置基本用户信息，确保loading为false
-          const basicUserInfo = {
-            id: session.user.id,
-            email: session.user.email || '',
-            username: session.user.email?.split('@')[0] || '',
-            display_name: undefined
-          };
-
-          setAuthState({
-            user: basicUserInfo,
-            session,
-            loading: false,
-            isOnlineMode: true
-          });
-
-          // 异步获取详细profile信息，不阻塞主流程
-          supabase
-            .from('profiles')
-            .select('username, display_name')
-            .eq('id', session.user.id)
-            .maybeSingle()
-            .then(({ data: profile, error: profileError }) => {
-              if (profileError && profileError.code !== 'PGRST116') {
-                console.warn('获取用户profile失败:', profileError);
-                return;
-              }
-
-              // 更新用户信息为详细的profile数据
-              setAuthState(prev => ({
-                ...prev,
-                user: {
-                  ...basicUserInfo,
-                  username: profile?.username || basicUserInfo.username,
-                  display_name: profile?.display_name
-                }
-              }));
-            })
-            .catch(error => {
-              console.warn('异步获取profile失败:', error);
-            });
+          console.log('🎉 [Auth] 处理SIGNED_IN事件，立即设置用户状态');
+          await handleSession(session, 'auth_change', setAuthState);
           return;
         }
 

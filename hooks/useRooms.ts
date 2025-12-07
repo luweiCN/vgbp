@@ -78,11 +78,21 @@ export const useRooms = () => {
       requestIdRef.current = requestId;
     }
 
+  console.log('🔄 [useRooms] fetchRooms 开始', {
+    requestId,
+    ownerId,
+    page: currentPage,
+    pageSize,
+    search,
+    sortBy
+  });
+
   setLoading(true);
   setError(null);
 
   try {
       // 构建查询 - 简单查询bp_states
+      console.log('📝 [useRooms] 构建查询...');
       let query = supabase
         .from('rooms')
         .select(`
@@ -90,6 +100,7 @@ export const useRooms = () => {
           owner:profiles!rooms_owner_id_fkey(email, username, display_name),
           bp_states!bp_states_room_id_fkey(hero_id, is_selected)
         `);
+      console.log('✅ [useRooms] 查询构建完成');
 
       // 所有者筛选（用户未登录时忽略此条件）
       if (ownerId) {
@@ -213,11 +224,20 @@ export const useRooms = () => {
     pageSize?: number;
     t?: number; // 时间戳参数，用于强制刷新
   }) => {
+    console.log('🚀 [useRooms] loadRoomData 被调用', { filters, user: user?.id });
+
     // 生成新的请求序号
     const currentRequestId = ++requestIdRef.current;
 
     // 计算有效的owner条件（用户未登录时忽略owner筛选条件）
     const effectiveOwnerId = user && filters?.owner === "me" ? user.id : undefined;
+
+    console.log('📋 [useRooms] 准备调用 fetchRooms', {
+      requestId: currentRequestId,
+      ownerId: effectiveOwnerId,
+      page: filters?.page,
+      search: filters?.search
+    });
 
     return fetchRooms({
       ownerId: effectiveOwnerId,

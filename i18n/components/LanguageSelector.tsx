@@ -75,9 +75,14 @@ export const LanguageSelector = ({
     setIsOpen(!isOpen);
   };
 
-  const handleSelectLanguage = (langCode: 'zh-CN' | 'en-US') => {
-    setLanguage(langCode);
-    setIsOpen(false);
+  const handleSelectLanguage = async (langCode: 'zh-CN' | 'en-US') => {
+    try {
+      await setLanguage(langCode);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Failed to switch language:', error);
+      // 可以添加错误提示，但不下拉菜单
+    }
   };
 
   // 点击外部关闭下拉

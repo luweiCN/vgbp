@@ -8,7 +8,7 @@ import {
 } from '../types';
 
 // 直接导入中文翻译文件作为 fallback
-import zhCNTranslations from '../../public/i18n/locales/zh-CN.json';
+import zhCNTranslations from '@/i18n/locales/zh-CN.json';
 
 // 支持的语言配置
 const SUPPORTED_LANGUAGES: Record<Language, LanguageConfig> = {
@@ -304,7 +304,8 @@ class I18nService implements I18nServiceInterface {
     this.isLoading[language] = true;
 
     try {
-      // 3. 始终从网络加载最新版本
+      // 3. 从网络加载（如果是首次）或使用缓存
+      console.log(`Loading language pack for ${language}...`);
       const response = await fetch(`/i18n/locales/${language}.json?${Date.now()}`);
       if (!response.ok) {
         console.error(`Failed to load language pack for ${language}: ${response.status}`);
@@ -321,6 +322,7 @@ class I18nService implements I18nServiceInterface {
       }
 
       const pack: LanguagePack = await response.json();
+      console.log(`Language pack for ${language} loaded successfully`);
 
       // 4. 缓存结果到内存和 localStorage
       this.memoryCache[language] = pack;
