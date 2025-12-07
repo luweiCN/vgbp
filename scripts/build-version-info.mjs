@@ -3,9 +3,35 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
+
+// 获取环境参数，优先使用命令行参数
+const getEnvironment = () => {
+  // 从命令行参数获取环境
+  const args = process.argv.slice(2);
+  const modeIndex = args.indexOf('--mode');
+
+  if (modeIndex !== -1 && args[modeIndex + 1]) {
+    const mode = args[modeIndex + 1];
+    return mode;
+  }
+
+  // 从环境变量获取
+  if (process.env.NODE_ENV) {
+    return process.env.NODE_ENV;
+  }
+
+  // 默认根据脚本名判断
+  const npmScript = process.env.npm_config_script || process.env.npm_lifecycle_event;
+  if (npmScript && npmScript.includes('build')) {
+    return 'production';
+  }
+
+  return 'development';
+};
 
 // 读取版本信息
 const packageJsonPath = path.join(__dirname, '../package.json');
@@ -16,7 +42,7 @@ const version = packageJson.version;
 const versionInfo = {
   version,
   buildTime: new Date().toISOString(),
-  environment: process.env.NODE_ENV || 'development',
+  environment: getEnvironment(),
   gitCommit: process.env.GITHUB_SHA ? process.env.GITHUB_SHA.substring(0, 7) : 'unknown'
 };
 
