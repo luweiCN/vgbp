@@ -149,11 +149,11 @@ jobs:
           echo "Creating Vercel project config..."
           mkdir -p .vercel
           cat > .vercel/project.json << EOF
-          {
-            "projectId": "$VERCEL_PROJECT_ID",
-            "orgId": "team_a3D6DLejMClojs4gKaFvDat8"
-          }
-EOF
+            {
+              "projectId": "$VERCEL_PROJECT_ID",
+              "orgId": "team_a3D6DLejMClojs4gKaFvDat8"
+            }
+        EOF
 
           # 使用 Vercel CLI 进行 promotion
           echo "Using Vercel CLI to promote..."
