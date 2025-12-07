@@ -105,11 +105,11 @@ jobs:
         echo "2. 设置项目配置..."
         mkdir -p .vercel
         cat > .vercel/project.json << EOF
-        {
-          "orgId": "$VERCEL_ORG_ID",
-          "projectId": "$VERCEL_PROJECT_ID"
-        }
-EOF
+          {
+            "orgId": "$VERCEL_ORG_ID",
+            "projectId": "$VERCEL_PROJECT_ID"
+          }
+        EOF
 
         # 3. 拉取项目环境信息
         echo "3. 拉取项目环境信息..."
