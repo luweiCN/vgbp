@@ -139,7 +139,7 @@ jobs:
           # 5. 使用 CLI 进行 Promotion
           echo ""
           echo "5. 使用 Vercel CLI Promotion 到 Production..."
-          if vercel promote $DEPLOYMENT_URL --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID; then
+          if vercel promote $DEPLOYMENT_URL --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID --yes; then
             echo ""
             echo "✅ Promotion 成功完成！"
             echo "🌐 Production URL: https://vgbp.luwei.host"
