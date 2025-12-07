@@ -1,10 +1,10 @@
-# Release v0.0.19
+# Release v0.0.21
 
-*发布时间: 2025/12/7 09:31:30*
+*发布时间: 2025/12/7 09:37:00*
 
 ## 🐛 问题修复
 
-- 修复 workflow 中的 promotion 和 release 问题
+- 改进 Vercel promotion 流程和修复 release 构建
 
 ---
 
