@@ -32,11 +32,11 @@
   "start_url": "/",
   "orientation": "portrait",
   "lang": "zh-CN",
-  "last_updated": "2025-12-07T10:19:42.085Z",
-  "version": "0.0.31",
-  "build_time": "2025-12-07T10:19:42.054Z",
+  "last_updated": "2025-12-07T11:45:16.727Z",
+  "version": "0.0.33",
+  "build_time": "2025-12-07T11:45:16.694Z",
   "build_info": {
     "environment": "development",
-    "commit": "1d6af86"
+    "commit": "21a8a73"
   }
 }
