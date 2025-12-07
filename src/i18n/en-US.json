@@ -1,0 +1,628 @@
+{
+  "meta": {
+    "language": "en-US",
+    "version": "1.0.0",
+    "lastUpdated": "2025-12-04"
+  },
+  "translations": {
+    "ui": {
+      "common": {
+        "switchLanguage": "Switch Language",
+        "close": "Close",
+        "later": "Later",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
+      },
+      "components": {
+        "entryPage": {
+          "language": "Language:",
+          "modes": {
+            "bottomInfo": "Choose local mode to start quickly, or enter online mode for cloud room features",
+            "local": "Local Mode",
+            "localDesc": "Use local hero selection immediately, no registration required, all data stored in browser",
+            "localFeatures": "• Instant Use • No Login • Offline Available • Local Storage",
+            "online": "Online Mode",
+            "onlineDesc": "Browse room list, create your own room or join others, support cloud storage and sharing",
+            "onlineFeatures": "• Room Management • Cloud Storage • Real-time Sync • Multiplayer"
+          }
+        },
+        "filterChips": {
+          "all": "All Rooms",
+          "ascOrder": "Ascending",
+          "createdTime": "Created",
+          "descOrder": "Descending",
+          "direction": "Direction",
+          "filter": "Filters:",
+          "mine": "My Rooms",
+          "owner": "Owner",
+          "reset": "Reset",
+          "resetAllFilters": "Reset all filters",
+          "search": "Search",
+          "sort": "Sort",
+          "updatedTime": "Updated"
+        },
+        "ownerToggle": {
+          "label": "Only mine"
+        },
+        "pagination": {
+          "currentPageInfo": "Page {{current}} of {{total}}",
+          "currentPageInfoMobile": "{{current}}/{{total}}",
+          "itemsPerPage": "items / page",
+          "nextPage": "Next",
+          "previousPage": "Previous"
+        },
+        "roomItem": {
+          "copyLink": "Copy Link",
+          "created": "Created",
+          "createdAt": "Created",
+          "deleteRoom": "Delete Room",
+          "editRoom": "Edit Room",
+          "enterRoom": "Enter Room",
+          "heroesSelected": "Selected {{count}} heroes",
+          "linkCopied": "Room link copied to clipboard!",
+          "noHeroesSelected": "No heroes selected",
+          "unknownUser": "Unknown User",
+          "updated": "Updated",
+          "updatedAt": "Updated"
+        },
+        "roomManager": {
+          "auth": {
+            "loadingUserInfo": "Loading user info...",
+            "updateUsername": {
+              "error": "Please enter new username!",
+              "sameUsername": "New username is the same as current!"
+            }
+          },
+          "delete": {
+            "failed": "Failed to delete room, please try again later",
+            "success": "Room deleted successfully!"
+          },
+          "filter": {
+            "filteredRooms": "{{filtered}} rooms found (total {{total}})",
+            "filteredRoomsShort": "{{filtered}}/{{total}} rooms",
+            "totalRooms": "Total {{count}} rooms"
+          },
+          "header": {
+            "backToHome": "Back to Home",
+            "createRoom": "Create Room",
+            "createRoomShort": "Create",
+            "guest": "Guest",
+            "joinRoom": "Join Room",
+            "joinRoomShort": "Join",
+            "title": "Room List"
+          },
+          "join": {
+            "error": "Please enter room ID or room link!",
+            "invalidLink": "Invalid room link format",
+            "joinFailed": "Failed to join room, please check the room ID",
+            "roomNotFound": "Room not found"
+          },
+          "list": {
+            "loading": "Loading...",
+            "noRooms": "No rooms found"
+          }
+        },
+        "roomSearchBox": {
+          "clearButtonTitle": "Clear search",
+          "placeholder": "Search room names and descriptions...",
+          "searchButton": "Search",
+          "searchButtonTitle": "Search rooms"
+        },
+        "roomSortToggle": {
+          "ascOrder": "Ascending",
+          "createdTime": "Created",
+          "descOrder": "Descending",
+          "sortDirectionTitle": "Sort order: ",
+          "sortLabel": "Sort",
+          "updatedTime": "Updated"
+        },
+        "toast": {
+          "close": "Close",
+          "heroAvatar": "Hero Avatar"
+        },
+        "pwa": {
+          "installPrompt": {
+            "title": "Install App",
+            "description": "Install Vainglory Tactics on your device for faster startup and offline access.",
+            "install": "Install",
+            "features": {
+              "offline": "Offline Access - Use even without internet",
+              "fast": "Fast Startup - As quick as a native app",
+              "native": "Native Experience - Fullscreen display without browser interruption"
+            }
+          },
+          "installGuide": {
+            "safari": "To install this app, tap the share button and then select \"Add to Home Screen\".",
+            "chrome": "To install this app, click the install icon in the address bar.",
+            "firefox": "To install this app, click the menu button and select \"Install this site as an app\".",
+            "default": "Please look for the \"Install\" or \"Add to Home Screen\" option in your browser menu."
+          },
+          "offline": {
+            "title": "Offline Mode",
+            "description": "Currently offline, showing cached content."
+          },
+          "update": {
+            "title": "App Update",
+            "description": "A new version is available. Please refresh to get the latest features.",
+            "refresh": "Refresh"
+          }
+        },
+        "authForm": {
+          "title": {
+            "login": "Sign In",
+            "register": "Create Account"
+          },
+          "subtitle": {
+            "login": "Sign in to create and manage rooms",
+            "register": "Create an account to start using online features"
+          },
+          "fields": {
+            "username": {
+              "label": "Username",
+              "placeholder": "Enter username (Chinese or English)",
+              "description": "Username will be your display name on the platform"
+            },
+            "email": {
+              "label": "Email Address",
+              "placeholder": "Enter email address (for login)",
+              "privateNote": "Email address is only used for login and will not be displayed publicly"
+            },
+            "password": {
+              "label": "Password",
+              "placeholder": "Enter password (at least 6 characters)"
+            },
+            "confirmPassword": {
+              "label": "Confirm Password",
+              "placeholder": "Enter password again"
+            }
+          },
+          "validation": {
+            "checking": "Checking email status...",
+            "emailRegisteredUnverified": "Email registered but not verified",
+            "emailRegisteredVerified": "Email registered and verified",
+            "emailAvailable": "Email available for registration",
+            "emailNotRegistered": "Email not registered yet"
+          },
+          "errors": {
+            "emailInvalid": "Please enter a valid email address!",
+            "usernameRequired": "Please enter username!",
+            "passwordMismatch": "Passwords do not match!",
+            "passwordTooShort": "Password must be at least 6 characters!",
+            "resendFailed": "Failed to resend verification email",
+            "submitFailed": "Registration or login failed, please try again later"
+          },
+          "actions": {
+            "login": "Sign In",
+            "register": "Sign Up",
+            "loggingIn": "Signing in...",
+            "registering": "Signing up...",
+            "goToLogin": "Go to login",
+            "goToRegister": "Go to register",
+            "noAccount": "Don't have an account?",
+            "registerNow": "Sign up now",
+            "hasAccount": "Already have an account?",
+            "backToLogin": "Back to login"
+          }
+        },
+        "emailModals": {
+          "unverified": {
+            "title": "Email Verification Required",
+            "successBanner": "Registration Successful!",
+            "successMessage": "Congratulations, your account has been created",
+            "description": "This email has been registered but not yet verified",
+            "emailSent": "We have sent a verification email to {{email}}, please check your inbox and click the verification link.",
+            "instructions": {
+              "checkEmail": "📧 Please check your email (including spam folder)",
+              "clickLink": "🔗 Click the verification link in the email to complete verification",
+              "waitVerification": "⏱️ You can start using after verification is successful"
+            },
+            "actions": {
+              "gotIt": "Got it",
+              "sending": "Sending...",
+              "resend": "Resend Email",
+              "resendWithCountdown": "Resend ({{countdown}}s)"
+            }
+          },
+          "verified": {
+            "title": "Email Verified",
+            "status": "Email verification completed",
+            "description": "{{email}} has been verified, you can sign in directly.",
+            "instructions": {
+              "verified": "✅ Your email has been verified",
+              "canLogin": "👤 You can sign in directly with this email",
+              "startUsing": "🚀 Start using Vainglory BP!"
+            },
+            "actions": {
+              "continueRegister": "Continue Registration",
+              "loginNow": "Sign In Now"
+            }
+          }
+        },
+        "roomForm": {
+          "title": {
+            "create": "Create New Room",
+            "edit": "Edit Room"
+          },
+          "fields": {
+            "name": {
+              "label": "Room Name",
+              "placeholder": {
+                "create": "{{username}}'s Room MM-DD HH:mm",
+                "edit": "Enter new room name"
+              }
+            },
+            "description": {
+              "label": "Room Description",
+              "optional": "(optional)",
+              "placeholder": "Enter room description (max 200 characters)"
+            }
+          },
+          "buttons": {
+            "cancel": "Cancel",
+            "create": "Create Room",
+            "save": "Save Changes"
+          },
+          "loading": {
+            "create": "Creating...",
+            "save": "Saving..."
+          },
+          "errors": {
+            "loginRequired": "Please log in to perform this action",
+            "nameRequired": "Please enter a room name",
+            "permissionDenied": "Only the room owner can edit room information",
+            "submitFailed": "Operation failed, please try again later"
+          },
+          "success": {
+            "create": "Room created successfully",
+            "update": "Room information updated"
+          }
+        },
+        "joinRoom": {
+          "title": "Join Room",
+          "fields": {
+            "idOrLink": {
+              "label": "Room ID or Link",
+              "placeholder": "Enter room ID or link",
+              "support": "Supports entering room ID or full room link (e.g., {{url}})"
+            }
+          },
+          "buttons": {
+            "join": "Join Room",
+            "cancel": "Cancel"
+          },
+          "loading": "Joining..."
+        },
+        "userSettings": {
+          "title": "User Settings",
+          "subtitle": "Update your username",
+          "fields": {
+            "username": {
+              "label": "Username",
+              "placeholder": "Enter new username (Chinese or English)",
+              "description": "Username will be your display name on the platform"
+            }
+          },
+          "buttons": {
+            "update": "Update Username",
+            "cancel": "Cancel"
+          },
+          "loading": "Updating..."
+        },
+        "deleteConfirm": {
+          "title": "Delete Room",
+          "subtitle": "This action cannot be undone, proceed with caution",
+          "mainQuestion": "Are you sure you want to delete this room?",
+          "warning": "After deletion, it cannot be recovered and all related data will be cleared",
+          "roomName": "Room Name: {{roomName}}",
+          "buttons": {
+            "confirm": "Delete",
+            "cancel": "Cancel"
+          }
+        },
+        "roomManagerMenu": {
+          "title": "User Menu",
+          "guest": {
+            "mode": "Guest Mode",
+            "description": "Log in to access full features"
+          },
+          "sections": {
+            "user": "User Actions",
+            "rooms": "Room Actions"
+          },
+          "userSettings": {
+            "settings": "User Settings",
+            "settingsDescription": "Update username",
+            "signOut": "Sign Out",
+            "signOutDescription": "Sign out safely"
+          },
+          "auth": {
+            "loginOrRegister": "Sign In or Register",
+            "accessFullFeatures": "Access Full Features"
+          },
+          "roomActions": {
+            "join": "Join Room",
+            "joinDescription": "Join via ID or link",
+            "create": "Create Room",
+            "createDescription": "Create a new room",
+            "createDescriptionForGuest": "Login to create"
+          },
+          "errors": {
+            "signOutFailed": "Failed to sign out"
+          }
+        },
+        "roomPage": {
+          "title": {
+            "localMode": "Local Mode",
+            "onlineMode": "Room {{roomId}}",
+            "browserTitle": "{{roomName}} - Vainglory BP",
+            "tacticalTool": "Tactical Draft Tool"
+          },
+          "search": {
+            "placeholder": "Search heroes...",
+            "clearTitle": "Clear search",
+            "noHeroesFound": "No heroes found matching \"{{searchTerm}}\""
+          },
+          "progress": {
+            "desktop": "Picked {{selected}} heroes, {{remaining}} remaining",
+            "mobile": "Picked {{selected}}/{{total}}",
+            "selectedLabel": "Picked",
+            "remainingLabel": "remaining",
+            "unit": "heroes",
+            "unitShort": "",
+            "percentage": "%"
+          },
+          "controls": {
+            "resetBP": "Reset BP",
+            "editRoom": "Edit Room",
+            "hideSelected": "Hide Picked",
+            "showSelected": "View Picked Heroes",
+            "hideSelectedShort": "Hide Picked",
+            "compactLayout": "Compact",
+            "autoLayout": "Auto",
+            "currentPosition": "Current:",
+            "noHeroesSelected": "No heroes selected yet",
+            "viewSelected": "View selected heroes"
+          },
+          "sections": {
+            "captain": "Captains",
+            "jungle": "Junglers",
+            "carry": "Laners",
+            "captainStat": "Selected {{count}}, {{remaining}} remaining",
+            "jungleStat": "Selected {{count}}, {{remaining}} remaining",
+            "carryStat": "Selected {{count}}, {{remaining}} remaining"
+          },
+          "selectedHeroesButton": "Selected ({{count}})",
+          "status": {
+            "syncing": "Syncing...",
+            "syncFailed": "Sync failed: {{error}}",
+            "syncFailedPrefix": "Sync failed"
+          }
+        },
+        "selectedHeroesModal": {
+          "title": "Selected Heroes",
+          "subtitle": "Total {{count}} heroes selected",
+          "emptyTitle": "No heroes selected yet",
+          "emptyDescription": "Click on hero cards to select heroes",
+          "categories": {
+            "captain": "Roamer",
+            "jungle": "Jungle",
+            "carry": "Laner"
+          },
+          "heroCount": "{{count}} heroes",
+          "reset": "Reset BP",
+          "close": "Close"
+        },
+        "resetConfirmModal": {
+          "title": "Confirm Reset BP",
+          "message": "Are you sure you want to clear the selected {{count}} heroes? This action cannot be undone.",
+          "cancel": "Cancel",
+          "confirm": "Confirm Reset"
+        },
+        "classificationInfoModal": {
+          "title": "Hero Classification Guide",
+          "official": {
+            "title": "Official Classification",
+            "description": "Based on the official hero classification within the game."
+          },
+          "common": {
+            "title": "Common Classification",
+            "description": "Common classification represents the positions where we most frequently use this hero. For example, in the official classification, Amalel is placed as a Carry hero, but most commonly we see Amalel playing as a Support."
+          },
+          "flex": {
+            "title": "Flexible Classification",
+            "description": "Flexible classification includes all positions a hero can handle. For example, Glaive - in official classification he belongs to Jungle heroes, while in common classification he belongs to Carry heroes. This hero can build physical damage for Carry, build tanky with crystal damage for Jungle, or even play as a Roamer. Flexible classification shows all common positions a hero can handle in actual gameplay."
+          }
+        },
+        "classificationToggle": {
+          "official": "Official",
+          "common": "Common",
+          "flex": "Flexible",
+          "infoTitle": "Classification Guide",
+          "heroClassification": "Hero Classification:",
+          "officialDesc": "Classified by official position",
+          "commonDesc": "Classified by player common positions",
+          "flexDesc": "Classified by theoretically playable positions",
+          "officialShort": "Official",
+          "commonShort": "Common",
+          "flexShort": "Flexible"
+        },
+        "realtimeStatus": {
+          "connection": {
+            "realtime": "Real-time",
+            "polling": "Polling",
+            "offline": "Offline"
+          },
+          "status": {
+            "connected": "Connected",
+            "syncing": "Syncing",
+            "polling": "Polling",
+            "disconnected": "Offline",
+            "pollingDisconnected": "Polling off",
+            "offline": "Offline"
+          },
+          "time": {
+            "never": "Never",
+            "justNow": "Just now",
+            "secondsAgo": "{{count}}s ago",
+            "minutesAgo": "{{count}}m ago",
+            "lastActivity": "Last activity",
+            "lastSend": "Sent"
+          }
+        },
+        "permissionIndicator": {
+          "owner": {
+            "text": "Owner",
+            "description": "Has all permissions, can manage room and edit hero selection"
+          },
+          "participant": {
+            "text": "Participant",
+            "description": "Can view room status and invite other users"
+          },
+          "viewer": {
+            "text": "View Mode",
+            "description": "Can only view room status, cannot edit"
+          },
+          "unknown": {
+            "text": "Unknown",
+            "description": "Permission status unknown"
+          },
+          "editable": "(editable)"
+        },
+        "layoutToggle": {
+          "title": "Click to toggle layout mode",
+          "auto": "Auto",
+          "three": "3 cols",
+          "four": "4 cols",
+          "five": "5 cols"
+        },
+        "heroSelectionToast": {
+          "added": "Added",
+          "removed": "Removed",
+          "close": "Close",
+          "closing": "Closing"
+        },
+        "heroChangeToast": {
+          "addedWithNames": "Added: {{names}}{{hasMore ? ' & more' : ''}}",
+          "addedWithCount": "Added {{count}} heroes",
+          "removedWithNames": "Removed: {{names}}{{hasMore ? ' & more' : ''}}",
+          "removedWithCount": "Removed {{count}} heroes",
+          "changed": "Changed: Added {{addedNames}}{{hasMoreAdded ? ' & more' : ''}}, Removed {{removedNames}}{{hasMoreRemoved ? ' & more' : ''}}"
+        },
+        "heroAvatar": {
+          "alt": "Hero Avatar"
+        },
+        "api": {
+          "errors": {
+            "invalidCredentials": "Invalid email or password",
+            "emailNotConfirmed": "Please verify your email address first",
+            "userNotFound": "User not found",
+            "signupDisabled": "Sign up is disabled",
+            "emailAlreadyRegistered": "This email is already registered",
+            "weakPassword": "Password is too weak, please use a stronger password",
+            "invalidEmail": "Invalid email format",
+            "tooManyRequests": "Too many requests, please try again later",
+            "sessionExpired": "Session expired, please log in again",
+            "invalidRefreshToken": "Invalid refresh token, please log in again",
+            "permissionDenied": "Permission denied",
+            "notFound": "Data not found",
+            "duplicateEntry": "Data already exists",
+            "serviceUnavailable": "Email service temporarily unavailable, please try again later",
+            "rateLimitExceeded": "Too many requests, please try again later",
+            "emailNotFound": "Email address not found",
+            "invalidPassword": "Incorrect password",
+            "authTimeout": "Authentication timeout",
+            "networkError": "Network connection error",
+            "unknownError": "Unknown error",
+            "serverError": "Server error, please try again later",
+            "invalidEmailFormat": "Please provide a valid email address",
+            "sendConfirmationFailed": "Failed to send confirmation email",
+            "resendConfirmationFailed": "Failed to resend confirmation email",
+            "checkEmailFailed": "Failed to check email",
+            "emailNotRegistered": "This email is not registered yet, please sign up first",
+            "emailAlreadyVerified": "This email has already been verified, you can log in directly",
+            "emailCheckError": "An error occurred while checking email status, please try again later",
+            "sendingEmailError": "An error occurred while sending verification email, please try again later",
+            "resendEmailError": "An error occurred while resending verification email, please try again later"
+          },
+          "success": {
+            "emailSent": "Email sent successfully",
+            "confirmationEmailSent": "Confirmation email has been sent, please check your inbox (including spam folder)",
+            "resendEmailSent": "Verification email has been resent, please check your inbox",
+            "emailVerified": "Email verified successfully",
+            "roomCreated": "Room created successfully",
+            "roomUpdated": "Room updated successfully",
+            "roomDeleted": "Room deleted successfully",
+            "heroSelectionUpdated": "Hero selection updated",
+            "userLoggedIn": "Login successful",
+            "userRegistered": "Registration successful",
+            "passwordReset": "Password reset successful",
+            "profileUpdated": "Profile updated successfully"
+          },
+          "messages": {
+            "emailAvailable": "Email is available for registration",
+            "emailRegistered": "Email is registered",
+            "emailNotVerified": "Email not verified",
+            "emailVerified": "Email verified",
+            "roomDeleted": "Room deleted",
+            "heroAdded": "Hero added",
+            "heroRemoved": "Hero removed",
+            "selectionsCleared": "Selections cleared",
+            "dataSynced": "Data synced",
+            "settingsSaved": "Settings saved",
+            "roomJoined": "Joined room",
+            "roomLeft": "Left room",
+            "changesSaved": "Changes saved",
+            "operationSuccessful": "Operation successful",
+            "verificationEmailSent": "Verification email sent",
+            "verificationLinkGenerated": "Verification link generated, please click the link below to verify your email",
+            "pleaseWait": "Please wait...",
+            "loading": "Loading...",
+            "processing": "Processing..."
+          },
+          "status": {
+            "notRegistered": "Not registered",
+            "registeredUnverified": "Registered but not verified",
+            "registeredVerified": "Registered and verified",
+            "active": "Active",
+            "inactive": "Inactive",
+            "pending": "Pending",
+            "completed": "Completed",
+            "failed": "Failed",
+            "cancelled": "Cancelled",
+            "expired": "Expired"
+          },
+          "email": {
+            "verification": {
+              "send": {
+                "title": "Send verification email",
+                "subject": "[Vainglory BP] Please verify your email address",
+                "success": "Confirmation email sent successfully",
+                "error": "Failed to send confirmation email",
+                "invalidEmail": "Please provide a valid email address",
+                "serviceUnavailable": "Email service not configured",
+                "tryAgain": "An error occurred while sending verification email, please try again later"
+              },
+              "resend": {
+                "title": "Resend verification email",
+                "subject": "[Vainglory BP] Resend verification email",
+                "success": "Verification email has been sent, please check your inbox (including spam folder)",
+                "rateLimit": "Please try again later, too many requests",
+                "cooldownSeconds": "Please wait {{seconds}} seconds before trying again",
+                "notRegistered": "This email is not registered yet, please sign up first",
+                "alreadyVerified": "This email has already been verified, you can log in directly",
+                "manualLink": "Verification link generated, please click the link below to verify your email"
+              },
+              "check": {
+                "success": "Email status check successful",
+                "validEmail": "Email is available for registration",
+                "verified": "Email is registered and verified, you can log in directly",
+                "unverified": "Email is registered but not verified, please check your email or resend verification email",
+                "error": "An error occurred while checking email status, please try again later"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
