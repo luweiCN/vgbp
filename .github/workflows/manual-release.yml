@@ -153,13 +153,38 @@ jobs:
 
           # 使用 API 进行 promotion
           echo "Using Vercel API to promote..."
-          PROMOTE_RESPONSE=$(curl -s -X PATCH \
+          # 方法1: 标准 POST 请求
+          PROMOTE_RESPONSE=$(curl -s -X POST \
             -H "Authorization: Bearer $VERCEL_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{}' \
-            "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID/promote?teamId=$VERCEL_ORG_ID")
+            "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID/promote")
 
-          echo "Promotion Response: $PROMOTE_RESPONSE"
+          echo "Promotion Response (Method 1): $PROMOTE_RESPONSE"
+
+          # 如果方法1失败，尝试方法2: 带 teamId 参数
+          if echo "$PROMOTE_RESPONSE" | jq -e '.error' | grep -q "not_found"; then
+            echo "尝试带 teamId 参数的请求..."
+            PROMOTE_RESPONSE=$(curl -s -X POST \
+              -H "Authorization: Bearer $VERCEL_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{}' \
+              "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID/promote?teamId=$VERCEL_ORG_ID")
+
+            echo "Promotion Response (Method 2): $PROMOTE_RESPONSE"
+          fi
+
+          # 如果都失败，尝试方法3: 使用 /v9 版本
+          if echo "$PROMOTE_RESPONSE" | jq -e '.error' | grep -q "not_found"; then
+            echo "尝试 v9 API..."
+            PROMOTE_RESPONSE=$(curl -s -X POST \
+              -H "Authorization: Bearer $VERCEL_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{}' \
+              "https://api.vercel.com/v9/deployments/$DEPLOYMENT_ID/promote")
+
+            echo "Promotion Response (Method 3): $PROMOTE_RESPONSE"
+          fi
 
           # 检查是否 promotion 成功开始
           if echo "$PROMOTE_RESPONSE" | jq -e '.readyState' | grep -q "QUEUED\|BUILDING\|READY"; then
