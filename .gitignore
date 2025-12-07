@@ -29,3 +29,7 @@ dev-dist
 .env.local
 .env.*.local
 
+# Generated files
+# Multi-language files are copied from source code by build scripts
+public/i18n/locales/
+
