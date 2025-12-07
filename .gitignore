@@ -33,3 +33,5 @@ dev-dist
 # Multi-language files are copied from source code by build scripts
 public/i18n/locales/
 
+.vercel
+.env*.local

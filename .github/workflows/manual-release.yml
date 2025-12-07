@@ -56,29 +56,26 @@ jobs:
       run: npm run release
       id: release
 
-    - name: Get version and commit hash
+    - name: Get version
       id: version
       run: |
         VERSION=$(node -p "require('./package.json').version")
-        COMMIT_SHA=$(git rev-parse HEAD)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
 
     - name: Commit changes
+      id: commit
       run: |
         git add .
         git commit -m "release: v${{ steps.version.outputs.version }} [skip ci]"
+        # 获取刚提交的 hash（release commit）
+        COMMIT_SHA=$(git rev-parse HEAD)
+        echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
 
     - name: Push changes and tag
       run: |
         git push origin main
         git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
         git push origin "v${{ steps.version.outputs.version }}"
-
-    - name: Build project for release
-      run: |
-        npm ci
-        npm run build
 
     - name: Wait for Vercel build
       run: |
@@ -91,7 +88,7 @@ jobs:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        COMMIT_SHA: ${{ steps.version.outputs.commit_sha }}
+        COMMIT_SHA: ${{ steps.commit.outputs.commit_sha }}
       run: |
         echo "🔄 查找并 Promotion 对应的部署到 Production..."
         echo "Commit SHA: $COMMIT_SHA"
@@ -124,7 +121,7 @@ jobs:
           echo "尝试获取部署列表 (尝试 $i/10)..."
 
           # 获取最新的部署 URL
-          DEPLOYMENT_URL=$(vercel ls --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID 2>/dev/null |
+          DEPLOYMENT_URL=$(vercel ls --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID --yes 2>/dev/null |
             grep "$SHORT_SHA" |
             head -1 |
             awk '{print $2}')
