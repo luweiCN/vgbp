@@ -116,17 +116,17 @@ jobs:
         echo "4. 查找对应 commit 的部署..."
         SHORT_SHA=${COMMIT_SHA:0:7}
 
-        # 使用 vercel ls 获取部署列表
+        # 使用 API 获取部署列表（包含 commit 信息）
         for i in {1..10}; do
           echo "尝试获取部署列表 (尝试 $i/10)..."
 
-          # 获取最新的部署 URL
-          DEPLOYMENT_URL=$(vercel ls --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID --yes 2>/dev/null |
-            grep "$SHORT_SHA" |
-            head -1 |
-            awk '{print $2}')
+          # 通过 API 获取最新的部署
+          DEPLOYMENT_URL=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v6/deployments?limit=10&projectId=$VERCEL_PROJECT_ID" | \
+            jq -r ".deployments[] | select(.meta.githubCommitSha // empty | contains(\"$SHORT_SHA\")) | .url" | \
+            head -1)
 
-          if [ -n "$DEPLOYMENT_URL" ]; then
+          if [ -n "$DEPLOYMENT_URL" ] && [ "$DEPLOYMENT_URL" != "null" ]; then
             echo "✅ 找到部署 URL: $DEPLOYMENT_URL"
             break
           fi
