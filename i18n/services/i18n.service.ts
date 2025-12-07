@@ -8,7 +8,7 @@ import {
 } from '../types';
 
 // 直接导入中文翻译文件作为 fallback
-import zhCNTranslations from '../../public/i18n/locales/zh-CN.json';
+import zhCNTranslations from '@/i18n/locales/zh-CN.json';
 
 // 支持的语言配置
 const SUPPORTED_LANGUAGES: Record<Language, LanguageConfig> = {
