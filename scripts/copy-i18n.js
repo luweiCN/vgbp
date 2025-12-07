@@ -12,8 +12,8 @@ if (!fs.existsSync(targetDir)) {
   fs.mkdirSync(targetDir, { recursive: true });
 }
 
-// 复制所有语言文件
-const locales = ['zh-CN.json', 'en-US.json'];
+// 只复制非 fallback 语言文件（中文已内联到代码中）
+const locales = ['en-US.json'];
 let copied = 0;
 
 locales.forEach(locale => {
