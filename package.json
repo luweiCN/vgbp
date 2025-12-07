@@ -4,10 +4,10 @@
   "version": "0.0.5",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build && node scripts/copy-i18n.js",
-    "build:vercel": "vite build && node scripts/copy-i18n.js",
-    "build:github-pages": "vite build && node scripts/copy-i18n.js && cp dist/index.html dist/404.html && node scripts/fix-404-assets.cjs",
+    "dev": "node scripts/copy-i18n.mjs && vite",
+    "build": "vite build && node scripts/copy-i18n.mjs",
+    "build:vercel": "vite build && node scripts/copy-i18n.mjs",
+    "build:github-pages": "vite build && node scripts/copy-i18n.mjs && cp dist/index.html dist/404.html && node scripts/fix-404-assets.cjs",
     "preview": "vite preview",
     "release": "node scripts/release.js",
     "update-version": "node scripts/update-version.js"
