@@ -38,14 +38,18 @@ const EntryPage: React.FC<EntryPageProps> = ({ onLocalMode, onOnlineMode }) => {
 
         {/* Logo and Title */}
         <div className="text-center mb-8">
-          <div className="w-10 h-10 rounded bg-linear-to-br from-green-600 to-emerald-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-green-500/20 mx-auto mb-4">
-            V
+          <div className="w-16 h-16 mx-auto mb-4">
+            <img
+              src="/favicon.svg"
+              alt="Vainglory BP Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-white to-zinc-400 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-semibold sm:font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-white to-zinc-400 mb-2">
             Vainglory BP
           </h1>
-          <p className="text-zinc-400 text-lg uppercase tracking-widest">
-            Tactical Draft Assistant
+          <p className="text-zinc-400 text-sm sm:text-lg uppercase tracking-[0.2em] sm:tracking-widest font-light">
+            Vainglory Global BP Tool
           </p>
         </div>
 

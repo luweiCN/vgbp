@@ -7,7 +7,6 @@ import { ToastProvider, useToastContext } from './contexts/ToastContext';
 import { ToastContainer } from './components/Toast';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { OfflineIndicator } from './components/OfflineIndicator';
-import { VersionDisplay } from './components/VersionDisplay';
 import { I18nProvider } from './i18n/components/I18nProvider';
 
 // 房间页面包装组件
@@ -90,9 +89,6 @@ const AppContent: React.FC = () => {
 
       {/* Offline Indicator */}
       <OfflineIndicator />
-
-      {/* Version Display */}
-      <VersionDisplay />
     </div>
   );
 };

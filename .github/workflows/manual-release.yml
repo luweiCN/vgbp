@@ -206,8 +206,7 @@ jobs:
         tag_name: v${{ steps.version.outputs.version }}
         name: Release v${{ steps.version.outputs.version }}
         body_path: RELEASE_NOTES.md
-        files: |
-          dist/*
+        # 不包含本地构建文件，只创建 release
         draft: false
         prerelease: false
       env:

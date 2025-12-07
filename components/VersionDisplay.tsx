@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useI18n } from '../i18n/components/I18nProvider';
+import { useI18n } from '@/i18n/hooks/useI18n';
 
 interface VersionInfo {
   version: string;
@@ -8,17 +8,23 @@ interface VersionInfo {
   gitCommit?: string;
 }
 
-export const VersionDisplay: React.FC = () => {
+interface VersionDisplayProps {
+  showDetails: boolean;
+  onShowDetailsChange: (show: boolean) => void;
+}
+
+export const VersionDisplay: React.FC<VersionDisplayProps> = ({
+  showDetails,
+  onShowDetailsChange
+}) => {
   const { t } = useI18n();
   const [version, setVersion] = useState<VersionInfo | null>(null);
-  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     // 从 /version.json 获取版本信息
     fetch('/version.json')
       .then(res => {
         if (!res.ok) {
-          // 如果获取失败，返回默认值
           return {
             version: '0.0.0',
             buildTime: new Date().toISOString(),
@@ -30,9 +36,8 @@ export const VersionDisplay: React.FC = () => {
       })
       .then(data => setVersion(data))
       .catch(() => {
-        // 如果出错，尝试从 package.json 获取版本
         setVersion({
-          version: '0.0.0', // 开发环境默认值
+          version: '0.0.0',
           buildTime: new Date().toISOString(),
           environment: import.meta.env.MODE,
           gitCommit: undefined
@@ -46,9 +51,9 @@ export const VersionDisplay: React.FC = () => {
   const getEnvironmentText = () => {
     switch (version.environment) {
       case 'production':
-        return ''; // 生产环境不显示
+        return '';
       case 'development':
-        return t('version.environment.development');
+        return t('ui.version.environment.development');
       default:
         return version.environment;
     }
@@ -69,26 +74,36 @@ export const VersionDisplay: React.FC = () => {
   const envText = getEnvironmentText();
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100]">
-      <div className="text-xs text-gray-500 dark:text-gray-400 opacity-50 hover:opacity-100 transition-opacity cursor-pointer select-none">
-        <div onClick={() => setShowDetails(!showDetails)}>
-          <span>v{version.version}</span>
-          {envText && (
-            <span className={`ml-1 ${getEnvironmentColor()}`}>({envText})</span>
-          )}
-        </div>
-
-        {showDetails && (
+    <>
+      <div className="flex items-center justify-center h-12 max-w-[1400px] mx-auto px-4">
+        <div className="inline-block text-xs text-zinc-500 opacity-50 hover:opacity-100 transition-opacity cursor-pointer select-none">
           <div
-            className="absolute bottom-full right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-lg text-xs min-w-[220px] z-[101]"
-            onClick={(e) => e.stopPropagation()}
+            data-version-button
+            onClick={() => onShowDetailsChange(!showDetails)}
           >
-            <div className="space-y-1.5">
-              <div>
-                <span className="font-medium">{t('version.label.version')}:</span> {version.version}
-              </div>
-              <div>
-                <span className="font-medium">{t('version.label.buildTime')}:</span>{' '}
+            <span>v{version.version}</span>
+            {envText && (
+              <span className={`ml-1 ${getEnvironmentColor()}`}>({envText})</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Version modal without background overlay */}
+      {showDetails && (
+        <div
+          data-version-modal
+          className="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-black border border-zinc-700 rounded-lg p-4 shadow-2xl text-xs min-w-[280px] z-[70]"
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        >
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="font-medium text-white">{t('ui.version.label.version')}</span>
+              <span className="text-zinc-300">{version.version}</span>
+            </div>
+            <div className="flex justify-between items-start">
+              <span className="font-medium text-white">{t('ui.version.label.buildTime')}</span>
+              <span className="text-zinc-300 text-right">
                 {new Date(version.buildTime).toLocaleString('zh-CN', {
                   year: 'numeric',
                   month: '2-digit',
@@ -97,22 +112,23 @@ export const VersionDisplay: React.FC = () => {
                   minute: '2-digit',
                   second: '2-digit'
                 })}
-              </div>
-              <div>
-                <span className="font-medium">{t('version.label.environment')}:</span>{' '}
-                <span className={getEnvironmentColor()}>
-                  {version.environment === 'production' ? t('version.environment.production') : getEnvironmentText()}
-                </span>
-              </div>
-              {version.gitCommit && (
-                <div className="font-mono">
-                  <span className="font-medium">{t('version.label.commit')}:</span> {version.gitCommit}
-                </div>
-              )}
+              </span>
             </div>
+            <div className="flex justify-between items-center">
+              <span className="font-medium text-white">{t('ui.version.label.environment')}</span>
+              <span className={getEnvironmentColor()}>
+                {version.environment === 'production' ? t('ui.version.environment.production') : getEnvironmentText()}
+              </span>
+            </div>
+            {version.gitCommit && (
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-white">{t('ui.version.label.commit')}</span>
+                <span className="font-mono text-zinc-300 text-right">{version.gitCommit}</span>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 };

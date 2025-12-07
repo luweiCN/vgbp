@@ -37,17 +37,22 @@ export const RoomHeader: React.FC<RoomHeaderProps> = ({
               <Icon icon={ArrowLeft} preset="sm" />
             </button>
 
-            <div className="w-8 h-8 rounded flex items-center justify-center font-bold text-lg shadow-lg flex-shrink-0 bg-gradient-to-br from-green-600 to-emerald-600 shadow-green-500/20">
-              V
+            <div className="w-8 h-8 rounded flex-shrink-0 flex items-center justify-center">
+              <img
+                src="/favicon.svg"
+                alt="Vainglory BP Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400 flex-shrink-0">
-                  Vainglory BP
+                  <span className="hidden sm:inline">Vainglory BP</span>
+                  <span className="sm:hidden">VGBP</span>
                 </h1>
               </div>
               <p className="text-[10px] text-zinc-500 uppercase tracking-widest hidden sm:block">
-                Tactical Draft Tool
+                Vainglory Global BP Tool
               </p>
             </div>
           </div>

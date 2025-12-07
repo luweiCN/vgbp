@@ -188,10 +188,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
       setRoomName(updatedRoom.name);
       setEditingRoom(updatedRoom);
 
-      // 更新浏览器标题
-      if (typeof window !== 'undefined') {
-        document.title = `${updatedRoom.name} - Vainglory BP`;
-      }
+      // 移除动态浏览器标题设置，使用统一的标题
     }
   };
 
@@ -437,12 +434,12 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                   </button>
                 )}
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className={`w-8 h-8 rounded flex items-center justify-center font-bold text-lg shadow-lg flex-shrink-0 ${
-                    isOnlineMode
-                      ? 'bg-gradient-to-br from-green-600 to-emerald-600 shadow-green-500/20'
-                      : 'bg-gradient-to-br from-blue-600 to-indigo-600 shadow-blue-500/20'
-                  }`}>
-                    V
+                  <div className="w-8 h-8 rounded flex-shrink-0 flex items-center justify-center">
+                    <img
+                      src="/favicon.svg"
+                      alt="Vainglory BP Logo"
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     {/* 桌面端：显示Logo和房间名称 */}
@@ -488,12 +485,12 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                         </>
                       ) : (
                         <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
-                          Vainglory BP
+                          VGBP
                         </h1>
                       )}
                     </div>
                     <p className="text-[10px] text-zinc-500 uppercase tracking-widest hidden sm:block">
-                      Tactical Draft Tool
+                      Vainglory Global BP Tool
                     </p>
                   </div>
                 </div>

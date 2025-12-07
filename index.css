@@ -11,6 +11,11 @@ body {
   padding-top: env(safe-area-inset-top);
 }
 
+/* 内容区域的安全区域 + 固定栏间距 */
+.content-padding-top {
+  padding-top: calc(env(safe-area-inset-top) + 64px); /* 64px = 16 * 4 */
+}
+
 /* 为不同页面设置不同的安全区域背景色 */
 body.safe-area-black {
   background-color: #000000 !important; /* 首页使用纯黑色 */

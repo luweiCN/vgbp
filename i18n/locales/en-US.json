@@ -355,7 +355,7 @@
             "localMode": "Local Mode",
             "onlineMode": "Room {{roomId}}",
             "browserTitle": "{{roomName}} - Vainglory BP",
-            "tacticalTool": "Tactical Draft Tool"
+            "tacticalTool": "Vainglory Global BP Tool"
           },
           "search": {
             "placeholder": "Search heroes...",

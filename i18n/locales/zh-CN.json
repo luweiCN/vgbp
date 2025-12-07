@@ -15,7 +15,7 @@
       },
       "components": {
         "entryPage": {
-          "language": "Language:",
+          "language": "语言：",
           "modes": {
             "bottomInfo": "选择本地模式快速开始，或进入在线模式体验云端房间功能",
             "local": "本地模式",
@@ -355,7 +355,7 @@
             "localMode": "本地模式",
             "onlineMode": "房间 {{roomId}}",
             "browserTitle": "{{roomName}} - Vainglory BP",
-            "tacticalTool": "Tactical Draft Tool"
+            "tacticalTool": "Vainglory Global BP Tool"
           },
           "search": {
             "placeholder": "搜索英雄...",
