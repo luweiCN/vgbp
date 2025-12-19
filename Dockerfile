@@ -44,10 +44,14 @@ RUN echo "=== 验证构建输出 ===" && \
     test -f dist/index.html || (echo "❌ index.html 未找到" && exit 1) && \
     test -f dist/sw.js && echo "✓ Service Worker 已生成" || echo "⚠️ Service Worker 未生成" && \
     echo "=== 检查构建的 JS 文件中的环境变量 ===" && \
+    echo "查找 index.js 文件..." && \
+    ls dist/assets/index-*.js && \
     if [ -f dist/assets/index-*.js ]; then \
         echo "查找 Supabase URL 在构建文件中..." && \
         grep -o "sxkozhhlhvxdnwirbubw" dist/assets/index-*.js | head -1 && \
         echo "✓ Supabase URL 已打包到 JS 文件中" || echo "❌ Supabase URL 未找到"; \
+        echo "检查错误信息..." && \
+        grep -o "Supabase configuration is missing" dist/assets/index-*.js && echo "找到错误信息" || echo "未找到错误信息"; \
     fi && \
     echo "构建完成！"
 
@@ -94,6 +98,9 @@ RUN echo 'server { \
 
 # 从构建阶段复制构建产物（包含可能的 robots.txt）
 COPY --from=builder /app/dist /usr/share/nginx/html
+
+# 添加调试信息到 index.html
+RUN echo "<script>console.log('=== Docker 构建时调试 ===');console.log('VITE_SUPABASE_URL:', 'https://sxkozhhlhvxdnwirbubw.supabase.co');console.log('VITE_SUPABASE_ANON_KEY exists: true');console.log('=====================');</script>" >> /usr/share/nginx/html/index.html
 
 # 暴露端口
 EXPOSE 80
