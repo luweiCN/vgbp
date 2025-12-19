@@ -28,9 +28,9 @@ cmds = [
     "echo '=== 准备国际化文件 ==='",
     "node scripts/copy-i18n.mjs",
 
-    # 执行构建（使用完整路径）
+    # 添加 node_modules/.bin 到 PATH 并执行构建
     "echo '=== 开始构建 ==='",
-    "./node_modules/.bin/vite build",
+    "export PATH=\"$PATH:$(pwd)/node_modules/.bin\" && npm run build",
 
     # 验证构建输出
     "echo '=== 验证构建输出 ==='",
