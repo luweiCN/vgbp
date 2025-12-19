@@ -323,16 +323,16 @@ tc('items.count', itemCount, { count: itemCount })
 3. 更新类型定义
 4. 更新 LanguageSelector 组件
 
-## Coolify 部署（Nixpacks）
+## Coolify 部署（Docker）
 
-### Nixpacks 配置
-项目已配置 `nixpacks.toml` 文件用于在 Coolify 平台进行静态站点部署。
+### Docker 配置
+项目使用 `Dockerfile` 进行容器化部署，采用多阶段构建优化镜像大小。
 
 #### 部署特点
-- **部署类型**：静态站点托管
-- **Web 服务器**：Nginx
-- **构建环境**：Node.js 22
-- **输出目录**：dist
+- **部署类型**：Docker 容器
+- **Web 服务器**：Nginx（Alpine Linux）
+- **构建环境**：Node.js 22（Alpine Linux）
+- **镜像优化**：多阶段构建，最终镜像只包含 Nginx 和静态文件
 
 #### 必需的环境变量
 在 Coolify 中配置以下环境变量：
@@ -351,17 +351,17 @@ NODE_ENV=production
 
 1. **准备仓库**
    ```bash
-   # 确保 nixpacks.toml 已提交到仓库
-   git add nixpacks.toml
-   git commit -m "Add Nixpacks configuration for Coolify deployment"
+   # 确保 Dockerfile 已提交到仓库
+   git add Dockerfile .dockerignore
+   git commit -m "Add Docker configuration for deployment"
    git push
    ```
 
 2. **在 Coolify 中配置**
    - 连接 GitHub 仓库
-   - 选择服务类型：Static Site
-   - 设置构建命令：保持默认（Nixpacks 自动处理）
-   - 设置输出目录：dist
+   - 选择服务类型：Docker
+   - 构建命令：留空（使用 Dockerfile）
+   - 端口：80
    - 配置环境变量
 
 3. **部署验证**
@@ -369,30 +369,33 @@ NODE_ENV=production
    - 验证所有功能正常工作
    - 测试 PWA 安装功能
 
-#### Nixpacks 配置说明
+#### Docker 配置说明
 
-`nixpacks.toml` 文件包含以下配置：
+`Dockerfile` 采用多阶段构建：
 
-1. **构建流程**
+1. **构建阶段**
+   - 使用 `node:22-alpine` 基础镜像
+   - 安装所有依赖（包括开发依赖，用于构建）
    - 运行 `copy-i18n.mjs` 准备国际化文件
    - 执行 `npm run build` 构建生产版本
-   - 生成 Nginx 配置文件
+   - 清理敏感文件
 
-2. **Nginx 优化**
-   - SPA 路由支持（所有路由返回 index.html）
-   - PWA 资源不缓存策略（sw.js、webmanifest）
-   - 静态资源长期缓存（1年）
-   - Gzip 压缩配置
+2. **运行阶段**
+   - 使用 `nginx:alpine` 基础镜像
+   - 配置优化的 Nginx 服务器
+   - 复制构建产物到 Nginx 目录
 
-3. **安全配置**
-   - 清理敏感文件（.env）
-   - 合理的资源限制
+#### Nginx 优化
+- SPA 路由支持（所有路由返回 index.html）
+- 静态资源长期缓存（1年）
+- PWA 资源不缓存（sw.js、webmanifest）
+- Gzip 压缩
 
 #### 常见问题
 
 **构建失败**
-- 检查 `copy-i18n.mjs` 是否存在且可执行
-- 验证所有依赖已正确安装
+- 确保 `Dockerfile` 和 `.dockerignore` 已正确配置
+- 检查环境变量是否设置完整
 - 查看构建日志中的错误信息
 
 **PWA 功能异常**

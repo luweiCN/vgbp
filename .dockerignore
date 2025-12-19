@@ -45,8 +45,5 @@ coverage
 README.md
 *.md
 
-# Nixpacks 配置（不再需要）
-nixpacks.toml
-
 # Claude 相关文件
 .claude
