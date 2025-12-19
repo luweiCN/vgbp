@@ -7,8 +7,8 @@
 # 基础环境配置
 # ================================
 [phases.setup]
-nixPkgs = ["nodejs_20"]
-# 使用 Node.js 20 LTS
+nixPkgs = ["nodejs_22"]
+# 使用 Node.js 22
 
 # ================================
 # 安装依赖阶段
@@ -28,9 +28,9 @@ cmds = [
     "echo '=== 准备国际化文件 ==='",
     "node scripts/copy-i18n.mjs",
 
-    # 添加 node_modules/.bin 到 PATH 并执行构建
+    # 执行构建（使用完整路径）
     "echo '=== 开始构建 ==='",
-    "export PATH=\"$PATH:$(pwd)/node_modules/.bin\" && npm run build",
+    "./node_modules/.bin/vite build",
 
     # 验证构建输出
     "echo '=== 验证构建输出 ==='",
