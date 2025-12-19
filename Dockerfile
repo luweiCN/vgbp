@@ -29,35 +29,13 @@ ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
 ENV VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
 
 # 构建应用
-RUN echo "=== 开始构建 ===" && \
-    echo "=== 调试信息 ===" && \
-    echo "VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}" && \
-    echo "VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:0:10}..." && \
-    echo "=== 环境变量列表 ===" && \
-    env | grep VITE && \
-    echo "===================" && \
-    npm run build
+RUN npm run build
 
 # 验证构建输出
-RUN echo "=== 验证构建输出 ===" && \
-    ls -la dist/ && \
-    test -f dist/index.html || (echo "❌ index.html 未找到" && exit 1) && \
-    test -f dist/sw.js && echo "✓ Service Worker 已生成" || echo "⚠️ Service Worker 未生成" && \
-    echo "=== 检查构建的 JS 文件中的环境变量 ===" && \
-    echo "查找 index.js 文件..." && \
-    ls dist/assets/index-*.js && \
-    if [ -f dist/assets/index-*.js ]; then \
-        echo "查找 Supabase URL 在构建文件中..." && \
-        grep -o "sxkozhhlhvxdnwirbubw" dist/assets/index-*.js | head -1 && \
-        echo "✓ Supabase URL 已打包到 JS 文件中" || echo "❌ Supabase URL 未找到"; \
-        echo "检查错误信息..." && \
-        grep -o "Supabase configuration is missing" dist/assets/index-*.js && echo "找到错误信息" || echo "未找到错误信息"; \
-    fi && \
-    echo "构建完成！"
+RUN test -f dist/index.html || (echo "❌ index.html 未找到" && exit 1)
 
 # 清理敏感文件
-RUN rm -f dist/.env* && \
-    echo "=== 安全清理完成 ==="
+RUN rm -f dist/.env*
 
 # 复制 robots.txt 到 dist 目录（如果存在）
 RUN cp public/robots.txt dist/robots.txt 2>/dev/null || true
