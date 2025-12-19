@@ -7,8 +7,8 @@
 # 基础环境配置
 # ================================
 [phases.setup]
-nixPkgs = ["nodejs", "npm"]
-# 使用 Node.js 和 npm
+nixPkgs = ["nodejs"]
+# 使用默认的 nodejs 包（包含 npm）
 
 # ================================
 # 安装依赖阶段
