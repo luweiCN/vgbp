@@ -72,6 +72,9 @@ RUN echo 'server { \
     root         /usr/share/nginx/html; \
     index        index.html; \
     \
+    # 设置正确的 base URL，避免重定向循环 \
+    absolute_redirect off; \
+    \
     # SPA 路由支持 \
     location / { \
         try_files $uri $uri/ /index.html; \
