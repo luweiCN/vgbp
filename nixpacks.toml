@@ -7,8 +7,8 @@
 # 基础环境配置
 # ================================
 [phases.setup]
-nixPkgs = ["nodejs"]
-# 使用默认的 nodejs 包（包含 npm）
+nixPkgs = ["nodejs_20"]
+# 使用 Node.js 20 LTS
 
 # ================================
 # 安装依赖阶段
@@ -28,9 +28,9 @@ cmds = [
     "echo '=== 准备国际化文件 ==='",
     "node scripts/copy-i18n.mjs",
 
-    # 执行构建（使用 npx 确保 vite 可用）
+    # 执行构建
     "echo '=== 开始构建 ==='",
-    "npx vite build",
+    "npm run build",
 
     # 验证构建输出
     "echo '=== 验证构建输出 ==='",
@@ -52,10 +52,6 @@ cmd = "echo '=== 静态站点部署完成 ===' && echo '应用已准备就绪'"
 [variables]
 # Node.js 环境
 NODE_ENV = "production"
-NODE_OPTIONS = "--max-old-space-size=4096"
-
-# 忽略 Node.js 版本警告（因为我们使用的是 Nix 提供的版本）
-NPM_CONFIG_ENGINE_STRICT = "false"
 
 # Supabase 配置（在 Coolify 中设置实际值）
 VITE_SUPABASE_URL = "https://sxkozhhlhvxdnwirbubw.supabase.co"
