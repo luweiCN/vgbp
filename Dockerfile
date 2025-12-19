@@ -1,6 +1,6 @@
-# 使用国内镜像源的 Node.js 22 镜像
-FROM registry.cn-hangzhou.aliyuncs.com/google_containers/node:22-alpine AS builder
-# 构建时间: 2024-12-19 13:40 (使用国内镜像源)
+# 使用官方 Node.js 22 镜像
+FROM node:22-alpine AS builder
+# 构建时间: 2024-12-19 13:45 (恢复官方镜像)
 
 # 设置工作目录
 WORKDIR /app
@@ -43,7 +43,7 @@ RUN rm -f dist/.env* && \
 RUN cp public/robots.txt dist/robots.txt 2>/dev/null || true
 
 # 生产阶段：使用 Nginx 提供静态文件
-FROM registry.cn-hangzhou.aliyuncs.com/google_containers/nginx:alpine
+FROM nginx:alpine
 
 # 复制自定义 Nginx 配置（只需要 server 块）
 RUN echo 'server { \
