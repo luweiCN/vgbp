@@ -99,8 +99,8 @@ RUN echo 'server { \
 # 从构建阶段复制构建产物（包含可能的 robots.txt）
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 添加调试信息到 index.html
-RUN echo "<script>console.log('=== Docker 构建时调试 ===');console.log('VITE_SUPABASE_URL:', 'https://sxkozhhlhvxdnwirbubw.supabase.co');console.log('VITE_SUPABASE_ANON_KEY exists: true');console.log('=====================');</script>" >> /usr/share/nginx/html/index.html
+# 添加版本标识和调试信息
+RUN echo "<script>console.log('=== BUILD: $(date) ===');console.log('VITE_SUPABASE_URL: ' + 'https://sxkozhhlhvxdnwirbubw.supabase.co');console.log('VITE_SUPABASE_ANON_KEY: ' + 'exists');console.log('====================================');</script>" >> /usr/share/nginx/html/index.html
 
 # 暴露端口
 EXPOSE 80
