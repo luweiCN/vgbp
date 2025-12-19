@@ -38,6 +38,9 @@ RUN echo "=== 验证构建输出 ===" && \
 RUN rm -f dist/.env* && \
     echo "=== 安全清理完成 ==="
 
+# 复制 robots.txt 到 dist 目录（如果存在）
+RUN cp public/robots.txt dist/robots.txt 2>/dev/null || true
+
 # 生产阶段：使用 Nginx 提供静态文件
 FROM nginx:alpine
 
@@ -78,11 +81,8 @@ http { \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
-# 从构建阶段复制构建产物
+# 从构建阶段复制构建产物（包含可能的 robots.txt）
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-# 复制 robots.txt（如果存在）
-COPY public/robots.txt /usr/share/nginx/html/robots.txt || true
 
 # 暴露端口
 EXPOSE 80
