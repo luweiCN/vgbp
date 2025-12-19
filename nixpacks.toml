@@ -1,0 +1,171 @@
+# Nixpacks 配置文件 - 用于 Coolify 部署 Vainglory Draft Assistant
+# 部署方式：静态站点托管
+# Web 服务器：Nginx
+# 部署路径：根路径
+
+# ================================
+# 基础环境配置
+# ================================
+[phases.setup]
+nixPkgs = ["nodejs_22", "npm"]
+# 使用 Node.js 22，与开发环境保持一致
+
+# ================================
+# 安装依赖阶段
+# ================================
+[phases.install]
+cmds = [
+    "npm ci --only=production=false",  # 安装所有依赖（包括 devDependencies）
+    "npm cache clean --force"           # 清理缓存以减小镜像大小
+]
+
+# ================================
+# 构建阶段
+# ================================
+[phases.build]
+cmds = [
+    # 运行自定义 i18n 脚本
+    "echo '=== 准备国际化文件 ==='",
+    "node scripts/copy-i18n.mjs",
+
+    # 设置生产环境变量
+    "echo '=== 设置构建环境 ==='",
+    "export NODE_ENV=production",
+    "export NPM_SCRIPT=build",  # 使用标准构建（不是 GitHub Pages 构建）
+
+    # 执行构建
+    "echo '=== 开始构建 ==='",
+    "npm run $NPM_SCRIPT",
+
+    # 验证构建输出
+    "echo '=== 验证构建输出 ==='",
+    "ls -la dist/",
+    "test -f dist/index.html || (echo '❌ index.html 未找到' && exit 1)",
+    "test -f dist/sw.js && echo '✓ Service Worker 已生成' || echo '⚠️ Service Worker 未生成'",
+
+    # 创建 Nginx 配置文件
+    "echo '=== 创建 Nginx 配置 ==='",
+    "cat > dist/nginx.conf << 'EOF'",
+    "# SPA 路由支持",
+    "location / {",
+    "    try_files $uri $uri/ /index.html;",
+    "}",
+    "",
+    "# PWA 资源不缓存",
+    "location ~* \\.(webmanifest|json)$ {",
+    "    add_header Cache-Control \"no-cache, no-store, must-revalidate\";",
+    "    add_header Pragma \"no-cache\";",
+    "    add_header Expires \"0\";",
+    "}",
+    "",
+    "# Service Worker 特殊处理",
+    "location = /sw.js {",
+    "    add_header Cache-Control \"no-cache, no-store, must-revalidate\";",
+    "    add_header Pragma \"no-cache\";",
+    "    add_header Expires \"0\";",
+    "    add_header Service-Worker-Allowed \"/\";",
+    "}",
+    "",
+    "# 静态资源长期缓存",
+    "location ~* \\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$ {",
+    "    expires 1y;",
+    "    add_header Cache-Control \"public, immutable\";",
+    "    add_header Vary Accept-Encoding;",
+    "}",
+    "",
+    "# HTML 文件不缓存",
+    "location ~* \\.html$ {",
+    "    add_header Cache-Control \"no-cache, no-store, must-revalidate\";",
+    "    add_header Pragma \"no-cache\";",
+    "    add_header Expires \"0\";",
+    "}",
+    "",
+    "# Gzip 压缩",
+    "gzip on;",
+    "gzip_vary on;",
+    "gzip_min_length 1024;",
+    "gzip_proxied expired no-cache no-store private must-revalidate auth;",
+    "gzip_types",
+    "    text/plain",
+    "    text/css",
+    "    text/xml",
+    "    text/javascript",
+    "    application/javascript",
+    "    application/xml+rss",
+    "    application/json;",
+    "EOF",
+
+    # 创建 robots.txt
+    "echo '=== 创建 robots.txt ==='",
+    "cat > dist/robots.txt << 'EOF'",
+    "User-agent: *",
+    "Allow: /",
+    "Sitemap: /sitemap.xml",
+    "EOF",
+
+    # 验证关键文件
+    "echo '=== 最终验证 ==='",
+    "test -f dist/index.html && echo '✓ index.html'",
+    "test -f dist/site.webmanifest && echo '✓ PWA manifest'",
+    "test -f dist/nginx.conf && echo '✓ Nginx 配置'",
+    "echo '构建完成！'"
+]
+
+# ================================
+# 开始阶段（静态站点不需要运行时）
+# ================================
+[start]
+cmd = "echo '=== 静态站点部署完成 ===' && echo '应用已准备就绪'"
+
+# ================================
+# 环境变量配置
+# ================================
+[variables]
+# Node.js 环境
+NODE_ENV = "production"
+
+# Supabase 配置（在 Coolify 中设置实际值）
+VITE_SUPABASE_URL = "https://sxkozhhlhvxdnwirbubw.supabase.co"
+VITE_SUPABASE_ANON_KEY = ""
+
+# Gemini AI 配置（在 Coolify 中设置实际值）
+GEMINI_API_KEY = ""
+
+# 构建信息
+BUILD_DATE = "${DATE}"
+BUILD_TIME = "${DATETIME}"
+
+# ================================
+# 部署配置
+# ================================
+[deploy]
+# 静态站点部署配置
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "never"  # 静态站点不需要重启
+restartPolicyMaxRetries = 0
+
+# ================================
+# 资源限制
+# ================================
+[resources]
+# 静态站点资源需求较低
+limits = { cpu = "0.5", memory = "256Mi" }
+reservations = { cpu = "0.1", memory = "64Mi" }
+
+# ================================
+# 构建输出目录
+# ================================
+[build]
+# 静态文件将被复制到 deploy 目录
+dist = "dist"
+
+# ================================
+# 安全清理
+# ================================
+# 确保敏感文件不被包含在构建中
+[phases.security]
+cmds = [
+    "rm -f dist/.env*",
+    "echo '=== 安全清理完成 ==='"
+]

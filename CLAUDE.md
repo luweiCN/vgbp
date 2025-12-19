@@ -322,3 +322,99 @@ tc('items.count', itemCount, { count: itemCount })
 2. 更新 `i18n.service.ts` 支持新语言
 3. 更新类型定义
 4. 更新 LanguageSelector 组件
+
+## Coolify 部署（Nixpacks）
+
+### Nixpacks 配置
+项目已配置 `nixpacks.toml` 文件用于在 Coolify 平台进行静态站点部署。
+
+#### 部署特点
+- **部署类型**：静态站点托管
+- **Web 服务器**：Nginx
+- **构建环境**：Node.js 22
+- **输出目录**：dist
+
+#### 必需的环境变量
+在 Coolify 中配置以下环境变量：
+
+```env
+# 必需的 API 密钥
+GEMINI_API_KEY=your_gemini_api_key_here
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# 构建环境（默认设置）
+NODE_ENV=production
+```
+
+#### 部署步骤
+
+1. **准备仓库**
+   ```bash
+   # 确保 nixpacks.toml 已提交到仓库
+   git add nixpacks.toml
+   git commit -m "Add Nixpacks configuration for Coolify deployment"
+   git push
+   ```
+
+2. **在 Coolify 中配置**
+   - 连接 GitHub 仓库
+   - 选择服务类型：Static Site
+   - 设置构建命令：保持默认（Nixpacks 自动处理）
+   - 设置输出目录：dist
+   - 配置环境变量
+
+3. **部署验证**
+   - 检查构建日志确认成功
+   - 验证所有功能正常工作
+   - 测试 PWA 安装功能
+
+#### Nixpacks 配置说明
+
+`nixpacks.toml` 文件包含以下配置：
+
+1. **构建流程**
+   - 运行 `copy-i18n.mjs` 准备国际化文件
+   - 执行 `npm run build` 构建生产版本
+   - 生成 Nginx 配置文件
+
+2. **Nginx 优化**
+   - SPA 路由支持（所有路由返回 index.html）
+   - PWA 资源不缓存策略（sw.js、webmanifest）
+   - 静态资源长期缓存（1年）
+   - Gzip 压缩配置
+
+3. **安全配置**
+   - 清理敏感文件（.env）
+   - 合理的资源限制
+
+#### 常见问题
+
+**构建失败**
+- 检查 `copy-i18n.mjs` 是否存在且可执行
+- 验证所有依赖已正确安装
+- 查看构建日志中的错误信息
+
+**PWA 功能异常**
+- 确认 Service Worker 文件（sw.js）已生成
+- 检查 site.webmanifest 是否可访问
+- 验证 HTTPS 证书（PWA 需要）
+
+**环境变量问题**
+- 确保在 Coolify 中设置了所有必需的环境变量
+- API 密钥不要包含在代码中
+- 使用 `process.env.VITE_` 前缀访问环境变量
+
+#### 性能优化建议
+
+1. **CDN 加速**
+   - Coolify 自动提供 CDN
+   - 静态资源已配置长期缓存
+
+2. **监控**
+   - 添加 Google Analytics 或其他监控工具
+   - 设置错误追踪（如 Sentry）
+
+3. **持续集成**
+   - 配置自动部署（推送时触发）
+   - 设置部署前检查（测试、lint）
