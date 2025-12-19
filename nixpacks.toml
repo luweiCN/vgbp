@@ -28,86 +28,15 @@ cmds = [
     "echo '=== 准备国际化文件 ==='",
     "node scripts/copy-i18n.mjs",
 
-    # 设置生产环境变量
-    "echo '=== 设置构建环境 ==='",
-    "export NODE_ENV=production",
-    "export NPM_SCRIPT=build",  # 使用标准构建（不是 GitHub Pages 构建）
-
     # 执行构建
     "echo '=== 开始构建 ==='",
-    "npm run $NPM_SCRIPT",
+    "npm run build",
 
     # 验证构建输出
     "echo '=== 验证构建输出 ==='",
     "ls -la dist/",
     "test -f dist/index.html || (echo '❌ index.html 未找到' && exit 1)",
     "test -f dist/sw.js && echo '✓ Service Worker 已生成' || echo '⚠️ Service Worker 未生成'",
-
-    # 创建 Nginx 配置文件
-    "echo '=== 创建 Nginx 配置 ==='",
-    "cat > dist/nginx.conf << 'EOF'",
-    "# SPA 路由支持",
-    "location / {",
-    "    try_files $uri $uri/ /index.html;",
-    "}",
-    "",
-    "# PWA 资源不缓存",
-    "location ~* \\.(webmanifest|json)$ {",
-    "    add_header Cache-Control \"no-cache, no-store, must-revalidate\";",
-    "    add_header Pragma \"no-cache\";",
-    "    add_header Expires \"0\";",
-    "}",
-    "",
-    "# Service Worker 特殊处理",
-    "location = /sw.js {",
-    "    add_header Cache-Control \"no-cache, no-store, must-revalidate\";",
-    "    add_header Pragma \"no-cache\";",
-    "    add_header Expires \"0\";",
-    "    add_header Service-Worker-Allowed \"/\";",
-    "}",
-    "",
-    "# 静态资源长期缓存",
-    "location ~* \\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$ {",
-    "    expires 1y;",
-    "    add_header Cache-Control \"public, immutable\";",
-    "    add_header Vary Accept-Encoding;",
-    "}",
-    "",
-    "# HTML 文件不缓存",
-    "location ~* \\.html$ {",
-    "    add_header Cache-Control \"no-cache, no-store, must-revalidate\";",
-    "    add_header Pragma \"no-cache\";",
-    "    add_header Expires \"0\";",
-    "}",
-    "",
-    "# Gzip 压缩",
-    "gzip on;",
-    "gzip_vary on;",
-    "gzip_min_length 1024;",
-    "gzip_proxied expired no-cache no-store private must-revalidate auth;",
-    "gzip_types",
-    "    text/plain",
-    "    text/css",
-    "    text/xml",
-    "    text/javascript",
-    "    application/javascript",
-    "    application/xml+rss",
-    "    application/json;",
-    "EOF",
-
-    # 创建 robots.txt
-    "echo '=== 创建 robots.txt ==='",
-    "cat > dist/robots.txt << 'EOF'",
-    "User-agent: *",
-    "Allow: /",
-    "Sitemap: /sitemap.xml",
-    "EOF",
-
-    # 验证关键文件
-    "echo '=== 最终验证 ==='",
-    "test -f dist/index.html && echo '✓ index.html'",
-    "test -f dist/site.webmanifest && echo '✓ PWA manifest'",
-    "test -f dist/nginx.conf && echo '✓ Nginx 配置'",
     "echo '构建完成！'"
 ]
 
