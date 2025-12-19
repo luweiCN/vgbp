@@ -8,8 +8,8 @@ WORKDIR /app
 # 复制 package.json 和 package-lock.json（如果存在）
 COPY package*.json ./
 
-# 安装依赖
-RUN npm ci --only=production && npm cache clean --force
+# 安装所有依赖（包括开发依赖，因为需要 vite 进行构建）
+RUN npm ci && npm cache clean --force
 
 # 复制源代码
 COPY . .
