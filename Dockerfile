@@ -72,9 +72,6 @@ RUN echo 'server { \
     root         /usr/share/nginx/html; \
     index        index.html; \
     \
-    # 设置正确的 base URL，避免重定向循环 \
-    absolute_redirect off; \
-    \
     # SPA 路由支持 \
     location / { \
         try_files $uri $uri/ /index.html; \
@@ -102,8 +99,6 @@ RUN echo 'server { \
 # 从构建阶段复制构建产物（包含可能的 robots.txt）
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 添加版本标识和调试信息
-RUN echo "<script>console.log('=== BUILD: $(date) ===');console.log('VITE_SUPABASE_URL: ' + 'https://sxkozhhlhvxdnwirbubw.supabase.co');console.log('VITE_SUPABASE_ANON_KEY: ' + 'exists');console.log('====================================');</script>" >> /usr/share/nginx/html/index.html
 
 # 暴露端口
 EXPOSE 80

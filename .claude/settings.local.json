@@ -27,7 +27,8 @@
       "Bash(npx tailwindcss:*)",
       "Bash(npm info:*)",
       "Bash(supabase status:*)",
-      "Bash(supabase login:*)"
+      "Bash(supabase login:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []
