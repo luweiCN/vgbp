@@ -1,6 +1,10 @@
 # 使用 Harbor 代理的 Node.js 22 镜像
 FROM www.luwei.space:4008/proxy-docker-hub/library/node:22-alpine AS builder
-# 构建时间: 2024-12-19 13:50 (使用 Harbor 镜像)
+# 构建时间: 2024-12-19 14:00 (支持构建参数)
+
+# 定义构建参数（这些将由 Dokploy 的 Build-time Arguments 提供）
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
 
 # 设置工作目录
 WORKDIR /app
@@ -18,11 +22,11 @@ COPY . .
 RUN echo "=== 准备国际化文件 ===" && \
     node scripts/copy-i18n.mjs
 
-# 设置环境变量
+# 设置环境变量（构建时使用）
 ENV NODE_ENV=production
+# ARG 传递给 ENV，这样 Vite 在构建时可以读取
 ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
 ENV VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
-ENV GEMINI_API_KEY=${GEMINI_API_KEY}
 
 # 构建应用
 RUN echo "=== 开始构建 ===" && \
