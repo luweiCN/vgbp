@@ -6,13 +6,10 @@
 # ================================
 # 基础环境配置
 # ================================
-# 使用包含 nodejs_22 的 nixpkgs 版本（2024年11月的版本）
-[nixpkgs-archive]
-value = "https://github.com/NixOS/nixpkgs/archive/e87b505f5121ae4cd00f3c70987b690b737fc2b3.tar.gz"
-
-[phases.setup]
-nixPkgs = ["nodejs_22"]
-# 使用 Node.js 22
+# 注释掉 setup 阶段，让 Nixpacks 自动检测 Node.js 版本
+# [phases.setup]
+# nixPkgs = ["nodejs_20"]
+# 使用 Node.js 20（满足 Vite 6.2.0 的最低要求）
 
 # ================================
 # 安装依赖阶段
