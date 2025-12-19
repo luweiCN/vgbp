@@ -45,41 +45,35 @@ RUN cp public/robots.txt dist/robots.txt 2>/dev/null || true
 # 生产阶段：使用 Nginx 提供静态文件
 FROM nginx:alpine
 
-# 复制自定义 Nginx 配置
-RUN echo 'events { worker_connections 1024; } \
-http { \
-    include       /etc/nginx/mime.types; \
-    default_type  application/octet-stream; \
+# 复制自定义 Nginx 配置（只需要 server 块）
+RUN echo 'server { \
+    listen       80; \
+    server_name  localhost; \
+    root         /usr/share/nginx/html; \
+    index        index.html; \
     \
-    server { \
-        listen       80; \
-        server_name  localhost; \
-        root         /usr/share/nginx/html; \
-        index        index.html; \
-        \
-        # SPA 路由支持 \
-        location / { \
-            try_files $uri $uri/ /index.html; \
-        } \
-        \
-        # 静态资源缓存 \
-        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
-            expires 1y; \
-            add_header Cache-Control "public, immutable"; \
-        } \
-        \
-        # PWA 资源不缓存 \
-        location ~* \.(webmanifest|sw.js)$ { \
-            expires -1; \
-            add_header Cache-Control "no-cache, no-store, must-revalidate"; \
-        } \
-        \
-        # Gzip 压缩 \
-        gzip on; \
-        gzip_vary on; \
-        gzip_min_length 1024; \
-        gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json; \
+    # SPA 路由支持 \
+    location / { \
+        try_files $uri $uri/ /index.html; \
     } \
+    \
+    # 静态资源缓存 \
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
+    } \
+    \
+    # PWA 资源不缓存 \
+    location ~* \.(webmanifest|sw.js)$ { \
+        expires -1; \
+        add_header Cache-Control "no-cache, no-store, must-revalidate"; \
+    } \
+    \
+    # Gzip 压缩 \
+    gzip on; \
+    gzip_vary on; \
+    gzip_min_length 1024; \
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json; \
 }' > /etc/nginx/conf.d/default.conf
 
 # 从构建阶段复制构建产物（包含可能的 robots.txt）
