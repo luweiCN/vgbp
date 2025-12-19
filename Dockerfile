@@ -1,5 +1,6 @@
 # 使用官方 Node.js 22 镜像
 FROM node:22-alpine AS builder
+# 构建时间: 2024-12-19 10:15 (修复 robots.txt 复制问题)
 
 # 设置工作目录
 WORKDIR /app
