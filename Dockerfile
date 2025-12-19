@@ -30,6 +30,12 @@ ENV VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
 
 # 构建应用
 RUN echo "=== 开始构建 ===" && \
+    echo "=== 调试信息 ===" && \
+    echo "VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}" && \
+    echo "VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:0:10}..." && \
+    echo "=== 环境变量列表 ===" && \
+    env | grep VITE && \
+    echo "===================" && \
     npm run build
 
 # 验证构建输出
