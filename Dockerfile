@@ -43,6 +43,12 @@ RUN echo "=== 验证构建输出 ===" && \
     ls -la dist/ && \
     test -f dist/index.html || (echo "❌ index.html 未找到" && exit 1) && \
     test -f dist/sw.js && echo "✓ Service Worker 已生成" || echo "⚠️ Service Worker 未生成" && \
+    echo "=== 检查构建的 JS 文件中的环境变量 ===" && \
+    if [ -f dist/assets/index-*.js ]; then \
+        echo "查找 Supabase URL 在构建文件中..." && \
+        grep -o "sxkozhhlhvxdnwirbubw" dist/assets/index-*.js | head -1 && \
+        echo "✓ Supabase URL 已打包到 JS 文件中" || echo "❌ Supabase URL 未找到"; \
+    fi && \
     echo "构建完成！"
 
 # 清理敏感文件
