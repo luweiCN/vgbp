@@ -12,6 +12,7 @@
     "release": "node scripts/release.js"
   },
   "dependencies": {
+    "@aptabase/react": "^0.4.0",
     "@google/genai": "^1.30.0",
     "@supabase/supabase-js": "^2.86.0",
     "@tailwindcss/postcss": "^4.1.17",

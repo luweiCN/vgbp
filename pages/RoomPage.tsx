@@ -24,6 +24,7 @@ import { ToastContainer } from '@/components/Toast';
 import HeroSelectionToastContainer from '@/components/HeroSelectionToastContainer';
 import { supabase } from '@/services/supabase';
 import { useDefaultIsMobile } from '@/hooks/useIsMobile';
+import { analytics } from '../services/analytics';
 // import { useEnhancedSearch } from '@/hooks/useEnhancedSearch'; // TODO: 暂时注释，等搜索建议功能完善后再启用
 
 
@@ -122,8 +123,20 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
   
   // Handlers
   const handleToggleHero = useCallback(async (id: string) => {
+    const hero = HEROES.find(h => h.id === id);
+    const isCurrentlySelected = selectedHeroes.has(id);
+
+    // 追踪英雄选择/取消选择事件
+    if (isCurrentlySelected) {
+      analytics.heroDeselected(id);
+    } else {
+      if (hero) {
+        analytics.heroSelected(id, hero.cnName || hero.name);
+      }
+    }
+
     await toggleHero(id);
-  }, [toggleHero]);
+  }, [toggleHero, selectedHeroes]);
 
   const handleReset = useCallback(async () => {
     // 使用新的 clearAllHeroes 函数一次性清空所有英雄

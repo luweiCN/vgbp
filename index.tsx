@@ -1,8 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { AptabaseProvider } from '@aptabase/react';
 import App from "./App";
 import "./index.css";
 import "./styles/global.css";
+
+// 从 package.json 获取应用版本
+const appVersion = import.meta.env.npm_package_version || '0.0.0';
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -11,6 +15,11 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-  <App />
+  <AptabaseProvider
+    appKey={import.meta.env.VITE_APTABASE_APP_KEY}
+    appVersion={appVersion}
+  >
+    <App />
+  </AptabaseProvider>
 );
 
