@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, memo } from 'react';
 import { I18nContextValue, I18nProviderProps, Language } from '../types';
 import { i18nService } from '../services/i18n.service';
-import { analytics } from '../../services/analytics';
 
 export const I18nContext = createContext<I18nContextValue | undefined>(undefined);
 
@@ -29,9 +28,6 @@ export const I18nProvider = memo<I18nProviderProps>(({
       const previousLanguage = language;
       await i18nService.setLanguage(newLanguage);
       setLanguageState(newLanguage);
-
-      // 追踪语言切换事件
-      analytics.languageChanged(previousLanguage, newLanguage);
     } catch (error) {
       console.error('Failed to set language:', error);
       // 可以在这里添加错误处理，比如显示toast通知

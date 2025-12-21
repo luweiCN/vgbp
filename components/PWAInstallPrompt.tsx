@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSafeI18n } from '@/i18n/components/useSafeI18n';
 import { X, Download, Smartphone } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
-import { analytics } from '../services/analytics';
+import { useAnalytics } from '../services/analytics';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -15,6 +15,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 export const PWAInstallPrompt: React.FC = () => {
   const { translate: t } = useSafeI18n();
+  const analytics = useAnalytics();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);

@@ -24,7 +24,8 @@ import { ToastContainer } from '@/components/Toast';
 import HeroSelectionToastContainer from '@/components/HeroSelectionToastContainer';
 import { supabase } from '@/services/supabase';
 import { useDefaultIsMobile } from '@/hooks/useIsMobile';
-import { analytics } from '../services/analytics';
+import { useAnalytics } from '../services/analytics';
+import { setAnalyticsCallback } from '../services/geminiService';
 // import { useEnhancedSearch } from '@/hooks/useEnhancedSearch'; // TODO: 暂时注释，等搜索建议功能完善后再启用
 
 
@@ -36,6 +37,7 @@ interface RoomPageProps {
 
 const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
   const navigate = useNavigate();
+  const analytics = useAnalytics();
 
   // 判断是本地模式还是在线模式
   const isLocalMode = roomId === 'local';
@@ -47,6 +49,26 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
       // 组件卸载时不做处理，让下一个页面自己设置
     };
   }, []);
+
+  // 设置分析回调，以便在 geminiService 中使用
+  useEffect(() => {
+    setAnalyticsCallback((eventName: string, props?: any) => {
+      switch (eventName) {
+        case 'aiAdviceRequested':
+          analytics.aiAdviceRequested(props?.heroCount || 0);
+          break;
+        case 'aiAdviceReceived':
+          analytics.aiAdviceReceived(props?.responseTime || 0);
+          break;
+        case 'aiAdviceShown':
+          analytics.aiAdviceShown();
+          break;
+        case 'errorOccurred':
+          analytics.errorOccurred(props?.errorType || 'unknown', props?.errorMessage);
+          break;
+      }
+    });
+  }, [analytics]);
 
   const { showSuccess, showInfo, toasts, removeToast } = useToast();
   const { user } = useAuth();

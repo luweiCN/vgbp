@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { AptabaseProvider } from '@aptabase/react';
 import App from "./App";
+import { LanguageTracker } from "./components/LanguageTracker";
 import "./index.css";
 import "./styles/global.css";
 
@@ -19,6 +20,7 @@ root.render(
     appKey={import.meta.env.VITE_APTABASE_APP_KEY}
     appVersion={appVersion}
   >
+    <LanguageTracker />
     <App />
   </AptabaseProvider>
 );

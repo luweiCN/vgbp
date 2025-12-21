@@ -1,15 +1,23 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Hero } from '../types';
-import { analytics } from './analytics';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+// 用于在组件外部触发分析的回调函数
+let analyticsCallback: ((eventName: string, props?: any) => void) | null = null;
+
+export const setAnalyticsCallback = (callback: (eventName: string, props?: any) => void) => {
+  analyticsCallback = callback;
+};
 
 export const getDraftAnalysis = async (unavailableHeroes: Hero[]): Promise<any> => {
   const startTime = Date.now();
   const unavailableNames = unavailableHeroes.map(h => h.name).join(', ');
 
   // 追踪 AI 请求事件
-  analytics.aiAdviceRequested(unavailableHeroes.length);
+  if (analyticsCallback) {
+    analyticsCallback('aiAdviceRequested', { heroCount: unavailableHeroes.length });
+  }
 
   const systemInstruction = `You are a professional eSports coach for the game Vainglory.
   Your goal is to analyze the current draft state.
@@ -48,19 +56,26 @@ export const getDraftAnalysis = async (unavailableHeroes: Hero[]): Promise<any> 
     const responseTime = Date.now() - startTime;
 
     // 追踪 AI 响应时间
-    analytics.aiAdviceReceived(responseTime);
+    if (analyticsCallback) {
+      analyticsCallback('aiAdviceReceived', { responseTime });
+    }
 
     const result = JSON.parse(response.text || '{}');
 
     // 追踪 AI 建议显示事件
-    if (result && result.suggestedPicks && result.suggestedPicks.length > 0) {
-      analytics.aiAdviceShown();
+    if (result && result.suggestedPicks && result.suggestedPicks.length > 0 && analyticsCallback) {
+      analyticsCallback('aiAdviceShown');
     }
 
     return result;
   } catch (error) {
     // 追踪错误事件
-    analytics.errorOccurred('ai_advice_error', error instanceof Error ? error.message : 'Unknown error');
+    if (analyticsCallback) {
+      analyticsCallback('errorOccurred', {
+        errorType: 'ai_advice_error',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
     console.error("Gemini API Error:", error);
     throw error;
   }
