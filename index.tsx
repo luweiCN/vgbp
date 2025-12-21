@@ -19,7 +19,7 @@ root.render(
     appKey={import.meta.env.VITE_APTABASE_APP_KEY}
     appVersion={appVersion}
     options={{
-      host: 'https://aptabase.dokploy.luwei.host'
+      host: 'https://aptabase.dokploy.host'
     }}
   >
     <App />
