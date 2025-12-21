@@ -25,7 +25,6 @@ import HeroSelectionToastContainer from '@/components/HeroSelectionToastContaine
 import { supabase } from '@/services/supabase';
 import { useDefaultIsMobile } from '@/hooks/useIsMobile';
 import { useAnalytics } from '../services/analytics';
-import { setAnalyticsCallback } from '../services/geminiService';
 // import { useEnhancedSearch } from '@/hooks/useEnhancedSearch'; // TODO: 暂时注释，等搜索建议功能完善后再启用
 
 
@@ -50,26 +49,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
     };
   }, []);
 
-  // 设置分析回调，以便在 geminiService 中使用
-  useEffect(() => {
-    setAnalyticsCallback((eventName: string, props?: any) => {
-      switch (eventName) {
-        case 'aiAdviceRequested':
-          analytics.aiAdviceRequested(props?.heroCount || 0);
-          break;
-        case 'aiAdviceReceived':
-          analytics.aiAdviceReceived(props?.responseTime || 0);
-          break;
-        case 'aiAdviceShown':
-          analytics.aiAdviceShown();
-          break;
-        case 'errorOccurred':
-          analytics.errorOccurred(props?.errorType || 'unknown', props?.errorMessage);
-          break;
-      }
-    });
-  }, [analytics]);
-
+  
   const { showSuccess, showInfo, toasts, removeToast } = useToast();
   const { user } = useAuth();
   const { t, language, isLanguageReady } = useI18n();
