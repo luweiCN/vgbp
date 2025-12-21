@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSafeI18n } from '@/i18n/components/useSafeI18n';
 import { X, Download, Smartphone } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
+import { useAnalytics } from '../services/analytics';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -14,6 +15,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 export const PWAInstallPrompt: React.FC = () => {
   const { translate: t } = useSafeI18n();
+  const analytics = useAnalytics();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -37,6 +39,8 @@ export const PWAInstallPrompt: React.FC = () => {
         // 延迟显示安装提示，给用户一些时间使用应用
         setTimeout(() => {
           setShowInstallPrompt(true);
+          // 追踪安装提示显示
+          analytics.pwaInstallPromptShown();
         }, 10000); // 10秒后显示
       }
     };
@@ -55,6 +59,9 @@ export const PWAInstallPrompt: React.FC = () => {
       setShowInstallPrompt(false);
       setDeferredPrompt(null);
       localStorage.setItem('pwa-installed', 'true');
+
+      // 追踪 PWA 安装事件
+      analytics.pwaInstalled();
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -78,8 +85,13 @@ export const PWAInstallPrompt: React.FC = () => {
       const { outcome } = await deferredPrompt.userChoice;
 
       if (outcome === 'accepted') {
+        // 追踪安装接受事件
+        analytics.pwaInstallAccepted();
         setShowInstallPrompt(false);
         localStorage.setItem('pwa-install-prompted', 'true');
+      } else {
+        // 追踪安装拒绝事件
+        analytics.pwaInstallDismissed();
       }
 
       setDeferredPrompt(null);
@@ -92,6 +104,9 @@ export const PWAInstallPrompt: React.FC = () => {
   const handleDismiss = () => {
     setShowInstallPrompt(false);
     localStorage.setItem('pwa-install-prompted', 'true');
+
+    // 追踪安装提示关闭事件
+    analytics.pwaInstallDismissed();
   };
 
   const showInstallGuide = () => {

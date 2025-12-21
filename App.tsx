@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useCallback, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import RoomsPage from './pages/RoomsPage';
 import RoomPage from './pages/RoomPage';
@@ -8,6 +8,8 @@ import { ToastContainer } from './components/Toast';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { I18nProvider } from './i18n/components/I18nProvider';
+import { useAnalytics } from './services/analytics';
+import { LanguageTracker } from './components/LanguageTracker';
 
 // 房间页面包装组件
 const RoomPageWrapper: React.FC = () => {
@@ -37,6 +39,7 @@ const AppWithRouter: React.FC = () => {
   return (
     <ToastProvider>
       <I18nProvider>
+        <LanguageTracker />
         <Router basename={basename}>
           <AppContent />
         </Router>
@@ -47,20 +50,49 @@ const AppWithRouter: React.FC = () => {
 
 const AppContent: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showError, showSuccess, toasts, removeToast } = useToastContext();
+  const analytics = useAnalytics();
 
-  
+  // 追踪页面访问
+  useEffect(() => {
+    analytics.pageView(location.pathname);
+  }, [location, analytics]);
+
+  // 应用启动追踪
+  useEffect(() => {
+    analytics.appStarted();
+  }, [analytics]);
+
+  // 追踪应用焦点状态
+  useEffect(() => {
+    const handleFocus = () => analytics.appFocused();
+    const handleBlur = () => analytics.appBlurred();
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [analytics]);
+
   // 处理进入房间
   const handleEnterRoom = useCallback((roomId: string) => {
+    // 追踪房间加入事件
+    analytics.roomJoined(roomId);
     // 使用 React Router 导航
     navigate(`/room/${roomId}`);
-  }, [navigate]);
+  }, [navigate, analytics]);
 
   // 处理本地模式
   const handleLocalMode = useCallback(() => {
+    // 追踪本地模式启动
+    analytics.localModeStarted();
     // 导航到本地模式页面（使用RoomPage，但没有房间ID）
     navigate('/room/local');
-  }, [navigate]);
+  }, [navigate, analytics]);
 
   return (
     <div className="min-h-screen">

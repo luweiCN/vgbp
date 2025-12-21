@@ -25,6 +25,7 @@ export const I18nProvider = memo<I18nProviderProps>(({
 
     try {
       setIsLoading(true);
+      const previousLanguage = language;
       await i18nService.setLanguage(newLanguage);
       setLanguageState(newLanguage);
     } catch (error) {

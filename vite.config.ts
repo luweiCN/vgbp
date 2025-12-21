@@ -113,10 +113,12 @@ export default defineConfig(({ mode }) => {
         'process.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
         'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
         'process.env.IS_GITHUB_PAGES': JSON.stringify(isGitHubPages),
+        'process.env.VITE_APTABASE_APP_KEY': JSON.stringify(env.VITE_APTABASE_APP_KEY),
         // 关键：添加 import.meta.env 支持，确保与代码使用方式一致
         'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
         'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
         'import.meta.env.IS_GITHUB_PAGES': JSON.stringify(isGitHubPages),
+        'import.meta.env.VITE_APTABASE_APP_KEY': JSON.stringify(env.VITE_APTABASE_APP_KEY),
         // 注入构建信息
         '__BUILD_INFO__': JSON.stringify(buildInfo)
       },

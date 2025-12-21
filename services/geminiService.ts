@@ -6,10 +6,10 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 export const getDraftAnalysis = async (unavailableHeroes: Hero[]): Promise<any> => {
   const unavailableNames = unavailableHeroes.map(h => h.name).join(', ');
 
-  const systemInstruction = `You are a professional eSports coach for the game Vainglory. 
-  Your goal is to analyze the current draft state. 
-  The user will provide a list of heroes that are currently "Picked" or "Banned" (unavailable). 
-  You should suggest 3 strong heroes that remain available to pick, and explain why they are good in the current meta or general play. 
+  const systemInstruction = `You are a professional eSports coach for the game Vainglory.
+  Your goal is to analyze the current draft state.
+  The user will provide a list of heroes that are currently "Picked" or "Banned" (unavailable).
+  You should suggest 3 strong heroes that remain available to pick, and explain why they are good in the current meta or general play.
   Also, identify if the unavailable list implies a specific strategy (e.g., if lots of Captains are gone).
   Keep the analysis concise and tactical.`;
 
@@ -24,10 +24,10 @@ export const getDraftAnalysis = async (unavailableHeroes: Hero[]): Promise<any> 
             type: Type.OBJECT,
             properties: {
                 analysis: { type: Type.STRING, description: "A brief tactical analysis of what is missing or what style is being played." },
-                suggestedPicks: { 
-                    type: Type.ARRAY, 
+                suggestedPicks: {
+                    type: Type.ARRAY,
                     items: { type: Type.STRING },
-                    description: "List of 3 suggested hero names." 
+                    description: "List of 3 suggested hero names."
                 },
                 threats: {
                     type: Type.ARRAY,
