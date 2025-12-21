@@ -19,6 +19,9 @@ root.render(
   <AptabaseProvider
     appKey={import.meta.env.VITE_APTABASE_APP_KEY}
     appVersion={appVersion}
+    options={{
+      host: 'https://aptabase.dokploy.luwei.host'
+    }}
   >
     <LanguageTracker />
     <App />
